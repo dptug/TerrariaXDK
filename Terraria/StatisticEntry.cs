@@ -1,0 +1,63 @@
+﻿// Type: Terraria.StatisticEntry
+// Assembly: game, Version=1.0.4.1, Culture=neutral, PublicKeyToken=null
+// MVID: D0F84B30-D7A0-41D8-8306-C72BB0D9D9CF
+// Assembly location: C:\Users\DartPower\Downloads\Terraria.Xbox.360.Edition.XBLA.XBOX360-MoNGoLS\5841128F\000D0000\Terraria\Terraria.exe\ASSEMBLY.exe
+
+namespace Terraria
+{
+  public enum StatisticEntry
+  {
+    Unknown = -1,
+    BabySlime = 0,
+    BlackSlime = 1,
+    BlueSlime = 2,
+    DungeonSlime = 3,
+    GreenSlime = 4,
+    JungleSlime = 5,
+    LavaSlime = 6,
+    MotherSlime = 7,
+    Pinky = 8,
+    PurpleSlime = 9,
+    RedSlime = 10,
+    YellowSlime = 11,
+    CorruptSlime = 12,
+    IlluminantSlime = 13,
+    Slimer = 14,
+    Slimeling = 15,
+    ToxicSludge = 16,
+    ShadowSlime = 17,
+    KingSlime = 18,
+    EyeOfCthulhu = 19,
+    EaterOfWorlds = 20,
+    Skeletron = 21,
+    WallOfFlesh = 22,
+    TheTwins = 23,
+    TheDestroyer = 24,
+    SkeletronPrime = 25,
+    Ocram = 26,
+    AirTravel = 27,
+    GroundTravel = 28,
+    WaterTravel = 29,
+    LavaTravel = 30,
+    Ore = 31,
+    Gems = 32,
+    Soils = 33,
+    Wood = 34,
+    FurnitureCrafted = 35,
+    ToolsCrafted = 36,
+    WeaponsCrafted = 37,
+    ArmorCrafted = 38,
+    ConsumablesCrafted = 39,
+    MiscCrafted = 40,
+    PotionsDrank = 41,
+    LighstPlaced = 42,
+    AmmoShot = 43,
+    SeedsPlanted = 44,
+    KeysUsed = 45,
+    Drowned = 46,
+    Fallen = 47,
+    Buried = 48,
+    LavaBurned = 49,
+    NumEntries = 50,
+  }
+}
