@@ -1,8 +1,3 @@
-﻿// Type: StorageDeviceManager
-// Assembly: game, Version=1.0.4.1, Culture=neutral, PublicKeyToken=null
-// MVID: D0F84B30-D7A0-41D8-8306-C72BB0D9D9CF
-// Assembly location: C:\Users\DartPower\Downloads\Terraria.Xbox.360.Edition.XBLA.XBOX360-MoNGoLS\5841128F\000D0000\Terraria\Terraria.exe\ASSEMBLY.exe
-
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.GamerServices;
 using Microsoft.Xna.Framework.Storage;
@@ -10,114 +5,127 @@ using System;
 
 public class StorageDeviceManager : GameComponent
 {
-  public bool isDone = true;
-  private bool wasDeviceConnected;
-  private bool showDeviceSelector;
-  public StorageDevice Device;
-  public PlayerIndex? Player;
-  public PlayerIndex PlayerToPrompt;
-  public int RequiredBytes;
+	private bool wasDeviceConnected;
 
-  public event EventHandler DeviceSelected;
+	private bool showDeviceSelector;
 
-  public event EventHandler<EventArgs> DeviceSelectorCanceled;
+	public bool isDone = true;
 
-  public event EventHandler<EventArgs> DeviceDisconnected;
+	public StorageDevice Device;
 
-  public StorageDeviceManager(Game game)
-    : this(game, new PlayerIndex?(), 0)
-  {
-  }
+	public PlayerIndex? Player;
 
-  public StorageDeviceManager(Game game, PlayerIndex player)
-    : this(game, player, 0)
-  {
-  }
+	public PlayerIndex PlayerToPrompt;
 
-  public StorageDeviceManager(Game game, int requiredBytes)
-    : this(game, new PlayerIndex?(), requiredBytes)
-  {
-  }
+	public int RequiredBytes;
 
-  public StorageDeviceManager(Game game, PlayerIndex player, int requiredBytes)
-    : this(game, new PlayerIndex?(player), requiredBytes)
-  {
-  }
+	public event EventHandler DeviceSelected;
 
-  private StorageDeviceManager(Game game, PlayerIndex? player, int requiredBytes)
-    : base(game)
-  {
-    this.Player = player;
-    this.RequiredBytes = requiredBytes;
-    this.PlayerToPrompt = PlayerIndex.One;
-  }
+	public event EventHandler<EventArgs> DeviceSelectorCanceled;
 
-  public void PromptForDevice()
-  {
-    if (!this.isDone)
-      return;
-    this.isDone = false;
-    this.showDeviceSelector = true;
-  }
+	public event EventHandler<EventArgs> DeviceDisconnected;
 
-  public override void Update(GameTime gameTime)
-  {
-    bool flag = false;
-    if (this.Device != null)
-    {
-      flag = this.Device.IsConnected;
-      if (!flag)
-      {
-        if (this.wasDeviceConnected)
-          this.FireDeviceDisconnectedEvent();
-      }
-    }
-    try
-    {
-      if (!Guide.IsVisible)
-      {
-        if (this.showDeviceSelector)
-        {
-          this.showDeviceSelector = false;
-          if (this.Player.HasValue)
-            StorageDevice.BeginShowSelector(this.Player.Value, this.RequiredBytes, 0, new AsyncCallback(this.deviceSelectorCallback), (object) null);
-          else
-            StorageDevice.BeginShowSelector(this.RequiredBytes, 0, new AsyncCallback(this.deviceSelectorCallback), (object) null);
-        }
-      }
-    }
-    catch (GamerServicesNotAvailableException ex)
-    {
-    }
-    catch (GuideAlreadyVisibleException ex)
-    {
-    }
-    this.wasDeviceConnected = flag;
-  }
+	public StorageDeviceManager(Game game)
+		: this(game, null, 0)
+	{
+	}
 
-  private void deviceSelectorCallback(IAsyncResult ar)
-  {
-    this.Device = StorageDevice.EndShowSelector(ar);
-    if (this.Device != null)
-    {
-      if (this.DeviceSelected != null)
-        this.DeviceSelected((object) this, (EventArgs) null);
-      this.wasDeviceConnected = true;
-    }
-    else
-    {
-      if (this.DeviceSelectorCanceled != null)
-        this.DeviceSelectorCanceled((object) this, (EventArgs) null);
-      this.showDeviceSelector = false;
-    }
-    this.isDone = true;
-  }
+	public StorageDeviceManager(Game game, PlayerIndex player)
+		: this(game, player, 0)
+	{
+	}
 
-  private void FireDeviceDisconnectedEvent()
-  {
-    this.Device = (StorageDevice) null;
-    if (this.DeviceDisconnected != null)
-      this.DeviceDisconnected((object) this, (EventArgs) null);
-    this.showDeviceSelector = false;
-  }
+	public StorageDeviceManager(Game game, int requiredBytes)
+		: this(game, null, requiredBytes)
+	{
+	}
+
+	public StorageDeviceManager(Game game, PlayerIndex player, int requiredBytes)
+		: this(game, (PlayerIndex?)player, requiredBytes)
+	{
+	}
+
+	private StorageDeviceManager(Game game, PlayerIndex? player, int requiredBytes)
+		: base(game)
+	{
+		Player = player;
+		RequiredBytes = requiredBytes;
+		PlayerToPrompt = PlayerIndex.One;
+	}
+
+	public void PromptForDevice()
+	{
+		if (isDone)
+		{
+			isDone = false;
+			showDeviceSelector = true;
+		}
+	}
+
+	public override void Update(GameTime gameTime)
+	{
+		bool flag = false;
+		if (Device != null)
+		{
+			flag = Device.IsConnected;
+			if (!flag && wasDeviceConnected)
+			{
+				FireDeviceDisconnectedEvent();
+			}
+		}
+		try
+		{
+			if (!Guide.IsVisible && showDeviceSelector)
+			{
+				showDeviceSelector = false;
+				if (Player.HasValue)
+				{
+					StorageDevice.BeginShowSelector(Player.Value, RequiredBytes, 0, deviceSelectorCallback, null);
+				}
+				else
+				{
+					StorageDevice.BeginShowSelector(RequiredBytes, 0, deviceSelectorCallback, null);
+				}
+			}
+		}
+		catch (GamerServicesNotAvailableException)
+		{
+		}
+		catch (GuideAlreadyVisibleException)
+		{
+		}
+		wasDeviceConnected = flag;
+	}
+
+	private void deviceSelectorCallback(IAsyncResult ar)
+	{
+		Device = StorageDevice.EndShowSelector(ar);
+		if (Device != null)
+		{
+			if (this.DeviceSelected != null)
+			{
+				this.DeviceSelected(this, null);
+			}
+			wasDeviceConnected = true;
+		}
+		else
+		{
+			if (this.DeviceSelectorCanceled != null)
+			{
+				this.DeviceSelectorCanceled(this, null);
+			}
+			showDeviceSelector = false;
+		}
+		isDone = true;
+	}
+
+	private void FireDeviceDisconnectedEvent()
+	{
+		Device = null;
+		if (this.DeviceDisconnected != null)
+		{
+			this.DeviceDisconnected(this, null);
+		}
+		showDeviceSelector = false;
+	}
 }

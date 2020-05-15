@@ -1,99 +1,113 @@
-﻿// Type: Terraria.UserString
-// Assembly: game, Version=1.0.4.1, Culture=neutral, PublicKeyToken=null
-// MVID: D0F84B30-D7A0-41D8-8306-C72BB0D9D9CF
-// Assembly location: C:\Users\DartPower\Downloads\Terraria.Xbox.360.Edition.XBLA.XBOX360-MoNGoLS\5841128F\000D0000\Terraria\Terraria.exe\ASSEMBLY.exe
-
 using Microsoft.Xna.Framework.GamerServices;
 using System;
 using System.IO;
 
 namespace Terraria
 {
-  public sealed class UserString
-  {
-    public string text;
-    public bool isVerified;
-    public bool isCensored;
-    private IAsyncResult asyncResult;
+	public sealed class UserString
+	{
+		public string text;
 
-    public UserString(string s, bool verified)
-    {
-      this.text = s;
-      this.isVerified = verified;
-      this.isCensored = false;
-      this.asyncResult = (IAsyncResult) null;
-    }
+		public bool isVerified;
 
-    public UserString(BinaryReader input)
-    {
-      int num = (int) input.ReadByte();
-      this.isVerified = (num & 1) != 0;
-      this.isCensored = (num & 2) != 0;
-      this.text = !this.isCensored ? input.ReadString() : (string) null;
-      this.asyncResult = (IAsyncResult) null;
-    }
+		public bool isCensored;
 
-    public static implicit operator UserString(string s)
-    {
-      return new UserString(s, true);
-    }
+		private IAsyncResult asyncResult;
 
-    public void Write(BinaryWriter output)
-    {
-      int num = this.isVerified ? 1 : 0;
-      if (this.isCensored)
-        num |= 2;
-      output.Write((byte) num);
-      if (this.isCensored)
-        return;
-      output.Write(this.text);
-    }
+		public static implicit operator UserString(string s)
+		{
+			return new UserString(s, verified: true);
+		}
 
-    public void SetUserString(string s)
-    {
-      this.text = s;
-      this.isVerified = s.Length == 0;
-      this.isCensored = false;
-    }
+		public UserString(string s, bool verified)
+		{
+			text = s;
+			isVerified = verified;
+			isCensored = false;
+			asyncResult = null;
+		}
 
-    public void SetSystemString(string s)
-    {
-      this.text = s;
-      this.isVerified = true;
-      this.isCensored = false;
-    }
+		public UserString(BinaryReader input)
+		{
+			int num = input.ReadByte();
+			isVerified = ((num & 1) != 0);
+			isCensored = ((num & 2) != 0);
+			if (isCensored)
+			{
+				text = null;
+			}
+			else
+			{
+				text = input.ReadString();
+			}
+			asyncResult = null;
+		}
 
-    public string GetString()
-    {
-      if (!this.isVerified && this.asyncResult == null && Main.netMode > 0)
-        this.asyncResult = StringChecker.BeginCheckString(this.text, new AsyncCallback(this.OnCheckStringDone), (object) null);
-      if (this.asyncResult != null)
-        return Lang.inter[76];
-      if (!this.isCensored)
-        return this.text;
-      else
-        return Lang.inter[77];
-    }
+		public void Write(BinaryWriter output)
+		{
+			int num = isVerified ? 1 : 0;
+			if (isCensored)
+			{
+				num |= 2;
+			}
+			output.Write((byte)num);
+			if (!isCensored)
+			{
+				output.Write(text);
+			}
+		}
 
-    public bool IsEditable()
-    {
-      if (!this.isVerified)
-        return Main.netMode == 0;
-      else
-        return true;
-    }
+		public void SetUserString(string s)
+		{
+			text = s;
+			isVerified = (s.Length == 0);
+			isCensored = false;
+		}
 
-    private void OnCheckStringDone(object s)
-    {
-      try
-      {
-        this.isCensored = !StringChecker.EndCheckString(this.asyncResult);
-        this.isVerified = true;
-      }
-      catch
-      {
-      }
-      this.asyncResult = (IAsyncResult) null;
-    }
-  }
+		public void SetSystemString(string s)
+		{
+			text = s;
+			isVerified = true;
+			isCensored = false;
+		}
+
+		public string GetString()
+		{
+			if (!isVerified && asyncResult == null && Main.netMode > 0)
+			{
+				asyncResult = StringChecker.BeginCheckString(text, OnCheckStringDone, null);
+			}
+			if (asyncResult != null)
+			{
+				return Lang.inter[76];
+			}
+			if (!isCensored)
+			{
+				return text;
+			}
+			return Lang.inter[77];
+		}
+
+		public bool IsEditable()
+		{
+			if (!isVerified)
+			{
+				return Main.netMode == 0;
+			}
+			return true;
+		}
+
+		private void OnCheckStringDone(object s)
+		{
+			try
+			{
+				isCensored = !StringChecker.EndCheckString(asyncResult);
+				isVerified = true;
+			}
+			catch
+			{
+			}
+			asyncResult = null;
+		}
+	}
 }

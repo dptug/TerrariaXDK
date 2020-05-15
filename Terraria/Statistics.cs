@@ -1,262 +1,269 @@
-﻿// Type: Terraria.Statistics
-// Assembly: game, Version=1.0.4.1, Culture=neutral, PublicKeyToken=null
-// MVID: D0F84B30-D7A0-41D8-8306-C72BB0D9D9CF
-// Assembly location: C:\Users\DartPower\Downloads\Terraria.Xbox.360.Edition.XBLA.XBOX360-MoNGoLS\5841128F\000D0000\Terraria\Terraria.exe\ASSEMBLY.exe
-
 using System;
 using System.Collections;
 
 namespace Terraria
 {
-  public class Statistics
-  {
-    private const int FirstNonSlimeIndex = 19;
-    private const int FirstBossIndex = 18;
-    private const int LastBossIndex = 26;
-    public bool AllSlimeTypesKilled;
-    public bool AllBossesKilled;
-    private BitArray SlimesKilled;
-    private BitArray BossesKilled;
-    private uint[] Counters;
+	public class Statistics
+	{
+		private const int FirstNonSlimeIndex = 19;
 
-    public uint this[StatisticEntry stat]
-    {
-      get
-      {
-        return this.Counters[(int) stat];
-      }
-    }
+		private const int FirstBossIndex = 18;
 
-    public Statistics(BitArray slimesKilled, BitArray bossesKilled, uint[] counters)
-    {
-      this.SlimesKilled = slimesKilled;
-      this.BossesKilled = bossesKilled;
-      this.Counters = counters;
-      this.UpdateAllSlimesKilled();
-      this.UpdateAllBossesKilled();
-    }
+		private const int LastBossIndex = 26;
 
-    public static StatisticEntry GetStatisticEntryFromNetID(short netID)
-    {
-      StatisticEntry statisticEntry = StatisticEntry.Unknown;
-      switch (netID)
-      {
-        case (short) 138:
-          statisticEntry = StatisticEntry.IlluminantSlime;
-          break;
-        case (short) 141:
-          statisticEntry = StatisticEntry.ToxicSludge;
-          break;
-        case (short) 150:
-          statisticEntry = StatisticEntry.ShadowSlime;
-          break;
-        case (short) 81:
-          statisticEntry = StatisticEntry.CorruptSlime;
-          break;
-        case (short) 121:
-          statisticEntry = StatisticEntry.Slimer;
-          break;
-        case (short) 59:
-          statisticEntry = StatisticEntry.LavaSlime;
-          break;
-        case (short) 71:
-          statisticEntry = StatisticEntry.DungeonSlime;
-          break;
-        case (short) -18:
-          statisticEntry = StatisticEntry.Slimeling;
-          break;
-        case (short) -10:
-          statisticEntry = StatisticEntry.JungleSlime;
-          break;
-        case (short) -9:
-          statisticEntry = StatisticEntry.YellowSlime;
-          break;
-        case (short) -8:
-          statisticEntry = StatisticEntry.RedSlime;
-          break;
-        case (short) -7:
-          statisticEntry = StatisticEntry.PurpleSlime;
-          break;
-        case (short) -6:
-          statisticEntry = StatisticEntry.BlackSlime;
-          break;
-        case (short) -5:
-          statisticEntry = StatisticEntry.BabySlime;
-          break;
-        case (short) -4:
-          statisticEntry = StatisticEntry.Pinky;
-          break;
-        case (short) -3:
-          statisticEntry = StatisticEntry.GreenSlime;
-          break;
-        case (short) -2:
-          statisticEntry = StatisticEntry.Slimer;
-          break;
-        case (short) -1:
-          statisticEntry = StatisticEntry.Slimeling;
-          break;
-        case (short) 1:
-          statisticEntry = StatisticEntry.BlueSlime;
-          break;
-        case (short) 16:
-          statisticEntry = StatisticEntry.MotherSlime;
-          break;
-      }
-      return statisticEntry;
-    }
+		public bool AllSlimeTypesKilled;
 
-    public static StatisticEntry GetBossStatisticEntryFromNetID(short netID)
-    {
-      StatisticEntry statisticEntry = StatisticEntry.Unknown;
-      switch (netID)
-      {
-        case (short) 134:
-          statisticEntry = StatisticEntry.TheDestroyer;
-          break;
-        case (short) 166:
-          statisticEntry = StatisticEntry.Ocram;
-          break;
-        case (short) 113:
-          statisticEntry = StatisticEntry.WallOfFlesh;
-          break;
-        case (short) 125:
-        case (short) 126:
-          statisticEntry = StatisticEntry.TheTwins;
-          break;
-        case (short) sbyte.MaxValue:
-          statisticEntry = StatisticEntry.SkeletronPrime;
-          break;
-        case (short) 35:
-          statisticEntry = StatisticEntry.Skeletron;
-          break;
-        case (short) 50:
-          statisticEntry = StatisticEntry.KingSlime;
-          break;
-        case (short) 4:
-          statisticEntry = StatisticEntry.EyeOfCthulhu;
-          break;
-        case (short) 13:
-        case (short) 14:
-        case (short) 15:
-          statisticEntry = StatisticEntry.EaterOfWorlds;
-          break;
-      }
-      return statisticEntry;
-    }
+		public bool AllBossesKilled;
 
-    public static Statistics Create()
-    {
-      return new Statistics(new BitArray(19), new BitArray(9), new uint[50]);
-    }
+		private BitArray SlimesKilled;
 
-    private void UpdateAllSlimesKilled()
-    {
-      this.AllSlimeTypesKilled = true;
-      for (int index = 0; index < this.SlimesKilled.Count; ++index)
-      {
-        Statistics statistics = this;
-        int num = statistics.AllSlimeTypesKilled & this.SlimesKilled[index] ? 1 : 0;
-        statistics.AllSlimeTypesKilled = num != 0;
-      }
-    }
+		private BitArray BossesKilled;
 
-    private void UpdateAllBossesKilled()
-    {
-      this.AllBossesKilled = true;
-      for (int index = 0; index < this.BossesKilled.Count; ++index)
-      {
-        Statistics statistics = this;
-        int num = statistics.AllBossesKilled & this.BossesKilled[index] ? 1 : 0;
-        statistics.AllBossesKilled = num != 0;
-      }
-    }
+		private uint[] Counters;
 
-    public void incStat(StatisticEntry entry)
-    {
-      if (entry == StatisticEntry.Unknown)
-        return;
-      int index = (int) entry;
-      if (index < 19)
-      {
-        this.SlimesKilled.Set(index, true);
-        this.UpdateAllSlimesKilled();
-      }
-      if (index < 27 && index >= 18)
-      {
-        this.BossesKilled.Set(index - 18, true);
-        this.UpdateAllBossesKilled();
-      }
-      ++this.Counters[index];
-    }
+		public uint this[StatisticEntry stat] => Counters[(int)stat];
 
-    public void incWoodStat(uint count)
-    {
-      this.Counters[34] += count;
-    }
+		public static StatisticEntry GetStatisticEntryFromNetID(short netID)
+		{
+			StatisticEntry result = StatisticEntry.Unknown;
+			switch (netID)
+			{
+			case 1:
+				result = StatisticEntry.BlueSlime;
+				break;
+			case -1:
+				result = StatisticEntry.Slimeling;
+				break;
+			case -2:
+				result = StatisticEntry.Slimer;
+				break;
+			case -3:
+				result = StatisticEntry.GreenSlime;
+				break;
+			case -4:
+				result = StatisticEntry.Pinky;
+				break;
+			case -5:
+				result = StatisticEntry.BabySlime;
+				break;
+			case -6:
+				result = StatisticEntry.BlackSlime;
+				break;
+			case -7:
+				result = StatisticEntry.PurpleSlime;
+				break;
+			case -8:
+				result = StatisticEntry.RedSlime;
+				break;
+			case -9:
+				result = StatisticEntry.YellowSlime;
+				break;
+			case -10:
+				result = StatisticEntry.JungleSlime;
+				break;
+			case -18:
+				result = StatisticEntry.Slimeling;
+				break;
+			case 16:
+				result = StatisticEntry.MotherSlime;
+				break;
+			case 59:
+				result = StatisticEntry.LavaSlime;
+				break;
+			case 81:
+				result = StatisticEntry.CorruptSlime;
+				break;
+			case 141:
+				result = StatisticEntry.ToxicSludge;
+				break;
+			case 121:
+				result = StatisticEntry.Slimer;
+				break;
+			case 150:
+				result = StatisticEntry.ShadowSlime;
+				break;
+			case 138:
+				result = StatisticEntry.IlluminantSlime;
+				break;
+			case 71:
+				result = StatisticEntry.DungeonSlime;
+				break;
+			}
+			return result;
+		}
 
-    private uint CreateChecksum(uint[] array)
-    {
-      uint num1 = 0U;
-      foreach (uint num2 in this.Counters)
-        num1 ^= num2;
-      return num1;
-    }
+		public static StatisticEntry GetBossStatisticEntryFromNetID(short netID)
+		{
+			StatisticEntry result = StatisticEntry.Unknown;
+			switch (netID)
+			{
+			case 50:
+				result = StatisticEntry.KingSlime;
+				break;
+			case 4:
+				result = StatisticEntry.EyeOfCthulhu;
+				break;
+			case 13:
+			case 14:
+			case 15:
+				result = StatisticEntry.EaterOfWorlds;
+				break;
+			case 35:
+				result = StatisticEntry.Skeletron;
+				break;
+			case 113:
+				result = StatisticEntry.WallOfFlesh;
+				break;
+			case 125:
+			case 126:
+				result = StatisticEntry.TheTwins;
+				break;
+			case 134:
+				result = StatisticEntry.TheDestroyer;
+				break;
+			case 127:
+				result = StatisticEntry.SkeletronPrime;
+				break;
+			case 166:
+				result = StatisticEntry.Ocram;
+				break;
+			}
+			return result;
+		}
 
-    public byte[] Serialize()
-    {
-      uint checksum = this.CreateChecksum(this.Counters);
-      int count = 4;
-      int num = Buffer.ByteLength((Array) this.Counters);
-      byte[] numArray = new byte[num + count];
-      Buffer.BlockCopy((Array) this.Counters, 0, (Array) numArray, 0, num);
-      Buffer.BlockCopy((Array) new uint[1]
-      {
-        checksum
-      }, 0, (Array) numArray, num, count);
-      return numArray;
-    }
+		public static Statistics Create()
+		{
+			BitArray slimesKilled = new BitArray(19);
+			BitArray bossesKilled = new BitArray(9);
+			uint[] counters = new uint[50];
+			return new Statistics(slimesKilled, bossesKilled, counters);
+		}
 
-    public void Deserialize(byte[] stream)
-    {
-      if (stream.Length == 0)
-      {
-        Array.Clear((Array) this.Counters, 0, this.Counters.Length);
-      }
-      else
-      {
-        int count = 4;
-        int num = stream.Length - count;
-        Buffer.BlockCopy((Array) stream, 0, (Array) this.Counters, 0, num);
-        uint[] numArray = new uint[1];
-        Buffer.BlockCopy((Array) stream, num, (Array) numArray, 0, count);
-        if ((int) this.CreateChecksum(this.Counters) != (int) numArray[0])
-          Array.Clear((Array) this.Counters, 0, this.Counters.Length);
-        for (int index = 0; index < this.Counters.Length; ++index)
-        {
-          bool flag = this.Counters[index] > 0U;
-          if (index < 19 && flag)
-            this.SlimesKilled.Set(index, true);
-          if (index < 27 && index >= 18 && flag)
-            this.BossesKilled.Set(index - 18, true);
-        }
-        this.UpdateAllSlimesKilled();
-        this.UpdateAllBossesKilled();
-      }
-    }
+		public Statistics(BitArray slimesKilled, BitArray bossesKilled, uint[] counters)
+		{
+			SlimesKilled = slimesKilled;
+			BossesKilled = bossesKilled;
+			Counters = counters;
+			UpdateAllSlimesKilled();
+			UpdateAllBossesKilled();
+		}
 
-    public static int CalculateSerialisationSize()
-    {
-      return 204;
-    }
+		private void UpdateAllSlimesKilled()
+		{
+			AllSlimeTypesKilled = true;
+			for (int i = 0; i < SlimesKilled.Count; i++)
+			{
+				AllSlimeTypesKilled &= SlimesKilled[i];
+			}
+		}
 
-    public void Init()
-    {
-      this.AllSlimeTypesKilled = false;
-      this.AllBossesKilled = false;
-      this.SlimesKilled.SetAll(false);
-      this.BossesKilled.SetAll(false);
-      for (int index = 49; index >= 0; --index)
-        this.Counters[index] = 0U;
-    }
-  }
+		private void UpdateAllBossesKilled()
+		{
+			AllBossesKilled = true;
+			for (int i = 0; i < BossesKilled.Count; i++)
+			{
+				AllBossesKilled &= BossesKilled[i];
+			}
+		}
+
+		public void incStat(StatisticEntry entry)
+		{
+			if (entry != StatisticEntry.Unknown)
+			{
+				if (entry < StatisticEntry.EyeOfCthulhu)
+				{
+					SlimesKilled.Set((int)entry, value: true);
+					UpdateAllSlimesKilled();
+				}
+				if (entry < StatisticEntry.AirTravel && entry >= StatisticEntry.KingSlime)
+				{
+					int index = (int)(entry - 18);
+					BossesKilled.Set(index, value: true);
+					UpdateAllBossesKilled();
+				}
+				Counters[(int)entry]++;
+			}
+		}
+
+		public void incWoodStat(uint count)
+		{
+			Counters[34] += count;
+		}
+
+		private uint CreateChecksum(uint[] array)
+		{
+			uint num = 0u;
+			uint[] counters = Counters;
+			foreach (uint num2 in counters)
+			{
+				num ^= num2;
+			}
+			return num;
+		}
+
+		public byte[] Serialize()
+		{
+			uint num = CreateChecksum(Counters);
+			int num2 = 4;
+			int num3 = Buffer.ByteLength(Counters);
+			byte[] array = new byte[num3 + num2];
+			Buffer.BlockCopy(Counters, 0, array, 0, num3);
+			Buffer.BlockCopy(new uint[1]
+			{
+				num
+			}, 0, array, num3, num2);
+			return array;
+		}
+
+		public void Deserialize(byte[] stream)
+		{
+			if (stream.Length == 0)
+			{
+				Array.Clear(Counters, 0, Counters.Length);
+				return;
+			}
+			int num = 4;
+			int num2 = stream.Length - num;
+			Buffer.BlockCopy(stream, 0, Counters, 0, num2);
+			uint[] array = new uint[1];
+			Buffer.BlockCopy(stream, num2, array, 0, num);
+			uint num3 = CreateChecksum(Counters);
+			if (num3 != array[0])
+			{
+				Array.Clear(Counters, 0, Counters.Length);
+			}
+			for (int i = 0; i < Counters.Length; i++)
+			{
+				bool flag = Counters[i] != 0;
+				if (i < 19 && flag)
+				{
+					SlimesKilled.Set(i, value: true);
+				}
+				if (i < 27 && i >= 18 && flag)
+				{
+					int index = i - 18;
+					BossesKilled.Set(index, value: true);
+				}
+			}
+			UpdateAllSlimesKilled();
+			UpdateAllBossesKilled();
+		}
+
+		public static int CalculateSerialisationSize()
+		{
+			return 204;
+		}
+
+		public void Init()
+		{
+			AllSlimeTypesKilled = false;
+			AllBossesKilled = false;
+			SlimesKilled.SetAll(value: false);
+			BossesKilled.SetAll(value: false);
+			for (int num = 49; num >= 0; num--)
+			{
+				Counters[num] = 0u;
+			}
+		}
+	}
 }

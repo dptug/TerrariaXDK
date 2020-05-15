@@ -1,8 +1,3 @@
-﻿// Type: Terraria.MessageBox
-// Assembly: game, Version=1.0.4.1, Culture=neutral, PublicKeyToken=null
-// MVID: D0F84B30-D7A0-41D8-8306-C72BB0D9D9CF
-// Assembly location: C:\Users\DartPower\Downloads\Terraria.Xbox.360.Edition.XBLA.XBOX360-MoNGoLS\5841128F\000D0000\Terraria\Terraria.exe\ASSEMBLY.exe
-
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.GamerServices;
 using System;
@@ -10,130 +5,141 @@ using System.Collections.Generic;
 
 namespace Terraria
 {
-  public static class MessageBox
-  {
-    public static IAsyncResult mbResult = (IAsyncResult) null;
-    private static List<MessageBox.Message> queue = new List<MessageBox.Message>();
-    public static MessageBox.Message current;
-    public static int? choice;
+	public static class MessageBox
+	{
+		public struct Message
+		{
+			public bool autoUpdate;
 
-    static MessageBox()
-    {
-      MessageBox.current.playerIndex = (sbyte) -1;
-    }
+			public sbyte playerIndex;
 
-    public static void Show(PlayerIndex controller, string caption, string contents, string[] options, bool autoUpdate = true)
-    {
-      lock (MessageBox.queue)
-      {
-        MessageBox.Message local_0;
-        local_0.autoUpdate = autoUpdate;
-        local_0.playerIndex = (sbyte) controller;
-        local_0.caption = caption;
-        local_0.contents = contents;
-        local_0.options = options;
-        if ((int) MessageBox.current.playerIndex < 0)
-        {
-          MessageBox.current = local_0;
-        }
-        else
-        {
-          if (!(MessageBox.current.contents != contents))
-            return;
-          for (int local_1 = MessageBox.queue.Count - 1; local_1 >= 0; --local_1)
-          {
-            if (contents == MessageBox.queue[local_1].contents)
-              return;
-          }
-          MessageBox.queue.Add(local_0);
-        }
-      }
-    }
+			public string caption;
 
-    private static void NextMessage()
-    {
-      if (MessageBox.queue.Count > 0)
-      {
-        MessageBox.current = MessageBox.queue[0];
-        MessageBox.queue.RemoveAt(0);
-      }
-      else
-      {
-        MessageBox.current.autoUpdate = false;
-        MessageBox.current.playerIndex = (sbyte) -1;
-      }
-    }
+			public string contents;
 
-    public static bool IsVisible()
-    {
-      return (int) MessageBox.current.playerIndex >= 0;
-    }
+			public string[] options;
+		}
 
-    public static bool IsAutoUpdate()
-    {
-      return MessageBox.current.autoUpdate;
-    }
+		public static IAsyncResult mbResult;
 
-    public static bool Update()
-    {
-      if ((int) MessageBox.current.playerIndex >= 0)
-      {
-        lock (MessageBox.queue)
-        {
-          if (!Guide.IsVisible)
-          {
-            try
-            {
-              MessageBox.mbResult = Guide.BeginShowMessageBox((PlayerIndex) MessageBox.current.playerIndex, MessageBox.current.caption, MessageBox.current.contents, (IEnumerable<string>) MessageBox.current.options, 0, MessageBoxIcon.None, (AsyncCallback) null, (object) null);
-            }
-            catch (GuideAlreadyVisibleException exception_0)
-            {
-            }
-          }
-          else if (MessageBox.mbResult != null)
-          {
-            if (MessageBox.mbResult.IsCompleted)
-            {
-              MessageBox.choice = Guide.EndShowMessageBox(MessageBox.mbResult);
-              MessageBox.mbResult = (IAsyncResult) null;
-              MessageBox.NextMessage();
-              return true;
-            }
-          }
-        }
-      }
-      return false;
-    }
+		public static Message current;
 
-    public static int GetResult()
-    {
-      if (!MessageBox.choice.HasValue)
-        return -1;
-      else
-        return MessageBox.choice.Value;
-    }
+		private static List<Message> queue;
 
-    public static void RemoveMessagesFor(PlayerIndex controller)
-    {
-      while ((PlayerIndex) MessageBox.current.playerIndex == controller)
-      {
-        if (MessageBox.mbResult == null)
-          MessageBox.NextMessage();
-      }
-      for (int index = MessageBox.queue.Count - 1; index >= 0; --index)
-      {
-        if ((PlayerIndex) MessageBox.queue[index].playerIndex == controller)
-          MessageBox.queue.RemoveAt(index);
-      }
-    }
+		public static int? choice;
 
-    public struct Message
-    {
-      public bool autoUpdate;
-      public sbyte playerIndex;
-      public string caption;
-      public string contents;
-      public string[] options;
-    }
-  }
+		static MessageBox()
+		{
+			mbResult = null;
+			queue = new List<Message>();
+			current.playerIndex = -1;
+		}
+
+		public static void Show(PlayerIndex controller, string caption, string contents, string[] options, bool autoUpdate = true)
+		{
+			lock (queue)
+			{
+				Message item = default(Message);
+				item.autoUpdate = autoUpdate;
+				item.playerIndex = (sbyte)controller;
+				item.caption = caption;
+				item.contents = contents;
+				item.options = options;
+				if (current.playerIndex < 0)
+				{
+					current = item;
+				}
+				else if (current.contents != contents)
+				{
+					for (int num = queue.Count - 1; num >= 0; num--)
+					{
+						if (contents == queue[num].contents)
+						{
+							return;
+						}
+					}
+					queue.Add(item);
+				}
+			}
+		}
+
+		private static void NextMessage()
+		{
+			if (queue.Count > 0)
+			{
+				current = queue[0];
+				queue.RemoveAt(0);
+			}
+			else
+			{
+				current.autoUpdate = false;
+				current.playerIndex = -1;
+			}
+		}
+
+		public static bool IsVisible()
+		{
+			return current.playerIndex >= 0;
+		}
+
+		public static bool IsAutoUpdate()
+		{
+			return current.autoUpdate;
+		}
+
+		public static bool Update()
+		{
+			if (current.playerIndex >= 0)
+			{
+				lock (queue)
+				{
+					if (!Guide.IsVisible)
+					{
+						try
+						{
+							mbResult = Guide.BeginShowMessageBox((PlayerIndex)current.playerIndex, current.caption, current.contents, current.options, 0, MessageBoxIcon.None, null, null);
+						}
+						catch (GuideAlreadyVisibleException)
+						{
+						}
+					}
+					else if (mbResult != null && mbResult.IsCompleted)
+					{
+						choice = Guide.EndShowMessageBox(mbResult);
+						mbResult = null;
+						NextMessage();
+						return true;
+					}
+				}
+			}
+			return false;
+		}
+
+		public static int GetResult()
+		{
+			if (!choice.HasValue)
+			{
+				return -1;
+			}
+			return choice.Value;
+		}
+
+		public static void RemoveMessagesFor(PlayerIndex controller)
+		{
+			while ((PlayerIndex)current.playerIndex == controller)
+			{
+				if (mbResult == null)
+				{
+					NextMessage();
+				}
+			}
+			for (int num = queue.Count - 1; num >= 0; num--)
+			{
+				if ((PlayerIndex)queue[num].playerIndex == controller)
+				{
+					queue.RemoveAt(num);
+				}
+			}
+		}
+	}
 }

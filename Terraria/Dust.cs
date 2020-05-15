@@ -1,73 +1,95 @@
-﻿// Type: Terraria.Dust
-// Assembly: game, Version=1.0.4.1, Culture=neutral, PublicKeyToken=null
-// MVID: D0F84B30-D7A0-41D8-8306-C72BB0D9D9CF
-// Assembly location: C:\Users\DartPower\Downloads\Terraria.Xbox.360.Edition.XBLA.XBOX360-MoNGoLS\5841128F\000D0000\Terraria\Terraria.exe\ASSEMBLY.exe
-
 using Microsoft.Xna.Framework;
 
 namespace Terraria
 {
-  public struct Dust
-  {
-    public const int NUM_GLOBAL = 256;
-    public const int NUM_LOCAL = 128;
-    public byte active;
-    public bool noGravity;
-    public bool noLight;
-    public ushort type;
-    public short alpha;
-    public Color color;
-    public float fadeIn;
-    public float rotation;
-    public float scale;
-    public Rectangle frame;
-    public Vector2 position;
-    public Vector2 velocity;
+	public struct Dust
+	{
+		public const int NUM_GLOBAL = 256;
 
-    public void Init()
-    {
-      this.active = (byte) 0;
-      this.noGravity = false;
-      this.noLight = false;
-      this.type = (ushort) 0;
-      this.fadeIn = 0.0f;
-    }
+		public const int NUM_LOCAL = 128;
 
-    public void GetAlpha(ref Color newColor)
-    {
-      if ((int) this.type == 6 || (int) this.type == 75 || ((int) this.type == 20 || (int) this.type == 21))
-        newColor.A = (byte) 25;
-      else if (((int) this.type == 68 || (int) this.type == 70) && this.noGravity)
-        newColor = new Color((int) byte.MaxValue, (int) byte.MaxValue, (int) byte.MaxValue, 0);
-      else if ((int) this.type == 66)
-        newColor.A = (byte) 0;
-      else if ((int) this.type == 71)
-        newColor = new Color(200, 200, 200, 0);
-      else if ((int) this.type == 72)
-      {
-        newColor = new Color(200, 200, 200, 200);
-      }
-      else
-      {
-        float num = (float) ((int) byte.MaxValue - (int) this.alpha) * 0.003921569f;
-        if ((int) this.type == 15 || (int) this.type == 29 || ((int) this.type == 35 || (int) this.type == 41) || ((int) this.type == 44 || (int) this.type == 27 || ((int) this.type == 45 || (int) this.type == 55)) || ((int) this.type == 56 || (int) this.type == 57 || ((int) this.type == 58 || (int) this.type == 73) || (int) this.type == 74))
-          num = (float) (((double) num + 3.0) * 0.25);
-        else if ((int) this.type == 43)
-          num = (float) (((double) num + 9.0) * 0.100000001490116);
-        newColor.R = (byte) ((double) newColor.R * (double) num);
-        newColor.G = (byte) ((double) newColor.G * (double) num);
-        newColor.B = (byte) ((double) newColor.B * (double) num);
-        newColor.A -= (byte) this.alpha;
-      }
-    }
+		public byte active;
 
-    public void GetColor(ref Color newColor)
-    {
-      int r = (int) this.color.R - ((int) byte.MaxValue - (int) newColor.R);
-      int g = (int) this.color.G - ((int) byte.MaxValue - (int) newColor.G);
-      int b = (int) this.color.B - ((int) byte.MaxValue - (int) newColor.B);
-      int a = (int) this.color.A - ((int) byte.MaxValue - (int) newColor.A);
-      newColor = new Color(r, g, b, a);
-    }
-  }
+		public bool noGravity;
+
+		public bool noLight;
+
+		public ushort type;
+
+		public short alpha;
+
+		public Color color;
+
+		public float fadeIn;
+
+		public float rotation;
+
+		public float scale;
+
+		public Rectangle frame;
+
+		public Vector2 position;
+
+		public Vector2 velocity;
+
+		public void Init()
+		{
+			active = 0;
+			noGravity = false;
+			noLight = false;
+			type = 0;
+			fadeIn = 0f;
+		}
+
+		public void GetAlpha(ref Color newColor)
+		{
+			if (type == 6 || type == 75 || type == 20 || type == 21)
+			{
+				newColor.A = 25;
+				return;
+			}
+			if ((type == 68 || type == 70) && noGravity)
+			{
+				newColor = new Color(255, 255, 255, 0);
+				return;
+			}
+			if (type == 66)
+			{
+				newColor.A = 0;
+				return;
+			}
+			if (type == 71)
+			{
+				newColor = new Color(200, 200, 200, 0);
+				return;
+			}
+			if (type == 72)
+			{
+				newColor = new Color(200, 200, 200, 200);
+				return;
+			}
+			float num = (float)(255 - alpha) * 0.003921569f;
+			if (type == 15 || type == 29 || type == 35 || type == 41 || type == 44 || type == 27 || type == 45 || type == 55 || type == 56 || type == 57 || type == 58 || type == 73 || type == 74)
+			{
+				num = (num + 3f) * 0.25f;
+			}
+			else if (type == 43)
+			{
+				num = (num + 9f) * 0.1f;
+			}
+			newColor.R = (byte)((float)(int)newColor.R * num);
+			newColor.G = (byte)((float)(int)newColor.G * num);
+			newColor.B = (byte)((float)(int)newColor.B * num);
+			newColor.A -= (byte)alpha;
+		}
+
+		public void GetColor(ref Color newColor)
+		{
+			int r = color.R - (255 - newColor.R);
+			int g = color.G - (255 - newColor.G);
+			int b = color.B - (255 - newColor.B);
+			int a = color.A - (255 - newColor.A);
+			newColor = new Color(r, g, b, a);
+		}
+	}
 }

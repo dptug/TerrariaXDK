@@ -1,100 +1,121 @@
-﻿// Type: Terraria.AnimationUtils
-// Assembly: game, Version=1.0.4.1, Culture=neutral, PublicKeyToken=null
-// MVID: D0F84B30-D7A0-41D8-8306-C72BB0D9D9CF
-// Assembly location: C:\Users\DartPower\Downloads\Terraria.Xbox.360.Edition.XBLA.XBOX360-MoNGoLS\5841128F\000D0000\Terraria\Terraria.exe\ASSEMBLY.exe
-
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace Terraria
 {
-  public static class AnimationUtils
-  {
-    public static Color StringToColor(string text)
-    {
-      if (text.Length == 7 && (int) text[0] == 35)
-        return new Color(AnimationUtils.HexValue(text[1]) * 16 + AnimationUtils.HexValue(text[2]), AnimationUtils.HexValue(text[3]) * 16 + AnimationUtils.HexValue(text[4]), AnimationUtils.HexValue(text[5]) * 16 + AnimationUtils.HexValue(text[6]));
-      if (text.Length < 11 || (int) text[0] != 123 || (int) text[text.Length - 1] != 125)
-        return Color.White;
-      int r = 0;
-      int g = 0;
-      int b = 0;
-      int a = 0;
-      int index = 1;
-      while (index + 2 < text.Length && ((int) char.ToLower(text[index]) == 97 || (int) char.ToLower(text[index]) == 114 || ((int) char.ToLower(text[index]) == 103 || (int) char.ToLower(text[index]) == 98)) && (int) text[index + 1] == 58)
-      {
-        char ch = char.ToLower(text[index]);
-        int num = 0;
-        index += 2;
-        for (; char.IsDigit(text[index]); ++index)
-          num = num * 10 + ((int) text[index] - 48);
-        if ((int) ch == 114)
-          r = num;
-        else if ((int) ch == 103)
-          g = num;
-        else if ((int) ch == 98)
-          b = num;
-        else
-          a = num;
-        while ((int) text[index] == 32)
-          ++index;
-      }
-      return new Color(r, g, b, a);
-    }
+	public static class AnimationUtils
+	{
+		public enum SqueezeTextFlags
+		{
+			NoWordBreak,
+			WordBreak
+		}
 
-    private static int HexValue(char ch)
-    {
-      if ((int) ch >= 48 && (int) ch <= 57)
-        return (int) ch - 48;
-      if ((int) ch >= 97 && (int) ch <= 122)
-        return (int) ch - 97 + 10;
-      if ((int) ch < 65 || (int) ch > 90)
-        return 0;
-      else
-        return (int) ch - 65 + 10;
-    }
+		public static Color StringToColor(string text)
+		{
+			if (text.Length == 7 && text[0] == '#')
+			{
+				int r = HexValue(text[1]) * 16 + HexValue(text[2]);
+				int g = HexValue(text[3]) * 16 + HexValue(text[4]);
+				int b = HexValue(text[5]) * 16 + HexValue(text[6]);
+				return new Color(r, g, b);
+			}
+			if (text.Length >= 11 && text[0] == '{' && text[text.Length - 1] == '}')
+			{
+				int r2 = 0;
+				int g2 = 0;
+				int b2 = 0;
+				int a = 0;
+				int i = 1;
+				while (i + 2 < text.Length && (char.ToLower(text[i]) == 'a' || char.ToLower(text[i]) == 'r' || char.ToLower(text[i]) == 'g' || char.ToLower(text[i]) == 'b') && text[i + 1] == ':')
+				{
+					char c = char.ToLower(text[i]);
+					int num = 0;
+					for (i += 2; char.IsDigit(text[i]); i++)
+					{
+						num = num * 10 + (text[i] - 48);
+					}
+					switch (c)
+					{
+					case 'r':
+						r2 = num;
+						break;
+					case 'g':
+						g2 = num;
+						break;
+					case 'b':
+						b2 = num;
+						break;
+					default:
+						a = num;
+						break;
+					}
+					for (; text[i] == ' '; i++)
+					{
+					}
+				}
+				return new Color(r2, g2, b2, a);
+			}
+			return Color.White;
+		}
 
-    public static int SqueezeText(SpriteFont font, string text, int width, AnimationUtils.SqueezeTextFlags flags)
-    {
-      if (width <= 0 || text.Length == 0)
-        return 0;
-      if ((double) (int) UI.MeasureString(font, text).X + (double) UI.Spacing(font) <= (double) width)
-        return text.Length;
-      int num1 = 0;
-      int num2 = text.Length;
-      do
-      {
-        int length = num1 + (num2 - num1 + 1 >> 1);
-        if ((double) (int) UI.MeasureString(font, text.Substring(0, length)).X + (double) UI.Spacing(font) <= (double) width)
-          num1 = length;
-        else
-          num2 = length;
-      }
-      while (num2 > num1 + 1);
-      if ((flags & AnimationUtils.SqueezeTextFlags.WordBreak) != AnimationUtils.SqueezeTextFlags.NoWordBreak)
-      {
-        for (; num1 >= 1; --num1)
-        {
-          switch (text[num1 - 1])
-          {
-            case ' ':
-            case '\t':
-            case '\r':
-            case '\n':
-              goto label_13;
-            default:
-              goto default;
-          }
-        }
-      }
-label_13:
-      return num1;
-    }
+		private static int HexValue(char ch)
+		{
+			if (ch < '0' || ch > '9')
+			{
+				if (ch < 'a' || ch > 'z')
+				{
+					if (ch < 'A' || ch > 'Z')
+					{
+						return 0;
+					}
+					return ch - 65 + 10;
+				}
+				return ch - 97 + 10;
+			}
+			return ch - 48;
+		}
 
-    public enum SqueezeTextFlags
-    {
-      NoWordBreak,
-      WordBreak,
-    }
-  }
+		public static int SqueezeText(SpriteFont font, string text, int width, SqueezeTextFlags flags)
+		{
+			if (width <= 0 || text.Length == 0)
+			{
+				return 0;
+			}
+			Vector2 vector = UI.MeasureString(font, text);
+			if ((float)(int)vector.X + UI.Spacing(font) <= (float)width)
+			{
+				return text.Length;
+			}
+			int num = 0;
+			int num2 = text.Length;
+			do
+			{
+				int num3 = num + (num2 - num + 1 >> 1);
+				vector = UI.MeasureString(font, text.Substring(0, num3));
+				if ((float)(int)vector.X + UI.Spacing(font) <= (float)width)
+				{
+					num = num3;
+				}
+				else
+				{
+					num2 = num3;
+				}
+			}
+			while (num2 > num + 1);
+			if ((flags & SqueezeTextFlags.WordBreak) != 0)
+			{
+				while (num >= 1)
+				{
+					char c = text[num - 1];
+					if (c == ' ' || c == '\t' || c == '\r' || c == '\n')
+					{
+						break;
+					}
+					num--;
+				}
+			}
+			return num;
+		}
+	}
 }

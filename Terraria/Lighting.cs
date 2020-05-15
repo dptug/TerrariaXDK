@@ -1,1413 +1,1547 @@
-﻿// Type: Terraria.Lighting
-// Assembly: game, Version=1.0.4.1, Culture=neutral, PublicKeyToken=null
-// MVID: D0F84B30-D7A0-41D8-8306-C72BB0D9D9CF
-// Assembly location: C:\Users\DartPower\Downloads\Terraria.Xbox.360.Edition.XBLA.XBOX360-MoNGoLS\5841128F\000D0000\Terraria\Terraria.exe\ASSEMBLY.exe
-
 using Microsoft.Xna.Framework;
-using System;
 using System.Threading;
 
 namespace Terraria
 {
-  public sealed class Lighting
-  {
-    private static Lighting.TempLight[] tempLight = new Lighting.TempLight[1024];
-    public short scrX = (short) -1;
-    private float negLight = 0.04f;
-    private float negLight2 = 0.16f;
-    private float wetLightR = 0.16f;
-    private float wetLightG = 0.16f;
-    private AutoResetEvent workerThreadReady = new AutoResetEvent(false);
-    private AutoResetEvent workerThreadGo = new AutoResetEvent(false);
-    public const int maxRenderCount = 4;
-    public const int OFFSCREEN_TILES = 34;
-    public const int offScreenTiles2 = 14;
-    private const int MAX_LIGHT_ARRAY_Y = 107;
-    private const int COLOR_H = 117;
-    public const float BRIGHTNESS = 1.2f;
-    private const int firstToLightY7 = 0;
-    private const int MAX_TEMP_LIGHTS = 1024;
-    private int MAX_LIGHT_ARRAY_X;
-    private int COLOR_W;
-    public float brightness;
-    public float defBrightness;
-    public float oldSkyColor;
-    public float skyColor;
-    private float lightColor;
-    private float lightColorG;
-    private float lightColorB;
-    public Vector3[,] color;
-    public Vector3[,] color2;
-    public byte[] stopAndWetLight;
-    private int firstTileX;
-    private int firstTileY;
-    private int lastTileX;
-    private int lastTileY;
-    private int firstToLightX;
-    private int firstToLightY;
-    public short scrY;
-    public int minX;
-    public int maxX;
-    public int minY;
-    public int maxY;
-    private int minX7;
-    private int maxX7;
-    private int minY7;
-    private int maxY7;
-    private int firstTileX7;
-    private int lastTileX7;
-    private int lastTileY7;
-    private int firstTileY7;
-    private int lastToLightY7;
-    private int firstToLightX27;
-    private int lastToLightX27;
-    private int firstToLightY27;
-    private int lastToLightY27;
-    private Thread workerThread;
-    private volatile bool quitWorkerThread;
-    public static int tempLightCount;
+	public sealed class Lighting
+	{
+		private struct TempLight
+		{
+			public short x;
 
-    static Lighting()
-    {
-    }
+			public short y;
 
-    public void StartWorkerThread()
-    {
-      if (this.workerThread != null)
-        this.StopWorkerThread();
-      this.quitWorkerThread = false;
-      this.workerThreadReady.Reset();
-      this.workerThreadGo.Reset();
-      this.workerThread = new Thread(new ThreadStart(this.WorkerThread));
-      this.workerThread.IsBackground = true;
-      this.workerThread.Start();
-    }
+			public Vector3 color;
+		}
 
-    public void StopWorkerThread()
-    {
-      if (this.workerThread == null)
-        return;
-      this.quitWorkerThread = true;
-      this.workerThreadGo.Set();
-      this.workerThread.Join();
-      this.workerThread = (Thread) null;
-    }
+		public const int maxRenderCount = 4;
 
-    private void WorkerThread()
-    {
-      Thread.CurrentThread.SetProcessorAffinity(new int[1]
-      {
-        3
-      });
-      do
-      {
-        this.workerThreadReady.Set();
-        this.workerThreadGo.WaitOne();
-        lock (this)
-          this.doColors();
-      }
-      while (!this.quitWorkerThread);
-      this.workerThreadReady.Set();
-    }
+		public const int OFFSCREEN_TILES = 34;
 
-    public void SetWidth(int width)
-    {
-      lock (this)
-      {
-        this.MAX_LIGHT_ARRAY_X = (width + 64 >> 4) + 68;
-        this.COLOR_W = this.MAX_LIGHT_ARRAY_X + 10;
-        this.color = new Vector3[this.MAX_LIGHT_ARRAY_X, 107];
-        this.color2 = new Vector3[this.COLOR_W, 117];
-        this.stopAndWetLight = new byte[this.COLOR_W * 117];
-      }
-    }
+		public const int offScreenTiles2 = 14;
 
-    public unsafe void LightTiles(WorldView view)
-    {
-      this.firstTileX = (int) view.firstTileX;
-      this.lastTileX = (int) view.lastTileX;
-      this.firstTileY = (int) view.firstTileY;
-      this.lastTileY = (int) view.lastTileY;
-      this.firstToLightX = this.firstTileX - 34;
-      this.firstToLightY = this.firstTileY - 34;
-      int num1 = this.lastTileX + 34;
-      int num2 = this.lastTileY + 34;
-      if (this.firstToLightX < 0)
-        this.firstToLightX = 0;
-      if (num1 >= (int) Main.maxTilesX)
-        num1 = (int) Main.maxTilesX - 1;
-      if (this.firstToLightY < 0)
-        this.firstToLightY = 0;
-      if (num2 >= (int) Main.maxTilesY)
-        num2 = (int) Main.maxTilesY - 1;
-      if (Main.renderCount <= 4)
-      {
-        int num3 = (view.screenPosition.X >> 4) - (view.screenLastPosition.X >> 4);
-        if (num3 < 0 && num3 >= -4)
-        {
-          Vector3[,] vector3Array;
-          // ISSUE: cast to a reference type
-          // ISSUE: explicit reference operation
-          fixed (Vector3* vector3Ptr1 = &^((vector3Array = this.color) == null || vector3Array.Length == 0 ? (Vector3&) IntPtr.Zero : vector3Array.Address(0, 0)))
-          {
-            int num4 = (this.MAX_LIGHT_ARRAY_X + num3) * 107 - 1;
-            int index = num3 * 107;
-            Vector3* vector3Ptr2 = vector3Ptr1 + (this.MAX_LIGHT_ARRAY_X * 107 - 1);
-            do
-            {
-              *vector3Ptr2 = vector3Ptr2[index];
-              --vector3Ptr2;
-            }
-            while (--num4 >= 0);
-          }
-        }
-        else if (num3 > 0 && num3 <= 4)
-        {
-          Vector3[,] vector3Array;
-          // ISSUE: cast to a reference type
-          // ISSUE: explicit reference operation
-          fixed (Vector3* vector3Ptr1 = &^((vector3Array = this.color) == null || vector3Array.Length == 0 ? (Vector3&) IntPtr.Zero : vector3Array.Address(0, 0)))
-          {
-            int num4 = (this.MAX_LIGHT_ARRAY_X - num3) * 107 - 1;
-            int index = num3 * 107;
-            Vector3* vector3Ptr2 = vector3Ptr1;
-            do
-            {
-              *vector3Ptr2 = vector3Ptr2[index];
-              ++vector3Ptr2;
-            }
-            while (--num4 >= 0);
-          }
-        }
-        int num5 = (view.screenPosition.Y >> 4) - (view.screenLastPosition.Y >> 4);
-        if (num5 < 0 && num5 >= -4)
-        {
-          for (int index1 = 0; index1 < this.MAX_LIGHT_ARRAY_X; ++index1)
-          {
-            fixed (Vector3* vector3Ptr = &this.color[index1, 0])
-            {
-              for (int index2 = 107 + num5; index2 > -num5; --index2)
-                vector3Ptr[index2] = vector3Ptr[index2 + num5];
-            }
-          }
-        }
-        else if (num5 > 0 && num5 <= 4)
-        {
-          for (int index1 = 0; index1 < this.MAX_LIGHT_ARRAY_X; ++index1)
-          {
-            fixed (Vector3* vector3Ptr = &this.color[index1, 0])
-            {
-              for (int index2 = 0; index2 < 107 - num5; ++index2)
-                vector3Ptr[index2] = vector3Ptr[index2 + num5];
-            }
-          }
-        }
-        this.oldSkyColor = this.skyColor;
-        this.skyColor = (float) (((double) view.time.tileColorf.X + (double) view.time.tileColorf.Y + (double) view.time.tileColorf.Z) * 0.333333343267441);
-        if ((double) this.oldSkyColor == (double) this.skyColor)
-          return;
-        int num6 = num2 <= Main.worldSurface ? num2 : Main.worldSurface;
-        Tile[,] tileArray;
-        // ISSUE: cast to a reference type
-        // ISSUE: explicit reference operation
-        fixed (Tile* tilePtr1 = &^((tileArray = Main.tile) == null || tileArray.Length == 0 ? (Tile&) IntPtr.Zero : tileArray.Address(0, 0)))
-        {
-          for (int index = this.firstToLightX; index < num1; ++index)
-          {
-            Tile* tilePtr2 = tilePtr1 + (index * 1440 + this.firstToLightY);
-            int num4 = this.firstToLightY;
-            while (num4 < num6)
-            {
-              if (((int) tilePtr2->active == 0 || !Main.tileNoSunLight[(int) tilePtr2->type]) && ((int) tilePtr2->wall == 0 || (int) tilePtr2->wall == 21) && (int) tilePtr2->liquid < 200)
-              {
-                fixed (Vector3* vector3Ptr = &this.color[index - this.firstToLightX, num4 - this.firstToLightY])
-                {
-                  if ((double) vector3Ptr->X < (double) this.skyColor)
-                  {
-                    vector3Ptr->X = view.time.tileColorf.X;
-                    if ((double) vector3Ptr->Y < (double) this.skyColor)
-                      vector3Ptr->Y = view.time.tileColorf.Y;
-                    if ((double) vector3Ptr->Z < (double) this.skyColor)
-                      vector3Ptr->Z = view.time.tileColorf.Z;
-                  }
-                }
-              }
-              ++num4;
-              ++tilePtr2;
-            }
-          }
-        }
-      }
-      else
-      {
-        this.workerThreadReady.WaitOne();
-        int num3 = view.screenPosition.X >> 4;
-        int num4 = view.screenPosition.Y >> 4;
-        if ((int) this.scrX >= 0)
-        {
-          int num5 = num3 - (int) this.scrX;
-          int num6 = num4 - (int) this.scrY;
-          int num7 = num5 < 0 ? -num5 : 0;
-          int num8 = num6 < 0 ? -num6 : 0;
-          Vector3[,] vector3Array1;
-          // ISSUE: cast to a reference type
-          // ISSUE: explicit reference operation
-          fixed (Vector3* vector3Ptr1 = &^((vector3Array1 = this.color) == null || vector3Array1.Length == 0 ? (Vector3&) IntPtr.Zero : vector3Array1.Address(0, 0)))
-          {
-            Vector3[,] vector3Array2;
-            // ISSUE: cast to a reference type
-            // ISSUE: explicit reference operation
-            fixed (Vector3* vector3Ptr2 = &^((vector3Array2 = this.color2) == null || vector3Array2.Length == 0 ? (Vector3&) IntPtr.Zero : vector3Array2.Address(0, 0)))
-            {
-              for (int index1 = num7; index1 < this.MAX_LIGHT_ARRAY_X; ++index1)
-              {
-                Vector3* vector3Ptr3 = vector3Ptr1 + (index1 * 107 + num8);
-                Vector3* vector3Ptr4 = vector3Ptr2 + ((index1 + num5) * 117 + num8 + num6);
-                for (int index2 = num8; index2 < 107; ++index2)
-                  *vector3Ptr3++ = *vector3Ptr4++;
-              }
-            }
-          }
-        }
-        Vector3[,] vector3Array3;
-        // ISSUE: cast to a reference type
-        // ISSUE: explicit reference operation
-        fixed (Vector3* vector3Ptr1 = &^((vector3Array3 = this.color2) == null || vector3Array3.Length == 0 ? (Vector3&) IntPtr.Zero : vector3Array3.Address(0, 0)))
-          fixed (byte* numPtr1 = this.stopAndWetLight)
-          {
-            Vector3* vector3Ptr2 = vector3Ptr1;
-            byte* numPtr2 = numPtr1;
-            for (int index = this.COLOR_W * 117 - 1; index >= 0; --index)
-            {
-              vector3Ptr2->X = 0.0f;
-              vector3Ptr2->Y = 0.0f;
-              vector3Ptr2->Z = 0.0f;
-              *numPtr2 = (byte) 0;
-              ++vector3Ptr2;
-              ++numPtr2;
-            }
-          }
-        fixed (Lighting.TempLight* tempLightPtr1 = Lighting.tempLight)
-        {
-          Vector3[,] vector3Array1;
-          // ISSUE: cast to a reference type
-          // ISSUE: explicit reference operation
-          fixed (Vector3* vector3Ptr1 = &^((vector3Array1 = this.color2) == null || vector3Array1.Length == 0 ? (Vector3&) IntPtr.Zero : vector3Array1.Address(0, 0)))
-          {
-            Lighting.TempLight* tempLightPtr2 = tempLightPtr1;
-            for (int index = Lighting.tempLightCount - 1; index >= 0; --index)
-            {
-              int num5 = (int) tempLightPtr2->x - this.firstToLightX;
-              if (num5 >= 0 && num5 < this.COLOR_W)
-              {
-                int num6 = (int) tempLightPtr2->y - this.firstToLightY;
-                if (num6 >= 0 && num6 < 117)
-                {
-                  Vector3* vector3Ptr2 = vector3Ptr1 + (num6 + num5 * 117);
-                  vector3Ptr2->X = tempLightPtr2->color.X;
-                  vector3Ptr2->Y = tempLightPtr2->color.Y;
-                  vector3Ptr2->Z = tempLightPtr2->color.Z;
-                }
-              }
-              ++tempLightPtr2;
-            }
-          }
-        }
-        int num9 = this.firstTileX - 14;
-        int num10 = this.firstTileY - 14;
-        int num11 = this.lastTileX + 14;
-        int num12 = this.lastTileY + 14;
-        if (num9 < 0)
-          num9 = 0;
-        if (num11 >= (int) Main.maxTilesX)
-          num11 = (int) Main.maxTilesX - 1;
-        if (num10 < 0)
-          num10 = 0;
-        if (num12 >= (int) Main.maxTilesY)
-          num12 = (int) Main.maxTilesY - 1;
-        if (NPC.wof >= 0)
-        {
-          if (view.player.horrified)
-          {
-            try
-            {
-              int num5 = (view.screenPosition.Y >> 4) - 10;
-              int num6 = (view.screenPosition.Y + 540 >> 4) + 10;
-              int num7 = Main.npc[NPC.wof].aabb.X >> 4;
-              int num8 = (int) Main.npc[NPC.wof].direction <= 0 ? num7 + 2 : num7 - 3;
-              int num13 = num8 + 8;
-              Vector3 vector3 = new Vector3((float) (0.200000002980232 * (0.5 * (double) Main.demonTorch + 1.0 * (1.0 - (double) Main.demonTorch))), 0.03f, (float) (0.300000011920929 * ((double) Main.demonTorch + 0.5 * (1.0 - (double) Main.demonTorch))));
-              for (int index1 = num8; index1 <= num13; ++index1)
-              {
-                for (int index2 = num5; index2 <= num6; ++index2)
-                  Vector3.Max(ref vector3, this.color2.Address(index1 - this.firstToLightX, index2 - this.firstToLightY), this.color2.Address(index1 - this.firstToLightX, index2 - this.firstToLightY));
-              }
-            }
-            catch
-            {
-            }
-          }
-        }
-        int num14 = this.firstToLightX;
-        int num15 = num1;
-        int num16 = this.firstToLightY;
-        int num17 = num2;
-        int num18 = num17 < Main.worldSurface ? num17 : Main.worldSurface;
-        Tile[,] tileArray1;
-        // ISSUE: cast to a reference type
-        // ISSUE: explicit reference operation
-        fixed (Tile* tilePtr1 = &^((tileArray1 = Main.tile) == null || tileArray1.Length == 0 ? (Tile&) IntPtr.Zero : tileArray1.Address(0, 0)))
-        {
-          for (int index = num14; index < num15; ++index)
-          {
-            Tile* tilePtr2 = tilePtr1 + (index * 1440 + num16);
-            int num5 = num16;
-            while (num5 < num18)
-            {
-              switch (tilePtr2->wall)
-              {
-                case (byte) 0:
-                case (byte) 21:
-                  if ((int) tilePtr2->liquid < 200 && ((int) tilePtr2->active == 0 || !Main.tileNoSunLight[(int) tilePtr2->type]))
-                  {
-                    fixed (Vector3* vector3Ptr = &this.color2[index - this.firstToLightX, num5 - this.firstToLightY])
-                    {
-                      if ((double) vector3Ptr->X < (double) this.skyColor)
-                      {
-                        vector3Ptr->X = view.time.tileColorf.X;
-                        if ((double) vector3Ptr->Y < (double) this.skyColor)
-                          vector3Ptr->Y = view.time.tileColorf.Y;
-                        if ((double) vector3Ptr->Z < (double) this.skyColor)
-                          vector3Ptr->Z = view.time.tileColorf.Z;
-                      }
-                    }
-                    break;
-                  }
-                  else
-                    break;
-              }
-              ++num5;
-              ++tilePtr2;
-            }
-          }
-        }
-        this.negLight = 0.91f;
-        this.negLight2 = 0.72f;
-        this.wetLightG = 0.97f * this.negLight * UI.blueWave;
-        this.wetLightR = 0.88f * this.negLight * UI.blueWave;
-        if (view.player.nightVision)
-        {
-          this.negLight *= 1.03f;
-          this.negLight2 *= 1.03f;
-        }
-        if (view.player.blind)
-        {
-          this.negLight *= 0.95f;
-          this.negLight2 *= 0.95f;
-        }
-        view.inactiveTiles = 0;
-        view.sandTiles = 0;
-        view.evilTiles = 0;
-        view.snowTiles = 0;
-        view.holyTiles = 0;
-        view.meteorTiles = 0;
-        view.jungleTiles = 0;
-        view.dungeonTiles = 0;
-        view.musicBox = -1;
-        this.minX = this.COLOR_W;
-        this.maxX = 0;
-        this.minY = 117;
-        this.maxY = 0;
-        Tile[,] tileArray2;
-        // ISSUE: cast to a reference type
-        // ISSUE: explicit reference operation
-        fixed (Tile* tilePtr1 = &^((tileArray2 = Main.tile) == null || tileArray2.Length == 0 ? (Tile&) IntPtr.Zero : tileArray2.Address(0, 0)))
-        {
-          for (int index1 = num14; index1 < num15; ++index1)
-          {
-            Tile* tilePtr2 = tilePtr1 + (index1 * 1440 + num16);
-            int num5 = num16;
-            while (num5 < num17)
-            {
-              int index2 = index1 - this.firstToLightX;
-              int index3 = num5 - this.firstToLightY;
-              fixed (Vector3* vector3Ptr = &this.color2[index2, index3])
-              {
-                if ((int) tilePtr2->active == 0)
-                {
-                  ++view.inactiveTiles;
-                }
-                else
-                {
-                  int index4 = (int) tilePtr2->type;
-                  int num6 = num15 - num14 - 99 >> 1;
-                  int num7 = num17 - num16 - 87 >> 1;
-                  if (index1 > num14 + num6 && index1 < num15 - num6 && (num5 > num16 + num7 && num5 < num17 - num7))
-                  {
-                    switch (index4)
-                    {
-                      case 109:
-                      case 110:
-                      case 113:
-                      case 117:
-                        ++view.holyTiles;
-                        break;
-                      case 112:
-                        ++view.sandTiles;
-                        ++view.evilTiles;
-                        break;
-                      case 116:
-                        ++view.sandTiles;
-                        ++view.holyTiles;
-                        break;
-                      case 139:
-                        if ((int) tilePtr2->frameX >= 36)
-                        {
-                          view.musicBox = (int) tilePtr2->frameY / 36;
-                          break;
-                        }
-                        else
-                          break;
-                      case 147:
-                      case 148:
-                        ++view.snowTiles;
-                        break;
-                      case 60:
-                      case 61:
-                      case 62:
-                      case 84:
-                        ++view.jungleTiles;
-                        break;
-                      case 37:
-                        ++view.meteorTiles;
-                        break;
-                      case 41:
-                      case 43:
-                      case 44:
-                        ++view.dungeonTiles;
-                        break;
-                      case 53:
-                        ++view.sandTiles;
-                        break;
-                      case 23:
-                      case 24:
-                      case 25:
-                      case 32:
-                        ++view.evilTiles;
-                        break;
-                      case 27:
-                        view.evilTiles -= 5;
-                        break;
-                    }
-                  }
-                  if (Main.tileBlockLight[index4])
-                    this.stopAndWetLight[index2 * 117 + index3] = (byte) 1;
-                  if (Main.tileLighted[index4])
-                  {
-                    switch (index4)
-                    {
-                      case 140:
-                      case 22:
-                        float num8 = 0.12f;
-                        float num13 = 0.07f;
-                        float num19 = 0.32f;
-                        if ((double) num8 > (double) vector3Ptr->X)
-                          vector3Ptr->X = num8;
-                        if ((double) num13 > (double) vector3Ptr->Y)
-                          vector3Ptr->Y = num13;
-                        if ((double) num19 > (double) vector3Ptr->Z)
-                        {
-                          vector3Ptr->Z = num19;
-                          break;
-                        }
-                        else
-                          break;
-                      case 149:
-                        if ((int) tilePtr2->frameX <= 36)
-                        {
-                          float num20;
-                          float num21;
-                          float num22;
-                          if ((int) tilePtr2->frameX == 0)
-                          {
-                            num20 = 0.1f;
-                            num21 = 0.2f;
-                            num22 = 0.5f;
-                          }
-                          else if ((int) tilePtr2->frameX == 18)
-                          {
-                            num20 = 0.5f;
-                            num21 = 0.1f;
-                            num22 = 0.1f;
-                          }
-                          else
-                          {
-                            num20 = 0.2f;
-                            num21 = 0.5f;
-                            num22 = 0.1f;
-                          }
-                          if ((double) vector3Ptr->X < (double) num20)
-                            vector3Ptr->X = (float) ((double) num20 * (double) Main.rand.Next(970, 1031) * (1.0 / 1000.0));
-                          if ((double) vector3Ptr->Y < (double) num21)
-                            vector3Ptr->Y = (float) ((double) num21 * (double) Main.rand.Next(970, 1031) * (1.0 / 1000.0));
-                          if ((double) vector3Ptr->Z < (double) num22)
-                          {
-                            vector3Ptr->Z = (float) ((double) num22 * (double) Main.rand.Next(970, 1031) * (1.0 / 1000.0));
-                            break;
-                          }
-                          else
-                            break;
-                        }
-                        else
-                          break;
-                      case 125:
-                        float num23 = (float) Main.rand.Next(28, 42) * 0.01f + (float) (270 - (int) UI.mouseTextBrightness) * (1.0 / 800.0);
-                        if ((double) vector3Ptr->Y < 0.100000001490116 * (double) num23)
-                          vector3Ptr->Y = 0.3f * num23;
-                        if ((double) vector3Ptr->Z < 0.300000011920929 * (double) num23)
-                        {
-                          vector3Ptr->Z = 0.6f * num23;
-                          break;
-                        }
-                        else
-                          break;
-                      case 126:
-                        if ((int) tilePtr2->frameX < 36)
-                        {
-                          if ((double) Main.DiscoRGB.X > (double) vector3Ptr->X)
-                            vector3Ptr->X = Main.DiscoRGB.X;
-                          if ((double) Main.DiscoRGB.Y > (double) vector3Ptr->Y)
-                            vector3Ptr->Y = Main.DiscoRGB.Y;
-                          if ((double) Main.DiscoRGB.Z > (double) vector3Ptr->Z)
-                          {
-                            vector3Ptr->Z = Main.DiscoRGB.Z;
-                            break;
-                          }
-                          else
-                            break;
-                        }
-                        else
-                          break;
-                      case 129:
-                        float num24;
-                        float num25;
-                        float num26;
-                        if ((int) tilePtr2->frameX == 0 || (int) tilePtr2->frameX == 54 || (int) tilePtr2->frameX == 108)
-                        {
-                          num24 = 0.0f;
-                          num25 = 0.05f;
-                          num26 = 0.25f;
-                        }
-                        else if ((int) tilePtr2->frameX == 18 || (int) tilePtr2->frameX == 72 || (int) tilePtr2->frameX == 126)
-                        {
-                          num24 = 0.2f;
-                          num25 = 0.0f;
-                          num26 = 0.15f;
-                        }
-                        else
-                        {
-                          num24 = 0.1f;
-                          num25 = 0.0f;
-                          num26 = 0.2f;
-                        }
-                        if ((double) vector3Ptr->X < (double) num24)
-                          vector3Ptr->X = (float) ((double) num24 * (double) Main.rand.Next(970, 1031) * (1.0 / 1000.0));
-                        if ((double) vector3Ptr->Y < (double) num25)
-                          vector3Ptr->Y = (float) ((double) num25 * (double) Main.rand.Next(970, 1031) * (1.0 / 1000.0));
-                        if ((double) vector3Ptr->Z < (double) num26)
-                        {
-                          vector3Ptr->Z = (float) ((double) num26 * (double) Main.rand.Next(970, 1031) * (1.0 / 1000.0));
-                          break;
-                        }
-                        else
-                          break;
-                      case 133:
-                      case 17:
-                        float num27 = 0.83f;
-                        float num28 = 0.6f;
-                        float num29 = 0.5f;
-                        if ((double) num27 > (double) vector3Ptr->X)
-                          vector3Ptr->X = num27;
-                        if ((double) num28 > (double) vector3Ptr->Y)
-                          vector3Ptr->Y = num28;
-                        if ((double) num29 > (double) vector3Ptr->Z)
-                        {
-                          vector3Ptr->Z = num29;
-                          break;
-                        }
-                        else
-                          break;
-                      case 83:
-                        if ((int) tilePtr2->frameX == 18 && !view.time.dayTime)
-                        {
-                          float num20 = 0.1f;
-                          float num21 = 0.4f;
-                          float num22 = 0.6f;
-                          if ((double) num20 > (double) vector3Ptr->X)
-                            vector3Ptr->X = num20;
-                          if ((double) num21 > (double) vector3Ptr->Y)
-                            vector3Ptr->Y = num21;
-                          if ((double) num22 > (double) vector3Ptr->Z)
-                          {
-                            vector3Ptr->Z = num22;
-                            break;
-                          }
-                          else
-                            break;
-                        }
-                        else
-                          break;
-                      case 84:
-                        switch ((int) tilePtr2->frameX / 18)
-                        {
-                          case 2:
-                            float num30 = (float) (270 - (int) UI.mouseTextBrightness) * (1.0 / 800.0);
-                            if ((double) num30 > 1.0)
-                              num30 = 1f;
-                            else if ((double) num30 < 0.0)
-                              num30 = 0.0f;
-                            float num31 = 0.7f * num30;
-                            float num32 = num30;
-                            float num33 = 0.1f * num30;
-                            if ((double) num31 > (double) vector3Ptr->X)
-                              vector3Ptr->X = num31;
-                            if ((double) num32 > (double) vector3Ptr->Y)
-                              vector3Ptr->Y = num32;
-                            if ((double) num33 > (double) vector3Ptr->Z)
-                            {
-                              vector3Ptr->Z = num33;
-                              break;
-                            }
-                            else
-                              break;
-                          case 5:
-                            float num34 = 0.9f;
-                            float num35 = 0.72f;
-                            float num36 = 0.18f;
-                            if ((double) num34 > (double) vector3Ptr->X)
-                              vector3Ptr->X = num34;
-                            if ((double) num35 > (double) vector3Ptr->Y)
-                              vector3Ptr->Y = num35;
-                            if ((double) num36 > (double) vector3Ptr->Z)
-                            {
-                              vector3Ptr->Z = num36;
-                              break;
-                            }
-                            else
-                              break;
-                        }
-                      case 92:
-                        if ((int) tilePtr2->frameY <= 18 && (int) tilePtr2->frameX == 0)
-                        {
-                          float num20 = 1f;
-                          float num21 = 1f;
-                          float num22 = 1f;
-                          if ((double) num20 > (double) vector3Ptr->X)
-                            vector3Ptr->X = num20;
-                          if ((double) num21 > (double) vector3Ptr->Y)
-                            vector3Ptr->Y = num21;
-                          if ((double) num22 > (double) vector3Ptr->Z)
-                          {
-                            vector3Ptr->Z = num22;
-                            break;
-                          }
-                          else
-                            break;
-                        }
-                        else
-                          break;
-                      case 93:
-                        if ((int) tilePtr2->frameY == 0 && (int) tilePtr2->frameX == 0)
-                        {
-                          float num20 = 1f;
-                          float num21 = 0.97f;
-                          float num22 = 0.85f;
-                          if ((double) num20 > (double) vector3Ptr->X)
-                            vector3Ptr->X = num20;
-                          if ((double) num21 > (double) vector3Ptr->Y)
-                            vector3Ptr->Y = num21;
-                          if ((double) num22 > (double) vector3Ptr->Z)
-                          {
-                            vector3Ptr->Z = num22;
-                            break;
-                          }
-                          else
-                            break;
-                        }
-                        else
-                          break;
-                      case 95:
-                        if ((int) tilePtr2->frameX < 36)
-                        {
-                          float num20 = 1f;
-                          float num21 = 0.95f;
-                          float num22 = 0.8f;
-                          if ((double) num20 > (double) vector3Ptr->X)
-                            vector3Ptr->X = num20;
-                          if ((double) num21 > (double) vector3Ptr->Y)
-                            vector3Ptr->Y = num21;
-                          if ((double) num22 > (double) vector3Ptr->Z)
-                          {
-                            vector3Ptr->Z = num22;
-                            break;
-                          }
-                          else
-                            break;
-                        }
-                        else
-                          break;
-                      case 98:
-                        if ((int) tilePtr2->frameY == 0)
-                        {
-                          float num20 = 1f;
-                          float num21 = 0.97f;
-                          float num22 = 0.85f;
-                          if ((double) num20 > (double) vector3Ptr->X)
-                            vector3Ptr->X = num20;
-                          if ((double) num21 > (double) vector3Ptr->Y)
-                            vector3Ptr->Y = num21;
-                          if ((double) num22 > (double) vector3Ptr->Z)
-                          {
-                            vector3Ptr->Z = num22;
-                            break;
-                          }
-                          else
-                            break;
-                        }
-                        else
-                          break;
-                      case 100:
-                        if ((int) tilePtr2->frameX < 36)
-                        {
-                          float num20 = 1f;
-                          float num21 = 0.95f;
-                          float num22 = 0.65f;
-                          if ((double) num20 > (double) vector3Ptr->X)
-                            vector3Ptr->X = num20;
-                          if ((double) num21 > (double) vector3Ptr->Y)
-                            vector3Ptr->Y = num21;
-                          if ((double) num22 > (double) vector3Ptr->Z)
-                          {
-                            vector3Ptr->Z = num22;
-                            break;
-                          }
-                          else
-                            break;
-                        }
-                        else
-                          break;
-                      case 70:
-                      case 71:
-                      case 72:
-                        float num37 = (float) Main.rand.Next(28, 42) * 0.005f + (float) (270 - (int) UI.mouseTextBrightness) * (1.0 / 500.0);
-                        float num38 = 0.1f;
-                        float num39 = 0.3f + num37;
-                        float num40 = 0.6f + num37;
-                        if ((double) num38 > (double) vector3Ptr->X)
-                          vector3Ptr->X = num38;
-                        if ((double) num39 > (double) vector3Ptr->Y)
-                          vector3Ptr->Y = num39;
-                        if ((double) num40 > (double) vector3Ptr->Z)
-                        {
-                          vector3Ptr->Z = num40;
-                          break;
-                        }
-                        else
-                          break;
-                      case 77:
-                        float num41 = 0.75f;
-                        float num42 = 0.45f;
-                        float num43 = 0.25f;
-                        if ((double) num41 > (double) vector3Ptr->X)
-                          vector3Ptr->X = num41;
-                        if ((double) num42 > (double) vector3Ptr->Y)
-                          vector3Ptr->Y = num42;
-                        if ((double) num43 > (double) vector3Ptr->Z)
-                        {
-                          vector3Ptr->Z = num43;
-                          break;
-                        }
-                        else
-                          break;
-                      case 49:
-                        float num44 = 0.3f;
-                        float num45 = 0.3f;
-                        float num46 = 0.75f;
-                        if ((double) num44 > (double) vector3Ptr->X)
-                          vector3Ptr->X = num44;
-                        if ((double) num45 > (double) vector3Ptr->Y)
-                          vector3Ptr->Y = num45;
-                        if ((double) num46 > (double) vector3Ptr->Z)
-                        {
-                          vector3Ptr->Z = num46;
-                          break;
-                        }
-                        else
-                          break;
-                      case 61:
-                        if ((int) tilePtr2->frameX == 144)
-                        {
-                          float num20 = 0.42f;
-                          float num21 = 0.81f;
-                          float num22 = 0.52f;
-                          if ((double) num20 > (double) vector3Ptr->X)
-                            vector3Ptr->X = num20;
-                          if ((double) num21 > (double) vector3Ptr->Y)
-                            vector3Ptr->Y = num21;
-                          if ((double) num22 > (double) vector3Ptr->Z)
-                          {
-                            vector3Ptr->Z = num22;
-                            break;
-                          }
-                          else
-                            break;
-                        }
-                        else
-                          break;
-                      case 26:
-                      case 31:
-                        float num47 = (float) Main.rand.Next(-5, 6) * (1.0 / 400.0);
-                        float num48 = 0.31f + num47;
-                        float num49 = 0.1f;
-                        float num50 = 0.44f + num47;
-                        if ((double) num48 > (double) vector3Ptr->X)
-                          vector3Ptr->X = num48;
-                        if ((double) num49 > (double) vector3Ptr->Y)
-                          vector3Ptr->Y = num49;
-                        if ((double) num50 > (double) vector3Ptr->Z)
-                        {
-                          vector3Ptr->Z = num50;
-                          break;
-                        }
-                        else
-                          break;
-                      case 33:
-                        if ((int) tilePtr2->frameX == 0)
-                        {
-                          float num20 = 1f;
-                          float num21 = 0.95f;
-                          float num22 = 0.65f;
-                          if ((double) num20 > (double) vector3Ptr->X)
-                            vector3Ptr->X = num20;
-                          if ((double) num21 > (double) vector3Ptr->Y)
-                            vector3Ptr->Y = num21;
-                          if ((double) num22 > (double) vector3Ptr->Z)
-                          {
-                            vector3Ptr->Z = num22;
-                            break;
-                          }
-                          else
-                            break;
-                        }
-                        else
-                          break;
-                      case 34:
-                      case 35:
-                        if ((int) tilePtr2->frameX < 54)
-                        {
-                          float num20 = 1f;
-                          float num21 = 0.95f;
-                          float num22 = 0.8f;
-                          if ((double) num20 > (double) vector3Ptr->X)
-                            vector3Ptr->X = num20;
-                          if ((double) num21 > (double) vector3Ptr->Y)
-                            vector3Ptr->Y = num21;
-                          if ((double) num22 > (double) vector3Ptr->Z)
-                          {
-                            vector3Ptr->Z = num22;
-                            break;
-                          }
-                          else
-                            break;
-                        }
-                        else
-                          break;
-                      case 36:
-                        if ((int) tilePtr2->frameX < 54)
-                        {
-                          float num20 = 1f;
-                          float num21 = 0.95f;
-                          float num22 = 0.65f;
-                          if ((double) num20 > (double) vector3Ptr->X)
-                            vector3Ptr->X = num20;
-                          if ((double) num21 > (double) vector3Ptr->Y)
-                            vector3Ptr->Y = num21;
-                          if ((double) num22 > (double) vector3Ptr->Z)
-                          {
-                            vector3Ptr->Z = num22;
-                            break;
-                          }
-                          else
-                            break;
-                        }
-                        else
-                          break;
-                      case 37:
-                        float num51 = 0.56f;
-                        float num52 = 0.43f;
-                        float num53 = 0.15f;
-                        if ((double) num51 > (double) vector3Ptr->X)
-                          vector3Ptr->X = num51;
-                        if ((double) num52 > (double) vector3Ptr->Y)
-                          vector3Ptr->Y = num52;
-                        if ((double) num53 > (double) vector3Ptr->Z)
-                        {
-                          vector3Ptr->Z = num53;
-                          break;
-                        }
-                        else
-                          break;
-                      case 42:
-                        if ((int) tilePtr2->frameX == 0)
-                        {
-                          float num20 = 0.65f;
-                          float num21 = 0.8f;
-                          float num22 = 0.54f;
-                          if ((double) num20 > (double) vector3Ptr->X)
-                            vector3Ptr->X = num20;
-                          if ((double) num21 > (double) vector3Ptr->Y)
-                            vector3Ptr->Y = num21;
-                          if ((double) num22 > (double) vector3Ptr->Z)
-                          {
-                            vector3Ptr->Z = num22;
-                            break;
-                          }
-                          else
-                            break;
-                        }
-                        else
-                          break;
-                      case 4:
-                        if ((int) tilePtr2->frameX < 66)
-                        {
-                          float num20;
-                          float num21;
-                          float num22;
-                          switch (tilePtr2->frameY)
-                          {
-                            case (short) 154:
-                              num20 = (float) (0.5 * (double) Main.demonTorch + 1.0 * (1.0 - (double) Main.demonTorch));
-                              num21 = 0.3f;
-                              num22 = Main.demonTorch + (float) (0.5 * (1.0 - (double) Main.demonTorch));
-                              break;
-                            case (short) 176:
-                              num20 = 0.85f;
-                              num21 = 1f;
-                              num22 = 0.7f;
-                              break;
-                            case (short) 110:
-                              num20 = 1.3f;
-                              num21 = 1.3f;
-                              num22 = 1.3f;
-                              break;
-                            case (short) 132:
-                              num20 = 1f;
-                              num21 = 1f;
-                              num22 = 0.1f;
-                              break;
-                            case (short) 66:
-                              num20 = 0.0f;
-                              num21 = 1f;
-                              num22 = 0.1f;
-                              break;
-                            case (short) 88:
-                              num20 = 0.95f;
-                              num21 = 0.1f;
-                              num22 = 0.95f;
-                              break;
-                            case (short) 22:
-                              num20 = 0.0f;
-                              num21 = 0.1f;
-                              num22 = 1.3f;
-                              break;
-                            case (short) 44:
-                              num20 = 1f;
-                              num21 = 0.1f;
-                              num22 = 0.1f;
-                              break;
-                            default:
-                              num20 = 1f;
-                              num21 = 0.95f;
-                              num22 = 0.8f;
-                              break;
-                          }
-                          if ((double) num20 > (double) vector3Ptr->X)
-                            vector3Ptr->X = num20;
-                          if ((double) num21 > (double) vector3Ptr->Y)
-                            vector3Ptr->Y = num21;
-                          if ((double) num22 > (double) vector3Ptr->Z)
-                          {
-                            vector3Ptr->Z = num22;
-                            break;
-                          }
-                          else
-                            break;
-                        }
-                        else
-                          break;
-                    }
-                  }
-                }
-                if ((int) tilePtr2->liquid > 0)
-                {
-                  if ((int) tilePtr2->lava != 0)
-                  {
-                    float num6 = 0.55f + (float) (270 - (int) UI.mouseTextBrightness) * (1.0 / 900.0);
-                    if ((double) vector3Ptr->X < (double) num6)
-                      vector3Ptr->X = num6;
-                    if ((double) vector3Ptr->Y < (double) num6)
-                      vector3Ptr->Y = num6 * 0.6f;
-                    if ((double) vector3Ptr->Z < (double) num6)
-                      vector3Ptr->Z = num6 * 0.2f;
-                  }
-                  else if ((int) tilePtr2->liquid > 128)
-                    this.stopAndWetLight[index2 * 117 + index3] |= (byte) 2;
-                }
-                if ((double) vector3Ptr->X > 0.0 || (double) vector3Ptr->Y > 0.0 || (double) vector3Ptr->Z > 0.0)
-                {
-                  if (this.minX > index2)
-                    this.minX = index2;
-                  if (this.maxX < index2 + 1)
-                    this.maxX = index2 + 1;
-                  if (this.minY > index3)
-                    this.minY = index3;
-                  if (this.maxY < index3 + 1)
-                    this.maxY = index3 + 1;
-                }
-              }
-              ++num5;
-              ++tilePtr2;
-            }
-          }
-        }
-        if (view.evilTiles < 0)
-          view.evilTiles = 0;
-        int num54 = view.holyTiles;
-        view.holyTiles -= view.evilTiles;
-        view.evilTiles -= num54;
-        if (view.holyTiles < 0)
-          view.holyTiles = 0;
-        if (view.evilTiles < 0)
-          view.evilTiles = 0;
-        this.minX7 = this.minX;
-        this.maxX7 = this.maxX;
-        this.minY7 = this.minY;
-        this.maxY7 = this.maxY;
-        this.minX += this.firstToLightX;
-        this.maxX += this.firstToLightX;
-        this.minY += this.firstToLightY;
-        this.maxY += this.firstToLightY;
-        this.firstTileX7 = this.firstTileX - this.firstToLightX;
-        this.lastTileX7 = this.lastTileX - this.firstToLightX;
-        this.lastTileY7 = this.lastTileY - this.firstToLightY;
-        this.firstTileY7 = this.firstTileY - this.firstToLightY;
-        this.lastToLightY7 = num2 - this.firstToLightY;
-        this.firstToLightX27 = num9 - this.firstToLightX;
-        this.lastToLightX27 = num11 - this.firstToLightX;
-        this.firstToLightY27 = num10 - this.firstToLightY;
-        this.lastToLightY27 = num12 - this.firstToLightY;
-        this.workerThreadGo.Set();
-        this.scrX = (short) (view.screenPosition.X >> 4);
-        this.scrY = (short) (view.screenPosition.Y >> 4);
-      }
-    }
+		private const int MAX_LIGHT_ARRAY_Y = 107;
 
-    private unsafe void doColors()
-    {
-      Vector3[,] vector3Array1;
-      // ISSUE: cast to a reference type
-      // ISSUE: explicit reference operation
-      fixed (Vector3* vector3Ptr = &^((vector3Array1 = this.color2) == null || vector3Array1.Length == 0 ? (Vector3&) IntPtr.Zero : vector3Array1.Address(0, 0)))
-      {
-        int num1 = this.minX7 * 117;
-        int num2 = this.minX7;
-        while (num2 < this.maxX7)
-        {
-          this.lightColor = 0.0f;
-          this.lightColorG = 0.0f;
-          this.lightColorB = 0.0f;
-          for (int index = this.minY7; index < this.lastToLightY27 + 4; ++index)
-          {
-            int s = num1 + index;
-            this.LightColor(vector3Ptr + s, s, 1);
-          }
-          this.lightColor = 0.0f;
-          this.lightColorG = 0.0f;
-          this.lightColorB = 0.0f;
-          for (int index = this.maxY7; index >= this.firstTileY7 - 4; --index)
-          {
-            int s = num1 + index;
-            this.LightColor(vector3Ptr + s, s, -1);
-          }
-          ++num2;
-          num1 += 117;
-        }
-      }
-      Vector3[,] vector3Array2;
-      // ISSUE: cast to a reference type
-      // ISSUE: explicit reference operation
-      fixed (Vector3* vector3Ptr = &^((vector3Array2 = this.color2) == null || vector3Array2.Length == 0 ? (Vector3&) IntPtr.Zero : vector3Array2.Address(0, 0)))
-      {
-        for (int index = 0; index < this.lastToLightY7; ++index)
-        {
-          this.lightColor = 0.0f;
-          this.lightColorG = 0.0f;
-          this.lightColorB = 0.0f;
-          int s1 = index + this.minX7 * 117;
-          int num1 = this.minX7;
-          while (num1 < this.lastTileX7 + 4)
-          {
-            this.LightColor(vector3Ptr + s1, s1, 117);
-            ++num1;
-            s1 += 117;
-          }
-          this.lightColor = 0.0f;
-          this.lightColorG = 0.0f;
-          this.lightColorB = 0.0f;
-          int s2 = index + this.maxX7 * 117;
-          int num2 = this.maxX7;
-          while (num2 >= this.firstTileX7 - 4)
-          {
-            this.LightColor(vector3Ptr + s2, s2, -117);
-            --num2;
-            s2 -= 117;
-          }
-        }
-      }
-      Vector3[,] vector3Array3;
-      // ISSUE: cast to a reference type
-      // ISSUE: explicit reference operation
-      fixed (Vector3* vector3Ptr = &^((vector3Array3 = this.color2) == null || vector3Array3.Length == 0 ? (Vector3&) IntPtr.Zero : vector3Array3.Address(0, 0)))
-      {
-        int num1 = this.firstToLightX27 * 117;
-        int num2 = this.firstToLightX27;
-        while (num2 < this.lastToLightX27)
-        {
-          this.lightColor = 0.0f;
-          this.lightColorG = 0.0f;
-          this.lightColorB = 0.0f;
-          for (int index = this.firstToLightY27; index < this.lastTileY7 + 4; ++index)
-          {
-            int s = index + num1;
-            this.LightColor(vector3Ptr + s, s, 1);
-          }
-          this.lightColor = 0.0f;
-          this.lightColorG = 0.0f;
-          this.lightColorB = 0.0f;
-          for (int index = this.lastToLightY27; index >= this.firstTileY7 - 4; --index)
-          {
-            int s = index + num1;
-            this.LightColor(vector3Ptr + s, s, -1);
-          }
-          ++num2;
-          num1 += 117;
-        }
-      }
-      Vector3[,] vector3Array4;
-      // ISSUE: cast to a reference type
-      // ISSUE: explicit reference operation
-      fixed (Vector3* vector3Ptr = &^((vector3Array4 = this.color2) == null || vector3Array4.Length == 0 ? (Vector3&) IntPtr.Zero : vector3Array4.Address(0, 0)))
-      {
-        for (int index = this.firstToLightY27; index < this.lastToLightY27; ++index)
-        {
-          this.lightColor = 0.0f;
-          this.lightColorG = 0.0f;
-          this.lightColorB = 0.0f;
-          int s1 = index + this.firstToLightX27 * 117;
-          int num1 = this.firstToLightX27;
-          while (num1 < this.lastTileX7 + 4)
-          {
-            this.LightColor(vector3Ptr + s1, s1, 117);
-            ++num1;
-            s1 += 117;
-          }
-          this.lightColor = 0.0f;
-          this.lightColorG = 0.0f;
-          this.lightColorB = 0.0f;
-          int s2 = index + this.lastToLightX27 * 117;
-          int num2 = this.lastToLightX27;
-          while (num2 >= this.firstTileX7 - 4)
-          {
-            this.LightColor(vector3Ptr + s2, s2, -117);
-            --num2;
-            s2 -= 117;
-          }
-        }
-      }
-    }
+		private const int COLOR_H = 117;
 
-    public static unsafe void addLight(int i, int j, Vector3 rgb)
-    {
-      if (Lighting.tempLightCount == 1024 || !WorldView.AnyViewContains(i << 4, j << 4))
-        return;
-      fixed (Lighting.TempLight* tempLightPtr1 = Lighting.tempLight)
-      {
-        int num = Lighting.tempLightCount - 1;
-        Lighting.TempLight* tempLightPtr2 = tempLightPtr1 + num;
-        for (; num >= 0; --num)
-        {
-          if ((int) tempLightPtr2->x == i && (int) tempLightPtr2->y == j)
-          {
-            if ((double) tempLightPtr2->color.X < (double) rgb.X)
-              tempLightPtr2->color.X = rgb.X;
-            if ((double) tempLightPtr2->color.Y < (double) rgb.Y)
-              tempLightPtr2->color.Y = rgb.Y;
-            if ((double) tempLightPtr2->color.Z >= (double) rgb.Z)
-              return;
-            tempLightPtr2->color.Z = rgb.Z;
-            return;
-          }
-          else
-            --tempLightPtr2;
-        }
-        Lighting.TempLight* tempLightPtr3 = tempLightPtr1 + Lighting.tempLightCount++;
-        tempLightPtr3->x = (short) i;
-        tempLightPtr3->y = (short) j;
-        tempLightPtr3->color = rgb;
-      }
-    }
+		public const float BRIGHTNESS = 1.2f;
 
-    private unsafe void LightColor(Vector3* pColor2, int s, int offset)
-    {
-      s = (int) this.stopAndWetLight[s];
-      float num1 = this.lightColor;
-      if ((double) pColor2->X > (double) num1)
-        num1 = pColor2->X;
-      if ((double) num1 > 0.0185000002384186)
-      {
-        pColor2->X = num1;
-        if ((double) pColor2[offset].X <= (double) num1)
-        {
-          if (s == 0)
-            num1 *= this.negLight;
-          else if ((s & 1) != 0)
-            num1 *= this.negLight2;
-          else
-            num1 *= (float) ((double) this.wetLightR * (double) Main.rand.Next(98, 100) * 0.00999999977648258);
-        }
-        this.lightColor = num1;
-      }
-      float num2 = this.lightColorG;
-      if ((double) pColor2->Y > (double) num2)
-        num2 = pColor2->Y;
-      if ((double) num2 > 0.0185000002384186)
-      {
-        pColor2->Y = num2;
-        if ((double) pColor2[offset].Y <= (double) num2)
-        {
-          if (s == 0)
-            num2 *= this.negLight;
-          else if ((s & 1) != 0)
-            num2 *= this.negLight2;
-          else
-            num2 *= (float) ((double) this.wetLightG * (double) Main.rand.Next(97, 100) * 0.00999999977648258);
-        }
-        this.lightColorG = num2;
-      }
-      float num3 = this.lightColorB;
-      if ((double) pColor2->Z > (double) num3)
-        num3 = pColor2->Z;
-      if ((double) num3 <= 0.0185000002384186)
-        return;
-      pColor2->Z = num3;
-      if ((double) pColor2[offset].Z < (double) num3)
-      {
-        if ((s & 1) != 0)
-          num3 *= this.negLight2;
-        else
-          num3 *= this.negLight;
-      }
-      this.lightColorB = num3;
-    }
+		private const int firstToLightY7 = 0;
 
-    public Color GetColorPlayer(int x, int y, Color oldColor)
-    {
-      int index1 = x - this.firstToLightX;
-      int index2 = y - this.firstToLightY;
-      if (index1 < 0 || index2 < 0 || (index1 >= this.MAX_LIGHT_ARRAY_X || index2 >= 107))
-        return Color.Black;
-      float num1 = this.color[index1, index2].X * 2.5f;
-      if ((double) num1 > 1.0)
-        num1 = 1f;
-      int r = (int) ((double) oldColor.R * (double) num1 * (double) this.brightness);
-      float num2 = this.color[index1, index2].Y * 2.5f;
-      if ((double) num2 > 1.0)
-        num2 = 1f;
-      int g = (int) ((double) oldColor.G * (double) num2 * (double) this.brightness);
-      float num3 = this.color[index1, index2].Z * 2.5f;
-      if ((double) num3 > 1.0)
-        num3 = 1f;
-      int b = (int) ((double) oldColor.B * (double) num3 * (double) this.brightness);
-      return new Color(r, g, b, (int) byte.MaxValue);
-    }
+		private const int MAX_TEMP_LIGHTS = 1024;
 
-    public Color GetColorPlayer(int x, int y)
-    {
-      int index1 = x - this.firstToLightX;
-      int index2 = y - this.firstToLightY;
-      if (index1 < 0 || index2 < 0 || (index1 >= this.MAX_LIGHT_ARRAY_X || index2 >= 107))
-        return Color.Black;
-      else
-        return new Color(this.color[index1, index2] * (this.brightness * 2.5f));
-    }
+		private int MAX_LIGHT_ARRAY_X;
 
-    public Color GetColorUnsafe(int x, int y)
-    {
-      return new Color(this.color[x - this.firstToLightX, y - this.firstToLightY] * this.brightness);
-    }
+		private int COLOR_W;
 
-    public Color GetColor(int x, int y)
-    {
-      int index1 = x - this.firstToLightX;
-      int index2 = y - this.firstToLightY;
-      if (index1 < 0 || index2 < 0 || (index1 >= this.MAX_LIGHT_ARRAY_X || index2 >= 107))
-        return Color.Black;
-      else
-        return new Color(this.color[index1, index2] * this.brightness);
-    }
+		public float brightness;
 
-    public unsafe float Brightness(int x, int y)
-    {
-      int index1 = x - this.firstToLightX;
-      int index2 = y - this.firstToLightY;
-      if (index1 < 0 || index2 < 0 || (index1 >= this.MAX_LIGHT_ARRAY_X || index2 >= 107))
-        return 0.0f;
-      fixed (Vector3* vector3Ptr = &this.color[index1, index2])
-        return (float) (((double) vector3Ptr->X + (double) vector3Ptr->Y + (double) vector3Ptr->Z) * 0.333333343267441);
-    }
+		public float defBrightness;
 
-    public unsafe float BrightnessUnsafe(int x, int y)
-    {
-      fixed (Vector3* vector3Ptr = &this.color[x - this.firstToLightX, y - this.firstToLightY])
-        return (float) (((double) vector3Ptr->X + (double) vector3Ptr->Y + (double) vector3Ptr->Z) * 0.333333343267441);
-    }
+		public float oldSkyColor;
 
-    public unsafe bool IsNotBlackUnsafe(int x, int y)
-    {
-      fixed (Vector3* vector3Ptr = &this.color[x - this.firstToLightX, y - this.firstToLightY])
-        return (double) vector3Ptr->X > 0.0 || (double) vector3Ptr->Y > 0.0 || (double) vector3Ptr->Z > 0.0;
-    }
+		public float skyColor;
 
-    public unsafe bool Brighter(int x, int y, int x2, int y2)
-    {
-      int index1 = x - this.firstToLightX;
-      int index2 = y - this.firstToLightY;
-      if (index1 < 0 || index2 < 0 || (index1 >= this.MAX_LIGHT_ARRAY_X || index2 >= 107))
-        return true;
-      int index3 = x2 - this.firstToLightX;
-      int index4 = y2 - this.firstToLightY;
-      if (index3 < 0 || index4 < 0 || (index3 >= this.MAX_LIGHT_ARRAY_X || index4 >= 107))
-        return false;
-      fixed (Vector3* vector3Ptr1 = &this.color[index1, index2])
-        fixed (Vector3* vector3Ptr2 = &this.color2[index3, index4])
-          return (double) vector3Ptr1->X + (double) vector3Ptr1->Y + (double) vector3Ptr1->Z <= (double) vector3Ptr2->X + (double) vector3Ptr2->Y + (double) vector3Ptr2->Z;
-    }
+		private float lightColor;
 
-    private struct TempLight
-    {
-      public short x;
-      public short y;
-      public Vector3 color;
-    }
-  }
+		private float lightColorG;
+
+		private float lightColorB;
+
+		public Vector3[,] color;
+
+		public Vector3[,] color2;
+
+		public byte[] stopAndWetLight;
+
+		private int firstTileX;
+
+		private int firstTileY;
+
+		private int lastTileX;
+
+		private int lastTileY;
+
+		private int firstToLightX;
+
+		private int firstToLightY;
+
+		public short scrX = -1;
+
+		public short scrY;
+
+		public int minX;
+
+		public int maxX;
+
+		public int minY;
+
+		public int maxY;
+
+		private float negLight = 0.04f;
+
+		private float negLight2 = 0.16f;
+
+		private float wetLightR = 0.16f;
+
+		private float wetLightG = 0.16f;
+
+		private int minX7;
+
+		private int maxX7;
+
+		private int minY7;
+
+		private int maxY7;
+
+		private int firstTileX7;
+
+		private int lastTileX7;
+
+		private int lastTileY7;
+
+		private int firstTileY7;
+
+		private int lastToLightY7;
+
+		private int firstToLightX27;
+
+		private int lastToLightX27;
+
+		private int firstToLightY27;
+
+		private int lastToLightY27;
+
+		private Thread workerThread;
+
+		private AutoResetEvent workerThreadReady = new AutoResetEvent(initialState: false);
+
+		private AutoResetEvent workerThreadGo = new AutoResetEvent(initialState: false);
+
+		private volatile bool quitWorkerThread;
+
+		public static int tempLightCount;
+
+		private static TempLight[] tempLight = new TempLight[1024];
+
+		public void StartWorkerThread()
+		{
+			if (workerThread != null)
+			{
+				StopWorkerThread();
+			}
+			quitWorkerThread = false;
+			workerThreadReady.Reset();
+			workerThreadGo.Reset();
+			workerThread = new Thread(WorkerThread);
+			workerThread.IsBackground = true;
+			workerThread.Start();
+		}
+
+		public void StopWorkerThread()
+		{
+			if (workerThread != null)
+			{
+				quitWorkerThread = true;
+				workerThreadGo.Set();
+				workerThread.Join();
+				workerThread = null;
+			}
+		}
+
+		private void WorkerThread()
+		{
+			Thread.CurrentThread.SetProcessorAffinity(3);
+			do
+			{
+				workerThreadReady.Set();
+				workerThreadGo.WaitOne();
+				lock (this)
+				{
+					doColors();
+				}
+			}
+			while (!quitWorkerThread);
+			workerThreadReady.Set();
+		}
+
+		public void SetWidth(int width)
+		{
+			lock (this)
+			{
+				MAX_LIGHT_ARRAY_X = (width + 64 >> 4) + 68;
+				COLOR_W = MAX_LIGHT_ARRAY_X + 10;
+				color = new Vector3[MAX_LIGHT_ARRAY_X, 107];
+				color2 = new Vector3[COLOR_W, 117];
+				stopAndWetLight = new byte[COLOR_W * 117];
+			}
+		}
+
+		public unsafe void LightTiles(WorldView view)
+		{
+			firstTileX = view.firstTileX;
+			lastTileX = view.lastTileX;
+			firstTileY = view.firstTileY;
+			lastTileY = view.lastTileY;
+			firstToLightX = firstTileX - 34;
+			firstToLightY = firstTileY - 34;
+			int num = lastTileX + 34;
+			int num2 = lastTileY + 34;
+			if (firstToLightX < 0)
+			{
+				firstToLightX = 0;
+			}
+			if (num >= Main.maxTilesX)
+			{
+				num = Main.maxTilesX - 1;
+			}
+			if (firstToLightY < 0)
+			{
+				firstToLightY = 0;
+			}
+			if (num2 >= Main.maxTilesY)
+			{
+				num2 = Main.maxTilesY - 1;
+			}
+			if (Main.renderCount <= 4)
+			{
+				int num3 = (view.screenPosition.X >> 4) - (view.screenLastPosition.X >> 4);
+				if (num3 < 0 && num3 >= -4)
+				{
+					fixed (Vector3* ptr = color)
+					{
+						int num4 = (MAX_LIGHT_ARRAY_X + num3) * 107 - 1;
+						num3 *= 107;
+						Vector3* ptr2 = ptr + (MAX_LIGHT_ARRAY_X * 107 - 1);
+						do
+						{
+							*ptr2 = ptr2[num3];
+							ptr2--;
+						}
+						while (--num4 >= 0);
+					}
+				}
+				else if (num3 > 0 && num3 <= 4)
+				{
+					fixed (Vector3* ptr3 = color)
+					{
+						int num5 = (MAX_LIGHT_ARRAY_X - num3) * 107 - 1;
+						num3 *= 107;
+						Vector3* ptr4 = ptr3;
+						do
+						{
+							*ptr4 = ptr4[num3];
+							ptr4++;
+						}
+						while (--num5 >= 0);
+					}
+				}
+				num3 = (view.screenPosition.Y >> 4) - (view.screenLastPosition.Y >> 4);
+				if (num3 < 0 && num3 >= -4)
+				{
+					for (int i = 0; i < MAX_LIGHT_ARRAY_X; i++)
+					{
+						fixed (Vector3* ptr5 = &color[i, 0])
+						{
+							for (int num6 = 107 + num3; num6 > -num3; num6--)
+							{
+								ptr5[num6] = ptr5[num6 + num3];
+							}
+						}
+					}
+				}
+				else if (num3 > 0 && num3 <= 4)
+				{
+					for (int j = 0; j < MAX_LIGHT_ARRAY_X; j++)
+					{
+						fixed (Vector3* ptr6 = &color[j, 0])
+						{
+							for (int k = 0; k < 107 - num3; k++)
+							{
+								ptr6[k] = ptr6[k + num3];
+							}
+						}
+					}
+				}
+				oldSkyColor = skyColor;
+				skyColor = (view.time.tileColorf.X + view.time.tileColorf.Y + view.time.tileColorf.Z) * 0.333333343f;
+				if (oldSkyColor != skyColor)
+				{
+					int num7 = (num2 <= Main.worldSurface) ? num2 : Main.worldSurface;
+					fixed (Tile* ptr7 = Main.tile)
+					{
+						for (int l = firstToLightX; l < num; l++)
+						{
+							Tile* ptr8 = ptr7 + (l * 1440 + firstToLightY);
+							int num8 = firstToLightY;
+							while (num8 < num7)
+							{
+								if ((ptr8->active == 0 || !Main.tileNoSunLight[ptr8->type]) && (ptr8->wall == 0 || ptr8->wall == 21) && ptr8->liquid < 200)
+								{
+									fixed (Vector3* ptr9 = &color[l - firstToLightX, num8 - firstToLightY])
+									{
+										if (ptr9->X < skyColor)
+										{
+											ptr9->X = view.time.tileColorf.X;
+											if (ptr9->Y < skyColor)
+											{
+												ptr9->Y = view.time.tileColorf.Y;
+											}
+											if (ptr9->Z < skyColor)
+											{
+												ptr9->Z = view.time.tileColorf.Z;
+											}
+										}
+									}
+								}
+								num8++;
+								ptr8++;
+							}
+						}
+					}
+				}
+				return;
+			}
+			workerThreadReady.WaitOne();
+			int num9 = view.screenPosition.X >> 4;
+			int num10 = view.screenPosition.Y >> 4;
+			if (scrX >= 0)
+			{
+				num9 -= scrX;
+				num10 -= scrY;
+				int num11 = (num9 < 0) ? (-num9) : 0;
+				int num12 = (num10 < 0) ? (-num10) : 0;
+				fixed (Vector3* ptr10 = color)
+				{
+					fixed (Vector3* ptr12 = color2)
+					{
+						for (int m = num11; m < MAX_LIGHT_ARRAY_X; m++)
+						{
+							Vector3* ptr11 = ptr10 + (m * 107 + num12);
+							Vector3* ptr13 = ptr12 + ((m + num9) * 117 + num12 + num10);
+							for (int n = num12; n < 107; n++)
+							{
+								Vector3* intPtr = ptr11;
+								ptr11 = intPtr + 1;
+								Vector3* intPtr2 = ptr13;
+								ptr13 = intPtr2 + 1;
+								*intPtr = *intPtr2;
+							}
+						}
+					}
+				}
+			}
+			fixed (Vector3* ptr14 = color2)
+			{
+				fixed (byte* ptr16 = stopAndWetLight)
+				{
+					Vector3* ptr15 = ptr14;
+					byte* ptr17 = ptr16;
+					for (int num13 = COLOR_W * 117 - 1; num13 >= 0; num13--)
+					{
+						ptr15->X = 0f;
+						ptr15->Y = 0f;
+						ptr15->Z = 0f;
+						*ptr17 = 0;
+						ptr15++;
+						ptr17++;
+					}
+				}
+			}
+			fixed (TempLight* ptr18 = tempLight)
+			{
+				fixed (Vector3* ptr20 = color2)
+				{
+					TempLight* ptr19 = ptr18;
+					for (int num14 = tempLightCount - 1; num14 >= 0; num14--)
+					{
+						int num15 = ptr19->x - firstToLightX;
+						if (num15 >= 0 && num15 < COLOR_W)
+						{
+							int num16 = ptr19->y - firstToLightY;
+							if (num16 >= 0 && num16 < 117)
+							{
+								Vector3* ptr21 = ptr20 + (num16 + num15 * 117);
+								ptr21->X = ptr19->color.X;
+								ptr21->Y = ptr19->color.Y;
+								ptr21->Z = ptr19->color.Z;
+							}
+						}
+						ptr19++;
+					}
+				}
+			}
+			int num17 = firstTileX - 14;
+			int num18 = firstTileY - 14;
+			int num19 = lastTileX + 14;
+			int num20 = lastTileY + 14;
+			if (num17 < 0)
+			{
+				num17 = 0;
+			}
+			if (num19 >= Main.maxTilesX)
+			{
+				num19 = Main.maxTilesX - 1;
+			}
+			if (num18 < 0)
+			{
+				num18 = 0;
+			}
+			if (num20 >= Main.maxTilesY)
+			{
+				num20 = Main.maxTilesY - 1;
+			}
+			if (NPC.wof >= 0 && view.player.horrified)
+			{
+				try
+				{
+					int num21 = (view.screenPosition.Y >> 4) - 10;
+					int num22 = (view.screenPosition.Y + 540 >> 4) + 10;
+					int num23 = Main.npc[NPC.wof].aabb.X >> 4;
+					num23 = ((Main.npc[NPC.wof].direction <= 0) ? (num23 + 2) : (num23 - 3));
+					int num24 = num23 + 8;
+					Vector3 value = new Vector3(0.2f * (0.5f * Main.demonTorch + 1f * (1f - Main.demonTorch)), 0.0300000012f, 0.3f * (Main.demonTorch + 0.5f * (1f - Main.demonTorch)));
+					for (int num25 = num23; num25 <= num24; num25++)
+					{
+						for (int num26 = num21; num26 <= num22; num26++)
+						{
+							Vector3.Max(ref value, ref color2[num25 - firstToLightX, num26 - firstToLightY], out color2[num25 - firstToLightX, num26 - firstToLightY]);
+						}
+					}
+				}
+				catch
+				{
+				}
+			}
+			int num27 = firstToLightX;
+			int num28 = num;
+			int num29 = firstToLightY;
+			int num30 = num2;
+			int num31 = (num30 < Main.worldSurface) ? num30 : Main.worldSurface;
+			fixed (Tile* ptr22 = Main.tile)
+			{
+				for (int num32 = num27; num32 < num28; num32++)
+				{
+					Tile* ptr23 = ptr22 + (num32 * 1440 + num29);
+					int num33 = num29;
+					while (num33 < num31)
+					{
+						int wall = ptr23->wall;
+						if ((wall == 0 || wall == 21) && ptr23->liquid < 200 && (ptr23->active == 0 || !Main.tileNoSunLight[ptr23->type]))
+						{
+							fixed (Vector3* ptr24 = &color2[num32 - firstToLightX, num33 - firstToLightY])
+							{
+								if (ptr24->X < skyColor)
+								{
+									ptr24->X = view.time.tileColorf.X;
+									if (ptr24->Y < skyColor)
+									{
+										ptr24->Y = view.time.tileColorf.Y;
+									}
+									if (ptr24->Z < skyColor)
+									{
+										ptr24->Z = view.time.tileColorf.Z;
+									}
+								}
+							}
+						}
+						num33++;
+						ptr23++;
+					}
+				}
+			}
+			negLight = 0.91f;
+			negLight2 = 0.72f;
+			wetLightG = 0.97f * negLight * UI.blueWave;
+			wetLightR = 0.88f * negLight * UI.blueWave;
+			if (view.player.nightVision)
+			{
+				negLight *= 1.03f;
+				negLight2 *= 1.03f;
+			}
+			if (view.player.blind)
+			{
+				negLight *= 0.95f;
+				negLight2 *= 0.95f;
+			}
+			view.inactiveTiles = 0;
+			view.sandTiles = 0;
+			view.evilTiles = 0;
+			view.snowTiles = 0;
+			view.holyTiles = 0;
+			view.meteorTiles = 0;
+			view.jungleTiles = 0;
+			view.dungeonTiles = 0;
+			view.musicBox = -1;
+			minX = COLOR_W;
+			maxX = 0;
+			minY = 117;
+			maxY = 0;
+			fixed (Tile* ptr25 = Main.tile)
+			{
+				for (int num34 = num27; num34 < num28; num34++)
+				{
+					Tile* ptr26 = ptr25 + (num34 * 1440 + num29);
+					int num35 = num29;
+					while (num35 < num30)
+					{
+						int num36 = num34 - firstToLightX;
+						int num37 = num35 - firstToLightY;
+						fixed (Vector3* ptr27 = &color2[num36, num37])
+						{
+							if (ptr26->active == 0)
+							{
+								view.inactiveTiles++;
+							}
+							else
+							{
+								int type = ptr26->type;
+								int num38 = num28 - num27 - 99 >> 1;
+								int num39 = num30 - num29 - 87 >> 1;
+								if (num34 > num27 + num38 && num34 < num28 - num38 && num35 > num29 + num39 && num35 < num30 - num39)
+								{
+									switch (type)
+									{
+									case 23:
+									case 24:
+									case 25:
+									case 32:
+										view.evilTiles++;
+										break;
+									case 112:
+										view.sandTiles++;
+										view.evilTiles++;
+										break;
+									case 109:
+									case 110:
+									case 113:
+									case 117:
+										view.holyTiles++;
+										break;
+									case 116:
+										view.sandTiles++;
+										view.holyTiles++;
+										break;
+									case 27:
+										view.evilTiles -= 5;
+										break;
+									case 37:
+										view.meteorTiles++;
+										break;
+									case 41:
+									case 43:
+									case 44:
+										view.dungeonTiles++;
+										break;
+									case 60:
+									case 61:
+									case 62:
+									case 84:
+										view.jungleTiles++;
+										break;
+									case 53:
+										view.sandTiles++;
+										break;
+									case 147:
+									case 148:
+										view.snowTiles++;
+										break;
+									case 139:
+										if (ptr26->frameX >= 36)
+										{
+											view.musicBox = ptr26->frameY / 36;
+										}
+										break;
+									}
+								}
+								if (Main.tileBlockLight[type])
+								{
+									stopAndWetLight[num36 * 117 + num37] = 1;
+								}
+								if (Main.tileLighted[type])
+								{
+									switch (type)
+									{
+									case 92:
+										if (ptr26->frameY <= 18 && ptr26->frameX == 0)
+										{
+											float num40 = 1f;
+											float num41 = 1f;
+											float num42 = 1f;
+											if (num40 > ptr27->X)
+											{
+												ptr27->X = num40;
+											}
+											if (num41 > ptr27->Y)
+											{
+												ptr27->Y = num41;
+											}
+											if (num42 > ptr27->Z)
+											{
+												ptr27->Z = num42;
+											}
+										}
+										break;
+									case 93:
+										if (ptr26->frameY == 0 && ptr26->frameX == 0)
+										{
+											float num40 = 1f;
+											float num41 = 0.97f;
+											float num42 = 0.85f;
+											if (num40 > ptr27->X)
+											{
+												ptr27->X = num40;
+											}
+											if (num41 > ptr27->Y)
+											{
+												ptr27->Y = num41;
+											}
+											if (num42 > ptr27->Z)
+											{
+												ptr27->Z = num42;
+											}
+										}
+										break;
+									case 98:
+										if (ptr26->frameY == 0)
+										{
+											float num40 = 1f;
+											float num41 = 0.97f;
+											float num42 = 0.85f;
+											if (num40 > ptr27->X)
+											{
+												ptr27->X = num40;
+											}
+											if (num41 > ptr27->Y)
+											{
+												ptr27->Y = num41;
+											}
+											if (num42 > ptr27->Z)
+											{
+												ptr27->Z = num42;
+											}
+										}
+										break;
+									case 4:
+										if (ptr26->frameX < 66)
+										{
+											float num40;
+											float num41;
+											float num42;
+											switch (ptr26->frameY)
+											{
+											case 22:
+												num40 = 0f;
+												num41 = 0.1f;
+												num42 = 1.3f;
+												break;
+											case 44:
+												num40 = 1f;
+												num41 = 0.1f;
+												num42 = 0.1f;
+												break;
+											case 66:
+												num40 = 0f;
+												num41 = 1f;
+												num42 = 0.1f;
+												break;
+											case 88:
+												num40 = 0.95f;
+												num41 = 0.1f;
+												num42 = 0.95f;
+												break;
+											case 110:
+												num40 = 1.3f;
+												num41 = 1.3f;
+												num42 = 1.3f;
+												break;
+											case 132:
+												num40 = 1f;
+												num41 = 1f;
+												num42 = 0.1f;
+												break;
+											case 154:
+												num40 = 0.5f * Main.demonTorch + 1f * (1f - Main.demonTorch);
+												num41 = 0.3f;
+												num42 = Main.demonTorch + 0.5f * (1f - Main.demonTorch);
+												break;
+											case 176:
+												num40 = 0.85f;
+												num41 = 1f;
+												num42 = 0.7f;
+												break;
+											default:
+												num40 = 1f;
+												num41 = 0.95f;
+												num42 = 0.8f;
+												break;
+											}
+											if (num40 > ptr27->X)
+											{
+												ptr27->X = num40;
+											}
+											if (num41 > ptr27->Y)
+											{
+												ptr27->Y = num41;
+											}
+											if (num42 > ptr27->Z)
+											{
+												ptr27->Z = num42;
+											}
+										}
+										break;
+									case 33:
+										if (ptr26->frameX == 0)
+										{
+											float num40 = 1f;
+											float num41 = 0.95f;
+											float num42 = 0.65f;
+											if (num40 > ptr27->X)
+											{
+												ptr27->X = num40;
+											}
+											if (num41 > ptr27->Y)
+											{
+												ptr27->Y = num41;
+											}
+											if (num42 > ptr27->Z)
+											{
+												ptr27->Z = num42;
+											}
+										}
+										break;
+									case 36:
+										if (ptr26->frameX < 54)
+										{
+											float num40 = 1f;
+											float num41 = 0.95f;
+											float num42 = 0.65f;
+											if (num40 > ptr27->X)
+											{
+												ptr27->X = num40;
+											}
+											if (num41 > ptr27->Y)
+											{
+												ptr27->Y = num41;
+											}
+											if (num42 > ptr27->Z)
+											{
+												ptr27->Z = num42;
+											}
+										}
+										break;
+									case 100:
+										if (ptr26->frameX < 36)
+										{
+											float num40 = 1f;
+											float num41 = 0.95f;
+											float num42 = 0.65f;
+											if (num40 > ptr27->X)
+											{
+												ptr27->X = num40;
+											}
+											if (num41 > ptr27->Y)
+											{
+												ptr27->Y = num41;
+											}
+											if (num42 > ptr27->Z)
+											{
+												ptr27->Z = num42;
+											}
+										}
+										break;
+									case 34:
+									case 35:
+										if (ptr26->frameX < 54)
+										{
+											float num40 = 1f;
+											float num41 = 0.95f;
+											float num42 = 0.8f;
+											if (num40 > ptr27->X)
+											{
+												ptr27->X = num40;
+											}
+											if (num41 > ptr27->Y)
+											{
+												ptr27->Y = num41;
+											}
+											if (num42 > ptr27->Z)
+											{
+												ptr27->Z = num42;
+											}
+										}
+										break;
+									case 95:
+										if (ptr26->frameX < 36)
+										{
+											float num40 = 1f;
+											float num41 = 0.95f;
+											float num42 = 0.8f;
+											if (num40 > ptr27->X)
+											{
+												ptr27->X = num40;
+											}
+											if (num41 > ptr27->Y)
+											{
+												ptr27->Y = num41;
+											}
+											if (num42 > ptr27->Z)
+											{
+												ptr27->Z = num42;
+											}
+										}
+										break;
+									case 17:
+									case 133:
+									{
+										float num40 = 0.83f;
+										float num41 = 0.6f;
+										float num42 = 0.5f;
+										if (num40 > ptr27->X)
+										{
+											ptr27->X = num40;
+										}
+										if (num41 > ptr27->Y)
+										{
+											ptr27->Y = num41;
+										}
+										if (num42 > ptr27->Z)
+										{
+											ptr27->Z = num42;
+										}
+										break;
+									}
+									case 77:
+									{
+										float num40 = 0.75f;
+										float num41 = 0.45f;
+										float num42 = 0.25f;
+										if (num40 > ptr27->X)
+										{
+											ptr27->X = num40;
+										}
+										if (num41 > ptr27->Y)
+										{
+											ptr27->Y = num41;
+										}
+										if (num42 > ptr27->Z)
+										{
+											ptr27->Z = num42;
+										}
+										break;
+									}
+									case 37:
+									{
+										float num40 = 0.56f;
+										float num41 = 0.43f;
+										float num42 = 0.15f;
+										if (num40 > ptr27->X)
+										{
+											ptr27->X = num40;
+										}
+										if (num41 > ptr27->Y)
+										{
+											ptr27->Y = num41;
+										}
+										if (num42 > ptr27->Z)
+										{
+											ptr27->Z = num42;
+										}
+										break;
+									}
+									case 22:
+									case 140:
+									{
+										float num40 = 0.12f;
+										float num41 = 0.07f;
+										float num42 = 0.32f;
+										if (num40 > ptr27->X)
+										{
+											ptr27->X = num40;
+										}
+										if (num41 > ptr27->Y)
+										{
+											ptr27->Y = num41;
+										}
+										if (num42 > ptr27->Z)
+										{
+											ptr27->Z = num42;
+										}
+										break;
+									}
+									case 42:
+										if (ptr26->frameX == 0)
+										{
+											float num40 = 0.65f;
+											float num41 = 0.8f;
+											float num42 = 0.54f;
+											if (num40 > ptr27->X)
+											{
+												ptr27->X = num40;
+											}
+											if (num41 > ptr27->Y)
+											{
+												ptr27->Y = num41;
+											}
+											if (num42 > ptr27->Z)
+											{
+												ptr27->Z = num42;
+											}
+										}
+										break;
+									case 49:
+									{
+										float num40 = 0.3f;
+										float num41 = 0.3f;
+										float num42 = 0.75f;
+										if (num40 > ptr27->X)
+										{
+											ptr27->X = num40;
+										}
+										if (num41 > ptr27->Y)
+										{
+											ptr27->Y = num41;
+										}
+										if (num42 > ptr27->Z)
+										{
+											ptr27->Z = num42;
+										}
+										break;
+									}
+									case 70:
+									case 71:
+									case 72:
+									{
+										float num46 = (float)Main.rand.Next(28, 42) * 0.005f;
+										num46 += (float)(270 - UI.mouseTextBrightness) * 0.002f;
+										float num40 = 0.1f;
+										float num41 = 0.3f + num46;
+										float num42 = 0.6f + num46;
+										if (num40 > ptr27->X)
+										{
+											ptr27->X = num40;
+										}
+										if (num41 > ptr27->Y)
+										{
+											ptr27->Y = num41;
+										}
+										if (num42 > ptr27->Z)
+										{
+											ptr27->Z = num42;
+										}
+										break;
+									}
+									case 61:
+										if (ptr26->frameX == 144)
+										{
+											float num40 = 0.42f;
+											float num41 = 0.81f;
+											float num42 = 0.52f;
+											if (num40 > ptr27->X)
+											{
+												ptr27->X = num40;
+											}
+											if (num41 > ptr27->Y)
+											{
+												ptr27->Y = num41;
+											}
+											if (num42 > ptr27->Z)
+											{
+												ptr27->Z = num42;
+											}
+										}
+										break;
+									case 26:
+									case 31:
+									{
+										float num43 = (float)Main.rand.Next(-5, 6) * 0.0025f;
+										float num40 = 0.31f + num43;
+										float num41 = 0.1f;
+										float num42 = 0.44f + num43;
+										if (num40 > ptr27->X)
+										{
+											ptr27->X = num40;
+										}
+										if (num41 > ptr27->Y)
+										{
+											ptr27->Y = num41;
+										}
+										if (num42 > ptr27->Z)
+										{
+											ptr27->Z = num42;
+										}
+										break;
+									}
+									case 84:
+										switch (ptr26->frameX / 18)
+										{
+										case 2:
+										{
+											float num45 = (float)(270 - UI.mouseTextBrightness) * 0.00125f;
+											if (num45 > 1f)
+											{
+												num45 = 1f;
+											}
+											else if (num45 < 0f)
+											{
+												num45 = 0f;
+											}
+											float num40 = 0.7f * num45;
+											float num41 = num45;
+											float num42 = 0.1f * num45;
+											if (num40 > ptr27->X)
+											{
+												ptr27->X = num40;
+											}
+											if (num41 > ptr27->Y)
+											{
+												ptr27->Y = num41;
+											}
+											if (num42 > ptr27->Z)
+											{
+												ptr27->Z = num42;
+											}
+											break;
+										}
+										case 5:
+										{
+											float num40 = 0.9f;
+											float num41 = 0.719999969f;
+											float num42 = 0.179999992f;
+											if (num40 > ptr27->X)
+											{
+												ptr27->X = num40;
+											}
+											if (num41 > ptr27->Y)
+											{
+												ptr27->Y = num41;
+											}
+											if (num42 > ptr27->Z)
+											{
+												ptr27->Z = num42;
+											}
+											break;
+										}
+										}
+										break;
+									case 83:
+										if (ptr26->frameX == 18 && !view.time.dayTime)
+										{
+											float num40 = 0.1f;
+											float num41 = 0.4f;
+											float num42 = 0.6f;
+											if (num40 > ptr27->X)
+											{
+												ptr27->X = num40;
+											}
+											if (num41 > ptr27->Y)
+											{
+												ptr27->Y = num41;
+											}
+											if (num42 > ptr27->Z)
+											{
+												ptr27->Z = num42;
+											}
+										}
+										break;
+									case 126:
+										if (ptr26->frameX < 36)
+										{
+											if (Main.DiscoRGB.X > ptr27->X)
+											{
+												ptr27->X = Main.DiscoRGB.X;
+											}
+											if (Main.DiscoRGB.Y > ptr27->Y)
+											{
+												ptr27->Y = Main.DiscoRGB.Y;
+											}
+											if (Main.DiscoRGB.Z > ptr27->Z)
+											{
+												ptr27->Z = Main.DiscoRGB.Z;
+											}
+										}
+										break;
+									case 125:
+									{
+										float num44 = (float)Main.rand.Next(28, 42) * 0.01f;
+										num44 += (float)(270 - UI.mouseTextBrightness) * 0.00125f;
+										if (ptr27->Y < 0.1f * num44)
+										{
+											ptr27->Y = 0.3f * num44;
+										}
+										if (ptr27->Z < 0.3f * num44)
+										{
+											ptr27->Z = 0.6f * num44;
+										}
+										break;
+									}
+									case 129:
+									{
+										float num40;
+										float num41;
+										float num42;
+										if (ptr26->frameX == 0 || ptr26->frameX == 54 || ptr26->frameX == 108)
+										{
+											num40 = 0f;
+											num41 = 0.05f;
+											num42 = 0.25f;
+										}
+										else if (ptr26->frameX == 18 || ptr26->frameX == 72 || ptr26->frameX == 126)
+										{
+											num40 = 0.2f;
+											num41 = 0f;
+											num42 = 0.15f;
+										}
+										else
+										{
+											num40 = 0.1f;
+											num41 = 0f;
+											num42 = 0.2f;
+										}
+										if (ptr27->X < num40)
+										{
+											ptr27->X = num40 * (float)Main.rand.Next(970, 1031) * 0.001f;
+										}
+										if (ptr27->Y < num41)
+										{
+											ptr27->Y = num41 * (float)Main.rand.Next(970, 1031) * 0.001f;
+										}
+										if (ptr27->Z < num42)
+										{
+											ptr27->Z = num42 * (float)Main.rand.Next(970, 1031) * 0.001f;
+										}
+										break;
+									}
+									case 149:
+										if (ptr26->frameX <= 36)
+										{
+											float num40;
+											float num41;
+											float num42;
+											if (ptr26->frameX == 0)
+											{
+												num40 = 0.1f;
+												num41 = 0.2f;
+												num42 = 0.5f;
+											}
+											else if (ptr26->frameX == 18)
+											{
+												num40 = 0.5f;
+												num41 = 0.1f;
+												num42 = 0.1f;
+											}
+											else
+											{
+												num40 = 0.2f;
+												num41 = 0.5f;
+												num42 = 0.1f;
+											}
+											if (ptr27->X < num40)
+											{
+												ptr27->X = num40 * (float)Main.rand.Next(970, 1031) * 0.001f;
+											}
+											if (ptr27->Y < num41)
+											{
+												ptr27->Y = num41 * (float)Main.rand.Next(970, 1031) * 0.001f;
+											}
+											if (ptr27->Z < num42)
+											{
+												ptr27->Z = num42 * (float)Main.rand.Next(970, 1031) * 0.001f;
+											}
+										}
+										break;
+									}
+								}
+							}
+							if (ptr26->liquid > 0)
+							{
+								if (ptr26->lava != 0)
+								{
+									float num47 = 0.55f;
+									num47 += (float)(270 - UI.mouseTextBrightness) * 0.00111111114f;
+									if (ptr27->X < num47)
+									{
+										ptr27->X = num47;
+									}
+									if (ptr27->Y < num47)
+									{
+										ptr27->Y = num47 * 0.6f;
+									}
+									if (ptr27->Z < num47)
+									{
+										ptr27->Z = num47 * 0.2f;
+									}
+								}
+								else if (ptr26->liquid > 128)
+								{
+									stopAndWetLight[num36 * 117 + num37] |= 2;
+								}
+							}
+							if (ptr27->X > 0f || ptr27->Y > 0f || ptr27->Z > 0f)
+							{
+								if (minX > num36)
+								{
+									minX = num36;
+								}
+								if (maxX < num36 + 1)
+								{
+									maxX = num36 + 1;
+								}
+								if (minY > num37)
+								{
+									minY = num37;
+								}
+								if (maxY < num37 + 1)
+								{
+									maxY = num37 + 1;
+								}
+							}
+						}
+						num35++;
+						ptr26++;
+					}
+				}
+			}
+			if (view.evilTiles < 0)
+			{
+				view.evilTiles = 0;
+			}
+			int holyTiles = view.holyTiles;
+			view.holyTiles -= view.evilTiles;
+			view.evilTiles -= holyTiles;
+			if (view.holyTiles < 0)
+			{
+				view.holyTiles = 0;
+			}
+			if (view.evilTiles < 0)
+			{
+				view.evilTiles = 0;
+			}
+			minX7 = minX;
+			maxX7 = maxX;
+			minY7 = minY;
+			maxY7 = maxY;
+			minX += firstToLightX;
+			maxX += firstToLightX;
+			minY += firstToLightY;
+			maxY += firstToLightY;
+			firstTileX7 = firstTileX - firstToLightX;
+			lastTileX7 = lastTileX - firstToLightX;
+			lastTileY7 = lastTileY - firstToLightY;
+			firstTileY7 = firstTileY - firstToLightY;
+			lastToLightY7 = num2 - firstToLightY;
+			firstToLightX27 = num17 - firstToLightX;
+			lastToLightX27 = num19 - firstToLightX;
+			firstToLightY27 = num18 - firstToLightY;
+			lastToLightY27 = num20 - firstToLightY;
+			workerThreadGo.Set();
+			scrX = (short)(view.screenPosition.X >> 4);
+			scrY = (short)(view.screenPosition.Y >> 4);
+		}
+
+		private unsafe void doColors()
+		{
+			fixed (Vector3* ptr = color2)
+			{
+				int num = minX7 * 117;
+				int num2 = minX7;
+				while (num2 < maxX7)
+				{
+					lightColor = 0f;
+					lightColorG = 0f;
+					lightColorB = 0f;
+					for (int i = minY7; i < lastToLightY27 + 4; i++)
+					{
+						int num3 = num + i;
+						LightColor(ptr + num3, num3, 1);
+					}
+					lightColor = 0f;
+					lightColorG = 0f;
+					lightColorB = 0f;
+					for (int num4 = maxY7; num4 >= firstTileY7 - 4; num4--)
+					{
+						int num5 = num + num4;
+						LightColor(ptr + num5, num5, -1);
+					}
+					num2++;
+					num += 117;
+				}
+			}
+			fixed (Vector3* ptr2 = color2)
+			{
+				for (int j = 0; j < lastToLightY7; j++)
+				{
+					lightColor = 0f;
+					lightColorG = 0f;
+					lightColorB = 0f;
+					int num6 = j + minX7 * 117;
+					int num7 = minX7;
+					while (num7 < lastTileX7 + 4)
+					{
+						LightColor(ptr2 + num6, num6, 117);
+						num7++;
+						num6 += 117;
+					}
+					lightColor = 0f;
+					lightColorG = 0f;
+					lightColorB = 0f;
+					num6 = j + maxX7 * 117;
+					int num8 = maxX7;
+					while (num8 >= firstTileX7 - 4)
+					{
+						LightColor(ptr2 + num6, num6, -117);
+						num8--;
+						num6 -= 117;
+					}
+				}
+			}
+			fixed (Vector3* ptr3 = color2)
+			{
+				int num9 = firstToLightX27 * 117;
+				int num10 = firstToLightX27;
+				while (num10 < lastToLightX27)
+				{
+					lightColor = 0f;
+					lightColorG = 0f;
+					lightColorB = 0f;
+					for (int k = firstToLightY27; k < lastTileY7 + 4; k++)
+					{
+						int num11 = k + num9;
+						LightColor(ptr3 + num11, num11, 1);
+					}
+					lightColor = 0f;
+					lightColorG = 0f;
+					lightColorB = 0f;
+					for (int num12 = lastToLightY27; num12 >= firstTileY7 - 4; num12--)
+					{
+						int num13 = num12 + num9;
+						LightColor(ptr3 + num13, num13, -1);
+					}
+					num10++;
+					num9 += 117;
+				}
+			}
+			fixed (Vector3* ptr4 = color2)
+			{
+				for (int l = firstToLightY27; l < lastToLightY27; l++)
+				{
+					lightColor = 0f;
+					lightColorG = 0f;
+					lightColorB = 0f;
+					int num14 = l + firstToLightX27 * 117;
+					int num15 = firstToLightX27;
+					while (num15 < lastTileX7 + 4)
+					{
+						LightColor(ptr4 + num14, num14, 117);
+						num15++;
+						num14 += 117;
+					}
+					lightColor = 0f;
+					lightColorG = 0f;
+					lightColorB = 0f;
+					num14 = l + lastToLightX27 * 117;
+					int num16 = lastToLightX27;
+					while (num16 >= firstTileX7 - 4)
+					{
+						LightColor(ptr4 + num14, num14, -117);
+						num16--;
+						num14 -= 117;
+					}
+				}
+			}
+		}
+
+		public unsafe static void addLight(int i, int j, Vector3 rgb)
+		{
+			if (tempLightCount != 1024 && WorldView.AnyViewContains(i << 4, j << 4))
+			{
+				fixed (TempLight* ptr = tempLight)
+				{
+					int num = tempLightCount - 1;
+					TempLight* ptr2 = ptr + num;
+					while (num >= 0)
+					{
+						if (ptr2->x == i && ptr2->y == j)
+						{
+							if (ptr2->color.X < rgb.X)
+							{
+								ptr2->color.X = rgb.X;
+							}
+							if (ptr2->color.Y < rgb.Y)
+							{
+								ptr2->color.Y = rgb.Y;
+							}
+							if (ptr2->color.Z < rgb.Z)
+							{
+								ptr2->color.Z = rgb.Z;
+							}
+							return;
+						}
+						ptr2--;
+						num--;
+					}
+					ptr2 = ptr + tempLightCount++;
+					ptr2->x = (short)i;
+					ptr2->y = (short)j;
+					ptr2->color = rgb;
+				}
+			}
+		}
+
+		private unsafe void LightColor(Vector3* pColor2, int s, int offset)
+		{
+			s = stopAndWetLight[s];
+			float num = lightColor;
+			if (pColor2->X > num)
+			{
+				num = pColor2->X;
+			}
+			if (num > 0.0185f)
+			{
+				pColor2->X = num;
+				if (pColor2[offset].X <= num)
+				{
+					num = ((s == 0) ? (num * negLight) : (((s & 1) == 0) ? (num * (wetLightR * (float)Main.rand.Next(98, 100) * 0.01f)) : (num * negLight2)));
+				}
+				lightColor = num;
+			}
+			num = lightColorG;
+			if (pColor2->Y > num)
+			{
+				num = pColor2->Y;
+			}
+			if (num > 0.0185f)
+			{
+				pColor2->Y = num;
+				if (pColor2[offset].Y <= num)
+				{
+					num = ((s == 0) ? (num * negLight) : (((s & 1) == 0) ? (num * (wetLightG * (float)Main.rand.Next(97, 100) * 0.01f)) : (num * negLight2)));
+				}
+				lightColorG = num;
+			}
+			num = lightColorB;
+			if (pColor2->Z > num)
+			{
+				num = pColor2->Z;
+			}
+			if (num > 0.0185f)
+			{
+				pColor2->Z = num;
+				if (pColor2[offset].Z < num)
+				{
+					num = (((s & 1) == 0) ? (num * negLight) : (num * negLight2));
+				}
+				lightColorB = num;
+			}
+		}
+
+		public Color GetColorPlayer(int x, int y, Color oldColor)
+		{
+			int num = x - firstToLightX;
+			int num2 = y - firstToLightY;
+			if (num < 0 || num2 < 0 || num >= MAX_LIGHT_ARRAY_X || num2 >= 107)
+			{
+				return Color.Black;
+			}
+			float num3 = color[num, num2].X * 2.5f;
+			if (num3 > 1f)
+			{
+				num3 = 1f;
+			}
+			int r = (int)((float)(int)oldColor.R * num3 * brightness);
+			num3 = color[num, num2].Y * 2.5f;
+			if (num3 > 1f)
+			{
+				num3 = 1f;
+			}
+			int g = (int)((float)(int)oldColor.G * num3 * brightness);
+			num3 = color[num, num2].Z * 2.5f;
+			if (num3 > 1f)
+			{
+				num3 = 1f;
+			}
+			int b = (int)((float)(int)oldColor.B * num3 * brightness);
+			return new Color(r, g, b, 255);
+		}
+
+		public Color GetColorPlayer(int x, int y)
+		{
+			int num = x - firstToLightX;
+			int num2 = y - firstToLightY;
+			if (num < 0 || num2 < 0 || num >= MAX_LIGHT_ARRAY_X || num2 >= 107)
+			{
+				return Color.Black;
+			}
+			return new Color(color[num, num2] * (brightness * 2.5f));
+		}
+
+		public Color GetColorUnsafe(int x, int y)
+		{
+			return new Color(color[x - firstToLightX, y - firstToLightY] * brightness);
+		}
+
+		public Color GetColor(int x, int y)
+		{
+			int num = x - firstToLightX;
+			int num2 = y - firstToLightY;
+			if (num < 0 || num2 < 0 || num >= MAX_LIGHT_ARRAY_X || num2 >= 107)
+			{
+				return Color.Black;
+			}
+			return new Color(color[num, num2] * brightness);
+		}
+
+		public unsafe float Brightness(int x, int y)
+		{
+			int num = x - firstToLightX;
+			int num2 = y - firstToLightY;
+			if (num < 0 || num2 < 0 || num >= MAX_LIGHT_ARRAY_X || num2 >= 107)
+			{
+				return 0f;
+			}
+			fixed (Vector3* ptr = &color[num, num2])
+			{
+				return (ptr->X + ptr->Y + ptr->Z) * 0.333333343f;
+			}
+		}
+
+		public unsafe float BrightnessUnsafe(int x, int y)
+		{
+			fixed (Vector3* ptr = &color[x - firstToLightX, y - firstToLightY])
+			{
+				return (ptr->X + ptr->Y + ptr->Z) * 0.333333343f;
+			}
+		}
+
+		public unsafe bool IsNotBlackUnsafe(int x, int y)
+		{
+			fixed (Vector3* ptr = &color[x - firstToLightX, y - firstToLightY])
+			{
+				return ptr->X > 0f || ptr->Y > 0f || ptr->Z > 0f;
+			}
+		}
+
+		public unsafe bool Brighter(int x, int y, int x2, int y2)
+		{
+			int num = x - firstToLightX;
+			int num2 = y - firstToLightY;
+			if (num < 0 || num2 < 0 || num >= MAX_LIGHT_ARRAY_X || num2 >= 107)
+			{
+				return true;
+			}
+			int num3 = x2 - firstToLightX;
+			int num4 = y2 - firstToLightY;
+			if (num3 < 0 || num4 < 0 || num3 >= MAX_LIGHT_ARRAY_X || num4 >= 107)
+			{
+				return false;
+			}
+			fixed (Vector3* ptr = &color[num, num2])
+			{
+				fixed (Vector3* ptr2 = &color2[num3, num4])
+				{
+					return ptr->X + ptr->Y + ptr->Z <= ptr2->X + ptr2->Y + ptr2->Z;
+				}
+			}
+		}
+	}
 }

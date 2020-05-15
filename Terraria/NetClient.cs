@@ -1,176 +1,203 @@
-﻿// Type: Terraria.NetClient
-// Assembly: game, Version=1.0.4.1, Culture=neutral, PublicKeyToken=null
-// MVID: D0F84B30-D7A0-41D8-8306-C72BB0D9D9CF
-// Assembly location: C:\Users\DartPower\Downloads\Terraria.Xbox.360.Edition.XBLA.XBOX360-MoNGoLS\5841128F\000D0000\Terraria\Terraria.exe\ASSEMBLY.exe
-
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Net;
-using System.Collections.ObjectModel;
 
 namespace Terraria
 {
-  public sealed class NetClient
-  {
-    public NetworkMachine machine;
-    public NetworkGamer gamer;
-    public short serverState;
-    private bool isPublicSlotRequest;
-    public bool[] playerSlots;
-    public bool[,] tileSection;
+	public sealed class NetClient
+	{
+		public NetworkMachine machine;
 
-    public NetClient(NetworkGamer g)
-    {
-      this.machine = g.Machine;
-      this.gamer = g;
-      this.serverState = (short) 0;
-      this.isPublicSlotRequest = false;
-      this.playerSlots = new bool[16];
-      this.tileSection = new bool[(int) sbyte.MaxValue, 49];
-    }
+		public NetworkGamer gamer;
 
-    public void RequestedPublicSlot()
-    {
-      --Netplay.session.PrivateGamerSlots;
-      this.isPublicSlotRequest = true;
-    }
+		public short serverState;
 
-    public void CanceledPublicSlot()
-    {
-      ++Netplay.session.PrivateGamerSlots;
-      this.isPublicSlotRequest = false;
-    }
+		private bool isPublicSlotRequest;
 
-    public void GamerJoined(Player player)
-    {
-      player.client = this;
-      int index = (int) player.whoAmI;
-      this.playerSlots[index] = true;
-      this.playerSlots[index + 8] = this.isPublicSlotRequest;
-      this.isPublicSlotRequest = false;
-    }
+		public bool[] playerSlots;
 
-    public bool GamerLeft(Player player)
-    {
-      int index = (int) player.whoAmI;
-      this.playerSlots[index] = false;
-      if (this.playerSlots[index + 8])
-      {
-        this.playerSlots[index + 8] = false;
-        ++Netplay.session.PrivateGamerSlots;
-      }
-      player.client = (NetClient) null;
-      return ((ReadOnlyCollection<NetworkGamer>) this.machine.Gamers).Count == 0;
-    }
+		public bool[,] tileSection;
 
-    public void ResetSections()
-    {
-      for (int index1 = 0; index1 < Main.maxSectionsX; ++index1)
-      {
-        for (int index2 = 0; index2 < Main.maxSectionsY; ++index2)
-          this.tileSection[index1, index2] = false;
-      }
-    }
+		public NetClient(NetworkGamer g)
+		{
+			machine = g.Machine;
+			gamer = g;
+			serverState = 0;
+			isPublicSlotRequest = false;
+			playerSlots = new bool[16];
+			tileSection = new bool[127, 49];
+		}
 
-    public void ResetSections(ref Vector2i min, ref Vector2i max)
-    {
-      int num1 = min.X / 40;
-      int num2 = min.Y / 30;
-      int num3 = max.X / 40;
-      int num4 = max.Y / 30;
-      for (int index1 = num1; index1 <= num3; ++index1)
-      {
-        for (int index2 = num2; index2 <= num4; ++index2)
-          this.tileSection[index1, index2] = false;
-      }
-    }
+		public void RequestedPublicSlot()
+		{
+			Netplay.session.PrivateGamerSlots--;
+			isPublicSlotRequest = true;
+		}
 
-    public bool SectionRange(int size, int firstX, int firstY)
-    {
-      int index1 = firstX / 40;
-      int index2 = firstY / 30;
-      if (this.tileSection[index1, index2])
-        return true;
-      int index3 = (firstY + size) / 30;
-      if (this.tileSection[index1, index3])
-        return true;
-      int index4 = (firstX + size) / 40;
-      if (this.tileSection[index4, index2])
-        return true;
-      else
-        return this.tileSection[index4, index3];
-    }
+		public void CanceledPublicSlot()
+		{
+			Netplay.session.PrivateGamerSlots++;
+			isPublicSlotRequest = false;
+		}
 
-    public bool IsReadyToReceive(byte[] packet)
-    {
-      if ((int) this.serverState < 10)
-        return false;
-      byte num = packet[0];
-      if ((uint) num <= 20U)
-      {
-        if ((int) num != 13)
-        {
-          if ((int) num == 20)
-            return this.SectionRange((int) packet[1], (int) packet[2] | (int) packet[3] << 8, (int) packet[4] | (int) packet[5] << 8);
-        }
-        else
-        {
-          Player player1 = Main.player[(int) packet[1] & 7];
-          if ((int) player1.netSkip == 0)
-            return true;
-          Rectangle rectangle = player1.aabb;
-          rectangle.X -= 2500;
-          rectangle.Y -= 2500;
-          rectangle.Width += 5000;
-          rectangle.Height += 5000;
-          for (int index = ((ReadOnlyCollection<NetworkGamer>) this.machine.Gamers).Count - 1; index >= 0; --index)
-          {
-            Player player2 = ((ReadOnlyCollection<NetworkGamer>) this.machine.Gamers)[index].Tag as Player;
-            if (rectangle.Intersects(player2.aabb))
-              return true;
-          }
-          return false;
-        }
-      }
-      else if ((int) num == 23 || (int) num == 28)
-      {
-        NPC npc = Main.npc[(int) packet[1]];
-        if (npc.life <= 0 || npc.townNPC)
-          return true;
-        Rectangle rectangle = npc.aabb;
-        rectangle.X -= 3000;
-        rectangle.Y -= 3000;
-        rectangle.Width += 6000;
-        rectangle.Height += 6000;
-        for (int index = ((ReadOnlyCollection<NetworkGamer>) this.machine.Gamers).Count - 1; index >= 0; --index)
-        {
-          Player player = ((ReadOnlyCollection<NetworkGamer>) this.machine.Gamers)[index].Tag as Player;
-          if (rectangle.Intersects(player.aabb))
-            return true;
-        }
-        return false;
-      }
-      return true;
-    }
+		public void GamerJoined(Player player)
+		{
+			player.client = this;
+			int whoAmI = player.whoAmI;
+			playerSlots[whoAmI] = true;
+			playerSlots[whoAmI + 8] = isPublicSlotRequest;
+			isPublicSlotRequest = false;
+		}
 
-    public bool IsReadyToReceiveProjectile(ref Projectile projectile)
-    {
-      if ((int) this.serverState == 10)
-      {
-        if ((int) projectile.type == 12)
-          return true;
-        Rectangle rectangle = projectile.aabb;
-        rectangle.X -= 5000;
-        rectangle.Y -= 5000;
-        rectangle.Width += 10000;
-        rectangle.Height += 10000;
-        for (int index = ((ReadOnlyCollection<NetworkGamer>) this.machine.Gamers).Count - 1; index >= 0; --index)
-        {
-          Player player = ((ReadOnlyCollection<NetworkGamer>) this.machine.Gamers)[index].Tag as Player;
-          if (rectangle.Intersects(player.aabb))
-            return true;
-        }
-      }
-      return false;
-    }
-  }
+		public bool GamerLeft(Player player)
+		{
+			int whoAmI = player.whoAmI;
+			playerSlots[whoAmI] = false;
+			if (playerSlots[whoAmI + 8])
+			{
+				playerSlots[whoAmI + 8] = false;
+				Netplay.session.PrivateGamerSlots++;
+			}
+			player.client = null;
+			return machine.Gamers.Count == 0;
+		}
+
+		public void ResetSections()
+		{
+			for (int i = 0; i < Main.maxSectionsX; i++)
+			{
+				for (int j = 0; j < Main.maxSectionsY; j++)
+				{
+					tileSection[i, j] = false;
+				}
+			}
+		}
+
+		public void ResetSections(ref Vector2i min, ref Vector2i max)
+		{
+			int num = min.X / 40;
+			int num2 = min.Y / 30;
+			int num3 = max.X / 40;
+			int num4 = max.Y / 30;
+			for (int i = num; i <= num3; i++)
+			{
+				for (int j = num2; j <= num4; j++)
+				{
+					tileSection[i, j] = false;
+				}
+			}
+		}
+
+		public bool SectionRange(int size, int firstX, int firstY)
+		{
+			int num = firstX / 40;
+			int num2 = firstY / 30;
+			if (tileSection[num, num2])
+			{
+				return true;
+			}
+			int num3 = (firstY + size) / 30;
+			if (tileSection[num, num3])
+			{
+				return true;
+			}
+			num = (firstX + size) / 40;
+			if (tileSection[num, num2])
+			{
+				return true;
+			}
+			return tileSection[num, num3];
+		}
+
+		public bool IsReadyToReceive(byte[] packet)
+		{
+			if (serverState < 10)
+			{
+				return false;
+			}
+			switch (packet[0])
+			{
+			case 13:
+			{
+				Player player2 = Main.player[packet[1] & 7];
+				if (player2.netSkip == 0)
+				{
+					return true;
+				}
+				Rectangle aabb2 = player2.aabb;
+				aabb2.X -= 2500;
+				aabb2.Y -= 2500;
+				aabb2.Width += 5000;
+				aabb2.Height += 5000;
+				for (int num2 = machine.Gamers.Count - 1; num2 >= 0; num2--)
+				{
+					NetworkGamer networkGamer2 = machine.Gamers[num2];
+					Player player3 = networkGamer2.Tag as Player;
+					if (aabb2.Intersects(player3.aabb))
+					{
+						return true;
+					}
+				}
+				return false;
+			}
+			case 20:
+				return SectionRange(packet[1], packet[2] | (packet[3] << 8), packet[4] | (packet[5] << 8));
+			case 23:
+			case 28:
+			{
+				NPC nPC = Main.npc[packet[1]];
+				if (nPC.life <= 0)
+				{
+					return true;
+				}
+				if (nPC.townNPC)
+				{
+					return true;
+				}
+				Rectangle aabb = nPC.aabb;
+				aabb.X -= 3000;
+				aabb.Y -= 3000;
+				aabb.Width += 6000;
+				aabb.Height += 6000;
+				for (int num = machine.Gamers.Count - 1; num >= 0; num--)
+				{
+					NetworkGamer networkGamer = machine.Gamers[num];
+					Player player = networkGamer.Tag as Player;
+					if (aabb.Intersects(player.aabb))
+					{
+						return true;
+					}
+				}
+				return false;
+			}
+			default:
+				return true;
+			}
+		}
+
+		public bool IsReadyToReceiveProjectile(ref Projectile projectile)
+		{
+			if (serverState == 10)
+			{
+				if (projectile.type == 12)
+				{
+					return true;
+				}
+				Rectangle aabb = projectile.aabb;
+				aabb.X -= 5000;
+				aabb.Y -= 5000;
+				aabb.Width += 10000;
+				aabb.Height += 10000;
+				for (int num = machine.Gamers.Count - 1; num >= 0; num--)
+				{
+					NetworkGamer networkGamer = machine.Gamers[num];
+					Player player = networkGamer.Tag as Player;
+					if (aabb.Intersects(player.aabb))
+					{
+						return true;
+					}
+				}
+			}
+			return false;
+		}
+	}
 }
