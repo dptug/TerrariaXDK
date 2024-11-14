@@ -1,17 +1,16 @@
-namespace Terraria.CreateCharacter
+namespace Terraria.CreateCharacter;
+
+internal enum CategoryIcon
 {
-	internal enum CategoryIcon
-	{
-		GENDER,
-		HAIR,
-		HAIRCOLOR,
-		EYES,
-		SKIN,
-		SHIRT,
-		UNDERSHIRT,
-		PANTS,
-		SHOES,
-		DIFFICULTY,
-		CATEGORY_COUNT
-	}
+	GENDER,
+	HAIR,
+	HAIRCOLOR,
+	EYES,
+	SKIN,
+	SHIRT,
+	UNDERSHIRT,
+	PANTS,
+	SHOES,
+	DIFFICULTY,
+	CATEGORY_COUNT
 }

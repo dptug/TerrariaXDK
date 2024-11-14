@@ -1,113 +1,112 @@
-using Microsoft.Xna.Framework.GamerServices;
 using System;
 using System.IO;
+using Microsoft.Xna.Framework.GamerServices;
 
-namespace Terraria
+namespace Terraria;
+
+public sealed class UserString
 {
-	public sealed class UserString
+	public string text;
+
+	public bool isVerified;
+
+	public bool isCensored;
+
+	private IAsyncResult asyncResult;
+
+	public static implicit operator UserString(string s)
 	{
-		public string text;
+		return new UserString(s, verified: true);
+	}
 
-		public bool isVerified;
+	public UserString(string s, bool verified)
+	{
+		text = s;
+		isVerified = verified;
+		isCensored = false;
+		asyncResult = null;
+	}
 
-		public bool isCensored;
-
-		private IAsyncResult asyncResult;
-
-		public static implicit operator UserString(string s)
+	public UserString(BinaryReader input)
+	{
+		int num = input.ReadByte();
+		isVerified = (num & 1) != 0;
+		isCensored = (num & 2) != 0;
+		if (isCensored)
 		{
-			return new UserString(s, verified: true);
+			text = null;
 		}
-
-		public UserString(string s, bool verified)
+		else
 		{
-			text = s;
-			isVerified = verified;
-			isCensored = false;
-			asyncResult = null;
+			text = input.ReadString();
 		}
+		asyncResult = null;
+	}
 
-		public UserString(BinaryReader input)
+	public void Write(BinaryWriter output)
+	{
+		int num = (isVerified ? 1 : 0);
+		if (isCensored)
 		{
-			int num = input.ReadByte();
-			isVerified = ((num & 1) != 0);
-			isCensored = ((num & 2) != 0);
-			if (isCensored)
-			{
-				text = null;
-			}
-			else
-			{
-				text = input.ReadString();
-			}
-			asyncResult = null;
+			num |= 2;
 		}
-
-		public void Write(BinaryWriter output)
+		output.Write((byte)num);
+		if (!isCensored)
 		{
-			int num = isVerified ? 1 : 0;
-			if (isCensored)
-			{
-				num |= 2;
-			}
-			output.Write((byte)num);
-			if (!isCensored)
-			{
-				output.Write(text);
-			}
+			output.Write(text);
 		}
+	}
 
-		public void SetUserString(string s)
+	public void SetUserString(string s)
+	{
+		text = s;
+		isVerified = s.Length == 0;
+		isCensored = false;
+	}
+
+	public void SetSystemString(string s)
+	{
+		text = s;
+		isVerified = true;
+		isCensored = false;
+	}
+
+	public string GetString()
+	{
+		if (!isVerified && asyncResult == null && Main.netMode > 0)
 		{
-			text = s;
-			isVerified = (s.Length == 0);
-			isCensored = false;
+			asyncResult = StringChecker.BeginCheckString(text, OnCheckStringDone, null);
 		}
-
-		public void SetSystemString(string s)
+		if (asyncResult != null)
 		{
-			text = s;
+			return Lang.inter[76];
+		}
+		if (!isCensored)
+		{
+			return text;
+		}
+		return Lang.inter[77];
+	}
+
+	public bool IsEditable()
+	{
+		if (!isVerified)
+		{
+			return Main.netMode == 0;
+		}
+		return true;
+	}
+
+	private void OnCheckStringDone(object s)
+	{
+		try
+		{
+			isCensored = !StringChecker.EndCheckString(asyncResult);
 			isVerified = true;
-			isCensored = false;
 		}
-
-		public string GetString()
+		catch
 		{
-			if (!isVerified && asyncResult == null && Main.netMode > 0)
-			{
-				asyncResult = StringChecker.BeginCheckString(text, OnCheckStringDone, null);
-			}
-			if (asyncResult != null)
-			{
-				return Lang.inter[76];
-			}
-			if (!isCensored)
-			{
-				return text;
-			}
-			return Lang.inter[77];
 		}
-
-		public bool IsEditable()
-		{
-			if (!isVerified)
-			{
-				return Main.netMode == 0;
-			}
-			return true;
-		}
-
-		private void OnCheckStringDone(object s)
-		{
-			try
-			{
-				isCensored = !StringChecker.EndCheckString(asyncResult);
-				isVerified = true;
-			}
-			catch
-			{
-			}
-			asyncResult = null;
-		}
+		asyncResult = null;
 	}
 }

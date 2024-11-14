@@ -1,41 +1,34 @@
 using Microsoft.Xna.Framework;
 
-namespace Terraria.CreateCharacter
+namespace Terraria.CreateCharacter;
+
+public interface IAttributeWidget
 {
-	public interface IAttributeWidget
-	{
-		string ControlDescription
-		{
-			get;
-		}
+	string ControlDescription { get; }
 
-		string WidgetDescription
-		{
-			get;
-		}
+	string WidgetDescription { get; }
 
-		void Draw(Vector2 position, float alpha);
+	void Draw(Vector2 position, float alpha);
 
-		void Update();
+	void Update();
 
-		bool SelectLeft();
+	bool SelectLeft();
 
-		bool SelectRight();
+	bool SelectRight();
 
-		bool SelectUp();
+	bool SelectUp();
 
-		bool SelectDown();
+	bool SelectDown();
 
-		void Back();
+	void Back();
 
-		void SetCursor(Vector2i cursor);
+	void SetCursor(Vector2i cursor);
 
-		void Apply(Player player);
+	void Apply(Player player);
 
-		void Reset();
+	void Reset();
 
-		void Show();
+	void Show();
 
-		void FlashSelection(int duration);
-	}
+	void FlashSelection(int duration);
 }

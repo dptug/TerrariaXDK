@@ -1,9 +1,8 @@
-namespace Terraria
-{
-	public struct Size
-	{
-		public short Width;
+namespace Terraria;
 
-		public short Height;
-	}
+public struct Size
+{
+	public short Width;
+
+	public short Height;
 }

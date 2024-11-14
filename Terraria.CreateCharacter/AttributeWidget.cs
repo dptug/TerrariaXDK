@@ -1,80 +1,71 @@
 using Microsoft.Xna.Framework;
 
-namespace Terraria.CreateCharacter
+namespace Terraria.CreateCharacter;
+
+public abstract class AttributeWidget<T> where T : ISelector
 {
-	public abstract class AttributeWidget<T> where T : ISelector
+	protected T widget;
+
+	public string WidgetDescription { get; protected set; }
+
+	public string ControlDescription { get; protected set; }
+
+	internal AttributeWidget()
 	{
-		protected T widget;
+	}
 
-		public string WidgetDescription
-		{
-			get;
-			protected set;
-		}
+	public virtual void Draw(Vector2 position, float alpha)
+	{
+		widget.Draw(position, alpha);
+	}
 
-		public string ControlDescription
-		{
-			get;
-			protected set;
-		}
+	public void Update()
+	{
+		widget.Update();
+	}
 
-		internal AttributeWidget()
-		{
-		}
+	public bool SelectLeft()
+	{
+		return widget.SelectLeft();
+	}
 
-		public virtual void Draw(Vector2 position, float alpha)
-		{
-			widget.Draw(position, alpha);
-		}
+	public bool SelectRight()
+	{
+		return widget.SelectRight();
+	}
 
-		public void Update()
-		{
-			widget.Update();
-		}
+	public bool SelectUp()
+	{
+		return widget.SelectUp();
+	}
 
-		public bool SelectLeft()
-		{
-			return widget.SelectLeft();
-		}
+	public bool SelectDown()
+	{
+		return widget.SelectDown();
+	}
 
-		public bool SelectRight()
-		{
-			return widget.SelectRight();
-		}
+	public virtual void SetCursor(Vector2i cursor)
+	{
+		widget.SetCursor(cursor);
+	}
 
-		public bool SelectUp()
-		{
-			return widget.SelectUp();
-		}
+	public void Reset()
+	{
+		widget.Reset();
+	}
 
-		public bool SelectDown()
-		{
-			return widget.SelectDown();
-		}
+	public void Back()
+	{
+		widget.CancelSelection();
+	}
 
-		public virtual void SetCursor(Vector2i cursor)
-		{
-			widget.SetCursor(cursor);
-		}
+	public void Show()
+	{
+		widget.Show();
+	}
 
-		public void Reset()
-		{
-			widget.Reset();
-		}
-
-		public void Back()
-		{
-			widget.CancelSelection();
-		}
-
-		public void Show()
-		{
-			widget.Show();
-		}
-
-		public void FlashSelection(int duration)
-		{
-			widget.FlashSelection(duration);
-		}
+	public void FlashSelection(int duration)
+	{
+		widget.FlashSelection(duration);
 	}
 }

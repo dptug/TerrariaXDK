@@ -1,11 +1,10 @@
-namespace Terraria
+namespace Terraria;
+
+internal struct Mech
 {
-	internal struct Mech
-	{
-		public short X;
+	public short X;
 
-		public short Y;
+	public short Y;
 
-		public int Time;
-	}
+	public int Time;
 }

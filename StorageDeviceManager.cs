@@ -1,7 +1,7 @@
+using System;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.GamerServices;
 using Microsoft.Xna.Framework.Storage;
-using System;
 
 public class StorageDeviceManager : GameComponent
 {
@@ -80,11 +80,11 @@ public class StorageDeviceManager : GameComponent
 				showDeviceSelector = false;
 				if (Player.HasValue)
 				{
-					StorageDevice.BeginShowSelector(Player.Value, RequiredBytes, 0, deviceSelectorCallback, null);
+					StorageDevice.BeginShowSelector(Player.Value, RequiredBytes, 0, (AsyncCallback)deviceSelectorCallback, (object)null);
 				}
 				else
 				{
-					StorageDevice.BeginShowSelector(RequiredBytes, 0, deviceSelectorCallback, null);
+					StorageDevice.BeginShowSelector(RequiredBytes, 0, (AsyncCallback)deviceSelectorCallback, (object)null);
 				}
 			}
 		}

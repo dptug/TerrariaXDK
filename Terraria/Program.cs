@@ -3,36 +3,31 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
 
-namespace Terraria
+namespace Terraria;
+
+internal static class Program
 {
-	internal static class Program
+	private static void Main(string[] args)
 	{
-		private static void Main(string[] args)
+		Marshal.PrelinkAll(typeof(Main));
+		ThreadPool.SetMinThreads(0, 0);
+		ThreadPool.SetMaxThreads(0, 0);
+		using Main main = new Main();
+		try
 		{
-			Marshal.PrelinkAll(typeof(Main));
-			ThreadPool.SetMinThreads(0, 0);
-			ThreadPool.SetMaxThreads(0, 0);
-			using (Main main = new Main())
+			main.Run();
+		}
+		catch (Exception value)
+		{
+			try
 			{
-				try
-				{
-					main.Run();
-				}
-				catch (Exception value)
-				{
-					try
-					{
-						using (StreamWriter streamWriter = new StreamWriter("client-crashlog.txt", append: true))
-						{
-							streamWriter.WriteLine(DateTime.Now);
-							streamWriter.WriteLine(value);
-							streamWriter.WriteLine("");
-						}
-					}
-					catch
-					{
-					}
-				}
+				using StreamWriter streamWriter = new StreamWriter("client-crashlog.txt", append: true);
+				streamWriter.WriteLine(DateTime.Now);
+				streamWriter.WriteLine(value);
+				streamWriter.WriteLine("");
+			}
+			catch
+			{
 			}
 		}
 	}

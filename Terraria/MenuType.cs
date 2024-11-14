@@ -1,9 +1,8 @@
-namespace Terraria
+namespace Terraria;
+
+public enum MenuType : byte
 {
-	public enum MenuType : byte
-	{
-		MAIN,
-		NONE,
-		PAUSE
-	}
+	MAIN,
+	NONE,
+	PAUSE
 }

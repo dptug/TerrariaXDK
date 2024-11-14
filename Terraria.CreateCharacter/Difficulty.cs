@@ -1,10 +1,9 @@
-namespace Terraria.CreateCharacter
+namespace Terraria.CreateCharacter;
+
+public enum Difficulty
 {
-	public enum Difficulty
-	{
-		SOFTCORE,
-		MEDIUMCORE,
-		HARDCORE,
-		DIFFICULTY_COUNT
-	}
+	SOFTCORE,
+	MEDIUMCORE,
+	HARDCORE,
+	DIFFICULTY_COUNT
 }

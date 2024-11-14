@@ -1,43 +1,42 @@
 using Microsoft.Xna.Framework;
 
-namespace Terraria.CreateCharacter
+namespace Terraria.CreateCharacter;
+
+public class WidgetAnimation
 {
-	public class WidgetAnimation
+	private Vector2 startPosition;
+
+	private Vector2 delta;
+
+	private float progress;
+
+	private float speed;
+
+	public bool Finished => progress >= 1f;
+
+	public Vector2 Position => startPosition + delta * progress;
+
+	public float Alpha => progress;
+
+	public WidgetAnimation(Vector2 startPosition, Vector2 endPosition, float speed)
 	{
-		private Vector2 startPosition;
+		this.startPosition = startPosition;
+		delta = endPosition - startPosition;
+		this.speed = speed;
+		progress = 0f;
+	}
 
-		private Vector2 delta;
+	public void Start()
+	{
+		progress = 0f;
+	}
 
-		private float progress;
-
-		private float speed;
-
-		public bool Finished => progress >= 1f;
-
-		public Vector2 Position => startPosition + delta * progress;
-
-		public float Alpha => progress;
-
-		public WidgetAnimation(Vector2 startPosition, Vector2 endPosition, float speed)
+	public void Update()
+	{
+		progress += speed;
+		if (progress >= 1f)
 		{
-			this.startPosition = startPosition;
-			delta = endPosition - startPosition;
-			this.speed = speed;
-			progress = 0f;
-		}
-
-		public void Start()
-		{
-			progress = 0f;
-		}
-
-		public void Update()
-		{
-			progress += speed;
-			if (progress >= 1f)
-			{
-				progress = 1f;
-			}
+			progress = 1f;
 		}
 	}
 }
