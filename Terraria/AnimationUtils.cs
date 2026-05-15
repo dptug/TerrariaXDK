@@ -101,7 +101,7 @@ public static class AnimationUtils
 			}
 		}
 		while (num2 > num + 1);
-		if ((flags & SqueezeTextFlags.WordBreak) != 0)
+		if ((flags & SqueezeTextFlags.WordBreak) != SqueezeTextFlags.NoWordBreak)
 		{
 			while (num >= 1)
 			{

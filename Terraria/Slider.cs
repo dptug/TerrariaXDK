@@ -58,7 +58,7 @@ public class Slider
 
 	public void Draw(SpriteBatch screen)
 	{
-		screen.Draw(texture, position, (Rectangle?)leftComponent, Color.White);
-		screen.Draw(texture, position + rightComponentOffset, (Rectangle?)rightComponent, Color.White);
+		screen.Draw(texture, position, leftComponent, Color.White);
+		screen.Draw(texture, position + rightComponentOffset, rightComponent, Color.White);
 	}
 }

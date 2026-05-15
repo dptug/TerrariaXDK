@@ -53,11 +53,13 @@ public sealed class Collision
 
 	public static bool AnyPlayerOrNPC(int i, int j, int h)
 	{
-		Rectangle rectangle = default(Rectangle);
-		rectangle.X = i * 16;
-		rectangle.Y = j * 16;
-		rectangle.Width = 16;
-		rectangle.Height = h * 16;
+		Rectangle rectangle = new Rectangle
+		{
+			X = i * 16,
+			Y = j * 16,
+			Width = 16,
+			Height = h * 16
+		};
 		for (int num = 7; num >= 0; num--)
 		{
 			if (Main.player[num].active != 0 && rectangle.Intersects(Main.player[num].aabb))
@@ -115,15 +117,15 @@ public sealed class Collision
 		{
 			num6 = Main.maxTilesY;
 		}
-		fixed (Tile* ptr = Main.tile)
+		fixed (Tile* tile = Main.tile)
 		{
 			for (int i = num3; i < num4; i++)
 			{
-				Tile* ptr2 = ptr + (i * 1440 + num5);
+				Tile* ptr = tile + (i * 1440 + num5);
 				int num7 = num5;
 				while (num7 < num6)
 				{
-					int liquid = ptr2->liquid;
+					int liquid = ptr->liquid;
 					if (liquid > 0)
 					{
 						int num8 = i << 4;
@@ -138,7 +140,7 @@ public sealed class Collision
 						}
 					}
 					num7++;
-					ptr2++;
+					ptr++;
 				}
 			}
 		}
@@ -180,15 +182,15 @@ public sealed class Collision
 		{
 			num6 = Main.maxTilesY;
 		}
-		fixed (Tile* ptr = Main.tile)
+		fixed (Tile* tile = Main.tile)
 		{
 			for (int i = num3; i < num4; i++)
 			{
-				Tile* ptr2 = ptr + (i * 1440 + num5);
+				Tile* ptr = tile + (i * 1440 + num5);
 				int num7 = num5;
 				while (num7 < num6)
 				{
-					int liquid = ptr2->liquid;
+					int liquid = ptr->liquid;
 					if (liquid > 0)
 					{
 						int num8 = i << 4;
@@ -204,7 +206,7 @@ public sealed class Collision
 						}
 					}
 					num7++;
-					ptr2++;
+					ptr++;
 				}
 			}
 		}
@@ -233,17 +235,17 @@ public sealed class Collision
 		{
 			num4 = Main.maxTilesY;
 		}
-		fixed (Tile* ptr = Main.tile)
+		fixed (Tile* tile = Main.tile)
 		{
 			Vector2 vector = default(Vector2);
 			for (int i = num; i < num2; i++)
 			{
-				Tile* ptr2 = ptr + (i * 1440 + num3);
+				Tile* ptr = tile + (i * 1440 + num3);
 				int num5 = num3;
 				while (num5 < num4)
 				{
-					int liquid = ptr2->liquid;
-					if (liquid > 0 && ptr2->lava != 0)
+					int liquid = ptr->liquid;
+					if (liquid > 0 && ptr->lava != 0)
 					{
 						vector.X = i * 16;
 						vector.Y = num5 * 16;
@@ -258,7 +260,7 @@ public sealed class Collision
 						}
 					}
 					num5++;
-					ptr2++;
+					ptr++;
 				}
 			}
 		}
@@ -300,7 +302,7 @@ public sealed class Collision
 		{
 			num10 = Main.maxTilesY;
 		}
-		fixed (Tile* ptr = Main.tile)
+		fixed (Tile* tile = Main.tile)
 		{
 			for (int i = num7; i < num8; i++)
 			{
@@ -309,15 +311,15 @@ public sealed class Collision
 				{
 					continue;
 				}
-				Tile* ptr2 = ptr + (i * 1440 + num9);
+				Tile* ptr = tile + (i * 1440 + num9);
 				int num16 = num9;
 				while (num16 < num10)
 				{
-					if (ptr2->active != 0)
+					if (ptr->active != 0)
 					{
-						int type = ptr2->type;
+						int type = ptr->type;
 						bool flag = Main.tileSolidTop[type];
-						if ((flag && ptr2->frameY == 0) || Main.tileSolid[type])
+						if ((flag && ptr->frameY == 0) || Main.tileSolid[type])
 						{
 							int num17 = num16 << 4;
 							if (num6 > (float)num17 && num4 < (float)(num17 + 16))
@@ -379,7 +381,7 @@ public sealed class Collision
 						}
 					}
 					num16++;
-					ptr2++;
+					ptr++;
 				}
 			}
 		}
@@ -409,7 +411,7 @@ public sealed class Collision
 		{
 			num6 = Main.maxTilesY;
 		}
-		fixed (Tile* ptr = Main.tile)
+		fixed (Tile* tile = Main.tile)
 		{
 			for (int i = num3; i < num4; i++)
 			{
@@ -417,16 +419,16 @@ public sealed class Collision
 				{
 					continue;
 				}
-				Tile* ptr2 = ptr + (i * 1440 + num5);
+				Tile* ptr = tile + (i * 1440 + num5);
 				int num7 = num5;
 				while (num7 < num6)
 				{
-					if (ptr2->active != 0 && num2 > (float)(num7 << 4) && Position.Y < (float)(num7 + 1 << 4) && Main.tileSolidNotSolidTop[ptr2->type])
+					if (ptr->active != 0 && num2 > (float)(num7 << 4) && Position.Y < (float)(num7 + 1 << 4) && Main.tileSolidNotSolidTop[ptr->type])
 					{
 						return true;
 					}
 					num7++;
-					ptr2++;
+					ptr++;
 				}
 			}
 		}
@@ -458,17 +460,17 @@ public sealed class Collision
 		{
 			num4 = Main.maxTilesY;
 		}
-		fixed (Tile* ptr = Main.tile)
+		fixed (Tile* tile = Main.tile)
 		{
 			Vector2 vector3 = default(Vector2);
 			for (int i = num; i < num2; i++)
 			{
 				vector3.X = i * 16;
-				Tile* ptr2 = ptr + (i * 1440 + num3);
+				Tile* ptr = tile + (i * 1440 + num3);
 				int num5 = num3;
 				while (num5 < num4)
 				{
-					int liquid = ptr2->liquid;
+					int liquid = ptr->liquid;
 					if (liquid > 0)
 					{
 						int num6 = liquid + 16 >> 5 << 1;
@@ -479,7 +481,7 @@ public sealed class Collision
 						}
 					}
 					num5++;
-					ptr2++;
+					ptr++;
 				}
 			}
 		}
@@ -514,7 +516,7 @@ public sealed class Collision
 		{
 			num4 = Main.maxTilesY;
 		}
-		fixed (Tile* ptr = Main.tile)
+		fixed (Tile* tile = Main.tile)
 		{
 			for (int i = num; i < num2; i++)
 			{
@@ -523,11 +525,11 @@ public sealed class Collision
 				{
 					continue;
 				}
-				Tile* ptr2 = ptr + (i * 1440 + num3);
+				Tile* ptr = tile + (i * 1440 + num3);
 				int num10 = num3;
 				while (num10 < num4)
 				{
-					if (ptr2->active != 0)
+					if (ptr->active != 0)
 					{
 						double num11 = num10 << 4;
 						if ((double)(vector.Y + (float)Height) > num11 && (double)vector.Y < num11 + 16.0)
@@ -541,7 +543,7 @@ public sealed class Collision
 									Velocity.Y = (float)(num11 - (double)(vector2.Y + (float)Height));
 								}
 							}
-							else if (!Main.tileSolidTop[ptr2->type])
+							else if (!Main.tileSolidTop[ptr->type])
 							{
 								if ((double)(vector2.X + (float)Width) <= num9)
 								{
@@ -575,7 +577,7 @@ public sealed class Collision
 						}
 					}
 					num10++;
-					ptr2++;
+					ptr++;
 				}
 			}
 		}
@@ -604,15 +606,15 @@ public sealed class Collision
 		{
 			num4 = Main.maxTilesY;
 		}
-		fixed (Tile* ptr = Main.tile)
+		fixed (Tile* tile = Main.tile)
 		{
 			for (int i = num; i < num2; i++)
 			{
-				Tile* ptr2 = ptr + (i * 1440 + num3);
+				Tile* ptr = tile + (i * 1440 + num3);
 				int num5 = num3;
 				while (num5 < num4)
 				{
-					if (ptr2->canStandOnTop())
+					if (ptr->canStandOnTop())
 					{
 						double num6 = i << 4;
 						double num7 = num5 << 4;
@@ -622,7 +624,7 @@ public sealed class Collision
 						}
 					}
 					num5++;
-					ptr2++;
+					ptr++;
 				}
 			}
 		}
@@ -650,17 +652,17 @@ public sealed class Collision
 		{
 			num4 = Main.maxTilesY;
 		}
-		fixed (Tile* ptr = Main.tile)
+		fixed (Tile* tile = Main.tile)
 		{
 			for (int i = num; i < num2; i++)
 			{
-				Tile* ptr2 = ptr + (i * 1440 + num3);
+				Tile* ptr = tile + (i * 1440 + num3);
 				int num5 = num3;
 				while (num5 < num4)
 				{
-					if (ptr2->active != 0)
+					if (ptr->active != 0)
 					{
-						int type = ptr2->type;
+						int type = ptr->type;
 						if (type == 32 || type == 37 || type == 48 || type == 53 || type == 57 || type == 58 || type == 69 || type == 76 || type == 112 || type == 116 || type == 123)
 						{
 							double num6 = i << 4;
@@ -718,7 +720,7 @@ public sealed class Collision
 						}
 					}
 					num5++;
-					ptr2++;
+					ptr++;
 				}
 			}
 		}
@@ -747,15 +749,15 @@ public sealed class Collision
 		{
 			num4 = Main.maxTilesY;
 		}
-		fixed (Tile* ptr = Main.tile)
+		fixed (Tile* tile = Main.tile)
 		{
 			for (int i = num; i < num2; i++)
 			{
-				Tile* ptr2 = ptr + (i * 1440 + num3);
+				Tile* ptr = tile + (i * 1440 + num3);
 				int num5 = num3;
 				while (num5 < num4)
 				{
-					if (ptr2->type == 135 && ptr2->active != 0)
+					if (ptr->type == 135 && ptr->active != 0)
 					{
 						double num6 = i * 16;
 						double num7 = num5 * 16 + 12;
@@ -768,7 +770,7 @@ public sealed class Collision
 						}
 					}
 					num5++;
-					ptr2++;
+					ptr++;
 				}
 			}
 		}
@@ -798,15 +800,15 @@ public sealed class Collision
 		{
 			num4 = Main.maxTilesY;
 		}
-		fixed (Tile* ptr = Main.tile)
+		fixed (Tile* tile = Main.tile)
 		{
 			for (int i = num; i < num2; i++)
 			{
-				Tile* ptr2 = ptr + (i * 1440 + num3);
+				Tile* ptr = tile + (i * 1440 + num3);
 				int num5 = num3;
 				while (num5 < num4)
 				{
-					if (ptr2->type == 51 && ptr2->active != 0)
+					if (ptr->type == 51 && ptr->active != 0)
 					{
 						double num6 = i * 16;
 						double num7 = num5 * 16;
@@ -820,7 +822,7 @@ public sealed class Collision
 						}
 					}
 					num5++;
-					ptr2++;
+					ptr++;
 				}
 			}
 		}
@@ -845,20 +847,20 @@ public sealed class Collision
 		{
 			return true;
 		}
-		fixed (Tile* ptr = Main.tile)
+		fixed (Tile* tile = Main.tile)
 		{
 			for (int i = startX; i < endX + 1; i++)
 			{
-				Tile* ptr2 = ptr + (i * 1440 + startY);
+				Tile* ptr = tile + (i * 1440 + startY);
 				int num = startY;
 				while (num < endY + 1)
 				{
-					if (ptr2->active != 0 && Main.tileSolidNotSolidTop[ptr2->type])
+					if (ptr->active != 0 && Main.tileSolidNotSolidTop[ptr->type])
 					{
 						return true;
 					}
 					num++;
-					ptr2++;
+					ptr++;
 				}
 			}
 		}

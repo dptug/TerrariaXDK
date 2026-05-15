@@ -47,35 +47,35 @@ public class HorizontalListSelector : ISelector
 
 	public void Draw(Vector2 position, float alpha)
 	{
-		float num = ((flashTimer > 0) ? (2f + 0.1f * (float)flashTimer) : 2f);
+		float scale = ((flashTimer > 0) ? (2f + 0.1f * (float)flashTimer) : 2f);
 		Color color = Color.White * alpha;
-		float num2 = (float)background.Width * 2f + 4f;
-		int num3 = (options.Length - 1) * (int)num2 - 4;
-		position.X -= num3 >> 1;
-		Vector2 vector = Vector2.Zero;
-		Vector2 vector2 = Vector2.Zero;
+		float num = (float)background.Width * 2f + 4f;
+		int num2 = (options.Length - 1) * (int)num - 4;
+		position.X -= num2 >> 1;
+		Vector2 position2 = Vector2.Zero;
+		Vector2 origin = Vector2.Zero;
 		Texture2D texture2D = null;
 		for (int i = 0; i < options.Length; i++)
 		{
 			Texture2D texture2D2 = options[i];
-			Vector2 vector3 = new Vector2(texture2D2.Width >> 1, texture2D2.Height >> 1);
+			Vector2 vector = new Vector2(texture2D2.Width >> 1, texture2D2.Height >> 1);
 			if (i == Selected)
 			{
 				texture2D = texture2D2;
-				vector2 = vector3;
-				vector = position;
+				origin = vector;
+				position2 = position;
 			}
 			else
 			{
-				Main.spriteBatch.Draw(background, position, (Rectangle?)null, color, 0f, backgroundOrigin, 2f, SpriteEffects.None, 0f);
-				Main.spriteBatch.Draw(texture2D2, position, (Rectangle?)null, color, 0f, vector3, 2f, SpriteEffects.None, 0f);
+				Main.spriteBatch.Draw(background, position, null, color, 0f, backgroundOrigin, 2f, SpriteEffects.None, 0f);
+				Main.spriteBatch.Draw(texture2D2, position, null, color, 0f, vector, 2f, SpriteEffects.None, 0f);
 			}
-			position.X += num2;
+			position.X += num;
 		}
 		if (texture2D != null)
 		{
-			Main.spriteBatch.Draw(picker, vector, (Rectangle?)null, color, 0f, pickerOrigin, num, SpriteEffects.None, 0f);
-			Main.spriteBatch.Draw(texture2D, vector, (Rectangle?)null, color, 0f, vector2, num, SpriteEffects.None, 0f);
+			Main.spriteBatch.Draw(picker, position2, null, color, 0f, pickerOrigin, scale, SpriteEffects.None, 0f);
+			Main.spriteBatch.Draw(texture2D, position2, null, color, 0f, origin, scale, SpriteEffects.None, 0f);
 		}
 	}
 

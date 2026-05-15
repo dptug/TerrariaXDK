@@ -9668,7 +9668,7 @@ public struct Item
 		{
 			if (!wet)
 			{
-				Lighting.addLight(rgb: type switch
+				Lighting.addLight(rgb: (int)type switch
 				{
 					427 => new Vector3(0.1f, 0.2f, 1.1f), 
 					428 => new Vector3(1f, 0.1f, 0.1f), 

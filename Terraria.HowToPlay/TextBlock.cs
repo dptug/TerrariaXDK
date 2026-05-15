@@ -42,14 +42,14 @@ public class TextBlock
 		Rectangle value = textArea;
 		value.X = 0;
 		value.Y = -scrollY;
-		Rectangle rectangle = textArea;
-		rectangle.X += ox;
-		rectangle.Y += oy;
+		Rectangle destinationRectangle = textArea;
+		destinationRectangle.X += ox;
+		destinationRectangle.Y += oy;
 		Vector2i position = dialogPosition;
 		position.X += ox;
 		position.Y += oy;
 		background.Draw(position, 1f);
-		Main.spriteBatch.Draw(textTexture, rectangle, (Rectangle?)value, Color.White);
+		Main.spriteBatch.Draw(textTexture, destinationRectangle, value, Color.White);
 		if (isScrollable)
 		{
 			int x = position.X + (background.Width >> 1) - 8;

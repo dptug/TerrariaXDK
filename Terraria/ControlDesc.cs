@@ -1,20 +1,12 @@
 namespace Terraria;
 
-public struct ControlDesc
+public struct ControlDesc(int a, int x, int y, string t)
 {
-	public int alignment;
+	public int alignment = a;
 
-	public ushort X;
+	public ushort X = (ushort)x;
 
-	public ushort Y;
+	public ushort Y = (ushort)y;
 
-	public string text;
-
-	public ControlDesc(int a, int x, int y, string t)
-	{
-		alignment = a;
-		X = (ushort)x;
-		Y = (ushort)y;
-		text = t;
-	}
+	public string text = t;
 }

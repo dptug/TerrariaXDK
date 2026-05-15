@@ -48,10 +48,11 @@ internal class LeaderboardInfo
 
 	private static LeaderboardIdentity CreateId(string key)
 	{
-		LeaderboardIdentity result = default(LeaderboardIdentity);
-		result.Key = key;
-		result.GameMode = 0;
-		return result;
+		return new LeaderboardIdentity
+		{
+			Key = key,
+			GameMode = 0
+		};
 	}
 
 	private LeaderboardInfo(LeaderboardIdentity identity, ColumnMapping[] columns, TitleTextID nameID)

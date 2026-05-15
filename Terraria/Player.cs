@@ -3026,7 +3026,7 @@ public sealed class Player
 					if (++wingFrameCounter > 4)
 					{
 						wingFrameCounter = 0;
-						wingFrame = (byte)((uint)(wingFrame + 1) & 3u);
+						wingFrame = (byte)((wingFrame + 1) & 3);
 					}
 				}
 				else if (velocity.Y != 0f)
@@ -3243,18 +3243,18 @@ public sealed class Player
 					}
 				}
 			}
-			fixed (Item* ptr9 = Main.item)
+			fixed (Item* item = Main.item)
 			{
-				Item* ptr10 = ptr9 + 199;
+				Item* ptr9 = item + 199;
 				for (int num34 = 199; num34 >= 0; num34--)
 				{
-					if (ptr10->active != 0 && ptr10->noGrabDelay == 0 && ptr10->owner == i)
+					if (ptr9->active != 0 && ptr9->noGrabDelay == 0 && ptr9->owner == i)
 					{
-						if (aabb.Intersects(new Rectangle((int)ptr10->position.X, (int)ptr10->position.Y, ptr10->width, ptr10->height)))
+						if (aabb.Intersects(new Rectangle((int)ptr9->position.X, (int)ptr9->position.Y, ptr9->width, ptr9->height)))
 						{
 							if (isLocal() && (inventory[selectedItem].type != 0 || itemAnimation <= 0))
 							{
-								if (ptr10->type == 58)
+								if (ptr9->type == 58)
 								{
 									Main.PlaySound(7, aabb.X, aabb.Y);
 									statLife += 20;
@@ -3263,11 +3263,11 @@ public sealed class Player
 									{
 										statLife = statLifeMax;
 									}
-									ptr10->Init();
+									ptr9->Init();
 									NetMessage.CreateMessage2(21, whoAmI, num34);
 									NetMessage.SendMessage();
 								}
-								else if (ptr10->type == 184)
+								else if (ptr9->type == 184)
 								{
 									Main.PlaySound(7, aabb.X, aabb.Y);
 									statMana += 100;
@@ -3276,67 +3276,67 @@ public sealed class Player
 									{
 										statMana = statManaMax2;
 									}
-									ptr10->Init();
+									ptr9->Init();
 									NetMessage.CreateMessage2(21, whoAmI, num34);
 									NetMessage.SendMessage();
 								}
-								else if (GetItem(ref *ptr10))
+								else if (GetItem(ref *ptr9))
 								{
 									NetMessage.CreateMessage2(21, whoAmI, num34);
 									NetMessage.SendMessage();
 								}
 							}
 						}
-						else if (new Rectangle(aabb.X - 38, aabb.Y - 38, 96, 118).Intersects(new Rectangle((int)ptr10->position.X, (int)ptr10->position.Y, ptr10->width, ptr10->height)) && ItemSpace(ptr10))
+						else if (new Rectangle(aabb.X - 38, aabb.Y - 38, 96, 118).Intersects(new Rectangle((int)ptr9->position.X, (int)ptr9->position.Y, ptr9->width, ptr9->height)) && ItemSpace(ptr9))
 						{
-							ptr10->beingGrabbed = true;
-							if (aabb.X + 10 > (int)ptr10->position.X + (ptr10->width >> 1))
+							ptr9->beingGrabbed = true;
+							if (aabb.X + 10 > (int)ptr9->position.X + (ptr9->width >> 1))
 							{
-								if (ptr10->velocity.X < 4f + velocity.X)
+								if (ptr9->velocity.X < 4f + velocity.X)
 								{
-									ptr10->velocity.X += 0.45f;
+									ptr9->velocity.X += 0.45f;
 								}
-								if (ptr10->velocity.X < 0f)
+								if (ptr9->velocity.X < 0f)
 								{
-									ptr10->velocity.X += 0.33749998f;
+									ptr9->velocity.X += 0.33749998f;
 								}
 							}
 							else
 							{
-								if (ptr10->velocity.X > -4f + velocity.X)
+								if (ptr9->velocity.X > -4f + velocity.X)
 								{
-									ptr10->velocity.X -= 0.45f;
+									ptr9->velocity.X -= 0.45f;
 								}
-								if (ptr10->velocity.X > 0f)
+								if (ptr9->velocity.X > 0f)
 								{
-									ptr10->velocity.X -= 0.33749998f;
+									ptr9->velocity.X -= 0.33749998f;
 								}
 							}
-							if (aabb.Y + 21 > (int)ptr10->position.Y + (ptr10->height >> 1))
+							if (aabb.Y + 21 > (int)ptr9->position.Y + (ptr9->height >> 1))
 							{
-								if (ptr10->velocity.Y < 4f)
+								if (ptr9->velocity.Y < 4f)
 								{
-									ptr10->velocity.Y += 0.45f;
+									ptr9->velocity.Y += 0.45f;
 								}
-								if (ptr10->velocity.Y < 0f)
+								if (ptr9->velocity.Y < 0f)
 								{
-									ptr10->velocity.Y += 0.33749998f;
+									ptr9->velocity.Y += 0.33749998f;
 								}
 							}
 							else
 							{
-								if (ptr10->velocity.Y > -4f)
+								if (ptr9->velocity.Y > -4f)
 								{
-									ptr10->velocity.Y -= 0.45f;
+									ptr9->velocity.Y -= 0.45f;
 								}
-								if (ptr10->velocity.Y > 0f)
+								if (ptr9->velocity.Y > 0f)
 								{
-									ptr10->velocity.Y -= 0.33749998f;
+									ptr9->velocity.Y -= 0.33749998f;
 								}
 							}
 						}
 					}
-					ptr10--;
+					ptr9--;
 				}
 			}
 			if (isLocal() && talkNPC < 0)
@@ -3891,16 +3891,16 @@ public sealed class Player
 						{
 							for (int num65 = 0; num65 < 32; num65++)
 							{
-								Dust* ptr11 = Main.dust.NewDust(aabb.X - 6, aabb.Y + 21 - 8, 32, 24, 33);
-								if (ptr11 == null)
+								Dust* ptr10 = Main.dust.NewDust(aabb.X - 6, aabb.Y + 21 - 8, 32, 24, 33);
+								if (ptr10 == null)
 								{
 									break;
 								}
-								ptr11->velocity.Y -= 4f;
-								ptr11->velocity.X *= 2.5f;
-								ptr11->scale = 1.3f;
-								ptr11->alpha = 100;
-								ptr11->noGravity = true;
+								ptr10->velocity.Y -= 4f;
+								ptr10->velocity.X *= 2.5f;
+								ptr10->scale = 1.3f;
+								ptr10->alpha = 100;
+								ptr10->noGravity = true;
 							}
 							Main.PlaySound(19, aabb.X, aabb.Y, 0);
 						}
@@ -3908,16 +3908,16 @@ public sealed class Player
 						{
 							for (int num66 = 0; num66 < 16; num66++)
 							{
-								Dust* ptr12 = Main.dust.NewDust(aabb.X - 6, aabb.Y + 21 - 8, 32, 24, 35);
-								if (ptr12 == null)
+								Dust* ptr11 = Main.dust.NewDust(aabb.X - 6, aabb.Y + 21 - 8, 32, 24, 35);
+								if (ptr11 == null)
 								{
 									break;
 								}
-								ptr12->velocity.Y -= 1.5f;
-								ptr12->velocity.X *= 2.5f;
-								ptr12->scale = 1.3f;
-								ptr12->alpha = 100;
-								ptr12->noGravity = true;
+								ptr11->velocity.Y -= 1.5f;
+								ptr11->velocity.X *= 2.5f;
+								ptr11->scale = 1.3f;
+								ptr11->alpha = 100;
+								ptr11->noGravity = true;
 							}
 							Main.PlaySound(19, aabb.X, aabb.Y);
 						}
@@ -3939,16 +3939,16 @@ public sealed class Player
 					{
 						for (int num67 = 0; num67 < 24; num67++)
 						{
-							Dust* ptr13 = Main.dust.NewDust(aabb.X - 6, aabb.Y + 21, 32, 24, 33);
-							if (ptr13 == null)
+							Dust* ptr12 = Main.dust.NewDust(aabb.X - 6, aabb.Y + 21, 32, 24, 33);
+							if (ptr12 == null)
 							{
 								break;
 							}
-							ptr13->velocity.Y -= 4f;
-							ptr13->velocity.X *= 2.5f;
-							ptr13->scale = 1.3f;
-							ptr13->alpha = 100;
-							ptr13->noGravity = true;
+							ptr12->velocity.Y -= 4f;
+							ptr12->velocity.X *= 2.5f;
+							ptr12->scale = 1.3f;
+							ptr12->alpha = 100;
+							ptr12->noGravity = true;
 						}
 						Main.PlaySound(19, aabb.X, aabb.Y, 0);
 					}
@@ -3956,16 +3956,16 @@ public sealed class Player
 					{
 						for (int num68 = 0; num68 < 8; num68++)
 						{
-							Dust* ptr14 = Main.dust.NewDust(aabb.X - 6, aabb.Y + 21 - 8, 32, 24, 35);
-							if (ptr14 == null)
+							Dust* ptr13 = Main.dust.NewDust(aabb.X - 6, aabb.Y + 21 - 8, 32, 24, 35);
+							if (ptr13 == null)
 							{
 								break;
 							}
-							ptr14->velocity.Y -= 1.5f;
-							ptr14->velocity.X *= 2.5f;
-							ptr14->scale = 1.3f;
-							ptr14->alpha = 100;
-							ptr14->noGravity = true;
+							ptr13->velocity.Y -= 1.5f;
+							ptr13->velocity.X *= 2.5f;
+							ptr13->scale = 1.3f;
+							ptr13->alpha = 100;
+							ptr13->noGravity = true;
 						}
 						Main.PlaySound(19, aabb.X, aabb.Y);
 					}
@@ -5658,7 +5658,7 @@ public sealed class Player
 			int num2 = Projectile.NewProjectile(position.X + 10f, position.Y + (float)(head >> 1), (float)Main.rand.Next(10, 30) * 0.1f * (float)hitDirection + num, (float)Main.rand.Next(-40, -20) * 0.1f, 43, 0, 0f, whoAmI);
 			if (num2 >= 0)
 			{
-				uint num3 = Projectile.tombstoneTextIndex++ & 7u;
+				uint num3 = Projectile.tombstoneTextIndex++ & 7;
 				Projectile.tombstoneText[num3] = name + Lang.deathMsgString(deathText);
 				Main.projectile[num2].tombstoneTextId = (byte)num3;
 			}
@@ -10113,11 +10113,13 @@ public sealed class Player
 				healthBarLife = statLife;
 			}
 		}
-		Rectangle rect = default(Rectangle);
-		rect.X = num - 22;
-		rect.Y = num2 + num3 - 2;
-		rect.Height = 10;
-		rect.Width = 52;
+		Rectangle rect = new Rectangle
+		{
+			X = num - 22,
+			Y = num2 + num3 - 2,
+			Height = 10,
+			Width = 52
+		};
 		Color wINDOW_OUTLINE = UI.WINDOW_OUTLINE;
 		Main.DrawRect(rect, wINDOW_OUTLINE, center: false);
 		rect.X += 2;

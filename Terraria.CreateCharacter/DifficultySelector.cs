@@ -103,8 +103,8 @@ public class DifficultySelector : ISelector
 	private void DrawDescription(Difficulty difficulty, Vector2 position, float alpha)
 	{
 		Texture2D texture2D = DifficultyIcons[(int)difficulty];
-		Vector2 vector = new Vector2(texture2D.Width >> 1, texture2D.Height >> 1);
-		Main.spriteBatch.Draw(texture2D, position, (Rectangle?)null, Color.White * alpha, 0f, vector, 1f + 0.1f * (float)FlashTimer, SpriteEffects.None, 0f);
+		Vector2 origin = new Vector2(texture2D.Width >> 1, texture2D.Height >> 1);
+		Main.spriteBatch.Draw(texture2D, position, null, Color.White * alpha, 0f, origin, 1f + 0.1f * (float)FlashTimer, SpriteEffects.None, 0f);
 		string text = Lang.menu[(int)(31 - difficulty)];
 		SpriteFont fontSmallOutline = Terraria.UI.fontSmallOutline;
 		Vector2 pivot = Terraria.UI.MeasureString(fontSmallOutline, text);

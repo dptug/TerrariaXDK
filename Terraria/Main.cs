@@ -1,5 +1,4 @@
 using System;
-using System.Collections.ObjectModel;
 using System.Text;
 using System.Threading;
 using Microsoft.Xna.Framework;
@@ -1228,7 +1227,7 @@ public sealed class Main : Game
 		shop[9].SetupShop(9);
 		Star.SpawnStars();
 		Projectile.Initialize();
-		((Collection<IGameComponent>)(object)base.Components).Add((IGameComponent)new GamerServicesComponent(this));
+		base.Components.Add(new GamerServicesComponent(this));
 		SignedInGamer.SignedIn += SignedInGamer_SignedIn;
 		SignedInGamer.SignedOut += SignedInGamer_SignedOut;
 		NetworkSession.InviteAccepted += Netplay.NetworkSession_InviteAccepted;
@@ -1368,7 +1367,7 @@ public sealed class Main : Game
 				bool flag = true;
 				for (int i = 0; i < 4; i++)
 				{
-					if (ui[i].menuType != 0)
+					if (ui[i].menuType != MenuType.MAIN)
 					{
 						flag = false;
 						break;
@@ -1393,9 +1392,11 @@ public sealed class Main : Game
 				{
 					int num = 0;
 					bool result = false;
-					Rectangle value = default(Rectangle);
-					value.Width = 10000;
-					value.Height = 10000;
+					Rectangle value = new Rectangle
+					{
+						Width = 10000,
+						Height = 10000
+					};
 					WorldView view = mainPlayer.view;
 					for (int j = 0; j < 196; j++)
 					{
@@ -1917,9 +1918,11 @@ public sealed class Main : Game
 			num = splashCounter - splashDelay - 16;
 			num = 255 - num * 255 / 16;
 		}
-		Vector2 position = default(Vector2);
-		position.X = 960 - splashTexture[splashLogo].Width >> 1;
-		position.Y = 540 - splashTexture[splashLogo].Height >> 1;
+		Vector2 position = new Vector2
+		{
+			X = 960 - splashTexture[splashLogo].Width >> 1,
+			Y = 540 - splashTexture[splashLogo].Height >> 1
+		};
 		spriteBatch.Draw(splashTexture[splashLogo], position, new Color(num, num, num, num));
 		spriteBatch.End();
 	}
@@ -1943,9 +1946,11 @@ public sealed class Main : Game
 		splashCounter++;
 		int num = 0;
 		num = ((splashCounter >= 16) ? 255 : (splashCounter * 255 / 16));
-		Vector2 position = default(Vector2);
-		position.X = 960 - splashTexture[splashLogo].Width >> 1;
-		position.Y = 540 - splashTexture[splashLogo].Height >> 1;
+		Vector2 position = new Vector2
+		{
+			X = 960 - splashTexture[splashLogo].Width >> 1,
+			Y = 540 - splashTexture[splashLogo].Height >> 1
+		};
 		spriteBatch.Draw(splashTexture[splashLogo], position, new Color(num, num, num, num));
 	}
 
@@ -1977,7 +1982,7 @@ public sealed class Main : Game
 		spriteBatch.Begin();
 		for (int k = 0; k < 4; k++)
 		{
-			if (ui[k].menuType != 0)
+			if (ui[k].menuType != MenuType.MAIN)
 			{
 				DrawChat();
 				break;
@@ -2106,9 +2111,9 @@ public sealed class Main : Game
 			for (int num = Netplay.clients.Count - 1; num >= 0; num--)
 			{
 				NetClient netClient = Netplay.clients[num];
-				for (int num2 = ((ReadOnlyCollection<NetworkGamer>)(object)netClient.machine.Gamers).Count - 1; num2 >= 0; num2--)
+				for (int num2 = netClient.machine.Gamers.Count - 1; num2 >= 0; num2--)
 				{
-					Player player = ((ReadOnlyCollection<NetworkGamer>)(object)netClient.machine.Gamers)[num2].Tag as Player;
+					Player player = netClient.machine.Gamers[num2].Tag as Player;
 					if (player.active != 0)
 					{
 						int num3 = (player.aabb.X >> 4) / 40;
@@ -2360,11 +2365,13 @@ public sealed class Main : Game
 			}
 			else
 			{
-				Rectangle rectangle = default(Rectangle);
-				rectangle.X = UI.current.view.screenPosition.X - 960;
-				rectangle.Y = UI.current.view.screenPosition.Y - 540;
-				rectangle.Width = 2880;
-				rectangle.Height = 1620;
+				Rectangle rectangle = new Rectangle
+				{
+					X = UI.current.view.screenPosition.X - 960,
+					Y = UI.current.view.screenPosition.Y - 540,
+					Width = 2880,
+					Height = 1620
+				};
 				flag = rectangle.Contains(x, y);
 				if (flag)
 				{
@@ -2892,7 +2899,7 @@ public sealed class Main : Game
 			goto case Tutorial.BUILD_HOUSE_EXTRA_INFO;
 		case Tutorial.BUILD_HOUSE_EXTRA_INFO:
 		{
-			if ((frameCounter & 0x1Fu) != 0)
+			if ((frameCounter & 0x1F) != 0)
 			{
 				break;
 			}
@@ -2938,7 +2945,7 @@ public sealed class Main : Game
 		case Tutorial.CRAFT_WORKBENCH:
 		case Tutorial.CRAFT_WORKBENCH_EXTRA_INFO:
 		{
-			if ((frameCounter & 0x1Fu) != 0)
+			if ((frameCounter & 0x1F) != 0)
 			{
 				break;
 			}

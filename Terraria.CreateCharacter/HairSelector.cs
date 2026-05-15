@@ -81,12 +81,12 @@ public class HairSelector : ISelector
 				}
 			}
 		}
-		Vector2 vector = default(Vector2);
-		float num12 = ((flashTimer > 0) ? (1f + 0.1f * (float)flashTimer) : 1f);
-		vector.X = position.X + (float)(selected.X * num);
-		vector.Y = position.Y + (float)(selected.Y * num2);
-		Main.spriteBatch.Draw(picker, vector, (Rectangle?)null, color, 0f, pickerOrigin, num12, SpriteEffects.None, 0f);
-		SpriteSheet<_sheetSprites>.DrawCentered(1269 + Selected, (int)vector.X, (int)vector.Y, sources[Selected], color, num12);
+		Vector2 position3 = default(Vector2);
+		float scale = ((flashTimer > 0) ? (1f + 0.1f * (float)flashTimer) : 1f);
+		position3.X = position.X + (float)(selected.X * num);
+		position3.Y = position.Y + (float)(selected.Y * num2);
+		Main.spriteBatch.Draw(picker, position3, null, color, 0f, pickerOrigin, scale, SpriteEffects.None, 0f);
+		SpriteSheet<_sheetSprites>.DrawCentered(1269 + Selected, (int)position3.X, (int)position3.Y, sources[Selected], color, scale);
 	}
 
 	public bool SelectLeft()

@@ -101,7 +101,7 @@ public static class MessageBox
 				{
 					try
 					{
-						mbResult = Guide.BeginShowMessageBox((PlayerIndex)current.playerIndex, current.caption, current.contents, (IEnumerable<string>)current.options, 0, MessageBoxIcon.None, (AsyncCallback)null, (object)null);
+						mbResult = Guide.BeginShowMessageBox((PlayerIndex)current.playerIndex, current.caption, current.contents, current.options, 0, MessageBoxIcon.None, null, null);
 					}
 					catch (GuideAlreadyVisibleException)
 					{

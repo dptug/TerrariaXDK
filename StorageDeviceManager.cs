@@ -80,11 +80,11 @@ public class StorageDeviceManager : GameComponent
 				showDeviceSelector = false;
 				if (Player.HasValue)
 				{
-					StorageDevice.BeginShowSelector(Player.Value, RequiredBytes, 0, (AsyncCallback)deviceSelectorCallback, (object)null);
+					StorageDevice.BeginShowSelector(Player.Value, RequiredBytes, 0, deviceSelectorCallback, null);
 				}
 				else
 				{
-					StorageDevice.BeginShowSelector(RequiredBytes, 0, (AsyncCallback)deviceSelectorCallback, (object)null);
+					StorageDevice.BeginShowSelector(RequiredBytes, 0, deviceSelectorCallback, null);
 				}
 			}
 		}

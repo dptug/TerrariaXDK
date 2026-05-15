@@ -2,29 +2,19 @@ using Microsoft.Xna.Framework;
 
 namespace Terraria;
 
-public struct DustPool
+public struct DustPool(WorldView v, int sizePower2)
 {
-	public WorldView view;
+	public WorldView view = v;
 
-	public short snowDust;
+	public short snowDust = 0;
 
-	public short lavaBubbles;
+	public short lavaBubbles = 0;
 
-	public short nextDust;
+	public short nextDust = 0;
 
-	public short size;
+	public short size = (short)sizePower2;
 
-	public Dust[] dust;
-
-	public DustPool(WorldView v, int sizePower2)
-	{
-		view = v;
-		snowDust = 0;
-		lavaBubbles = 0;
-		nextDust = 0;
-		size = (short)sizePower2;
-		dust = new Dust[sizePower2];
-	}
+	public Dust[] dust = new Dust[sizePower2];
 
 	public void Init()
 	{

@@ -17259,19 +17259,19 @@ internal sealed class Lang
 
 	public static uint deathMsg(int plr = -1, int npc = 0, int proj = 0, int other = -1)
 	{
-		return ((uint)plr & 0xFFu) | (uint)((npc & 0x3FF) << 8) | (uint)((proj & 0xFF) << 18) | (uint)((other & 0x3F) << 26);
+		return (uint)((plr & 0xFF) | ((npc & 0x3FF) << 8) | ((proj & 0xFF) << 18) | ((other & 0x3F) << 26));
 	}
 
 	public static string deathMsgString(uint encoded)
 	{
-		uint num = (encoded >> 26) & 0x3Fu;
+		uint num = (encoded >> 26) & 0x3F;
 		if (num >= 3 && num < 63)
 		{
 			return dt[num - 3];
 		}
-		uint num2 = encoded & 0xFFu;
+		uint num2 = encoded & 0xFF;
 		int num3 = (int)(encoded << 14) >> 22;
-		uint num4 = (encoded >> 18) & 0xFFu;
+		uint num4 = (encoded >> 18) & 0xFF;
 		string result = null;
 		if (lang <= 1)
 		{

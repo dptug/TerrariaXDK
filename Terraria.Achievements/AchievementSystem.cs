@@ -64,19 +64,19 @@ public class AchievementSystem
 		EarnedAchievementsData earnedAchievementsData = new EarnedAchievementsData();
 		earnedAchievementsData.Callback = callback;
 		earnedAchievementsData.Gamer = gamer;
-		EarnedAchievementsData earnedAchievementsData2 = earnedAchievementsData;
-		gamer.BeginGetAchievements((AsyncCallback)ProcessEarnedAchievements, (object)earnedAchievementsData2);
+		EarnedAchievementsData asyncState = earnedAchievementsData;
+		gamer.BeginGetAchievements(ProcessEarnedAchievements, asyncState);
 	}
 
 	public void Award(SignedInGamer gamer, Achievement achievement)
 	{
-		string text = achievement.ToString();
+		string achievementKey = achievement.ToString();
 		if (achievement < Achievement.BackForSeconds)
 		{
 			IAsyncResult asyncResult = null;
 			try
 			{
-				asyncResult = gamer.BeginAwardAchievement(text, (AsyncCallback)null, (object)null);
+				asyncResult = gamer.BeginAwardAchievement(achievementKey, null, null);
 			}
 			catch (ArgumentException)
 			{

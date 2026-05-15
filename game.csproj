@@ -6,8 +6,9 @@
     <TargetFramework>net20</TargetFramework>
   </PropertyGroup>
   <PropertyGroup>
-    <LangVersion>11.0</LangVersion>
+    <LangVersion>14.0</LangVersion>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
   </PropertyGroup>
   <PropertyGroup>
     <RootNamespace />
@@ -23,7 +24,7 @@
     <Reference Include="Microsoft.Xna.Framework.GamerServices" />
     <Reference Include="Microsoft.Xna.Framework" />
     <Reference Include="System.Core">
-      <HintPath>C:\Windows\Microsoft.NET\Framework64\v4.0.30319\System.Core.dll</HintPath>
+      <HintPath>C:\WINDOWS\Microsoft.NET\Framework64\v4.0.30319\System.Core.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Xna.Framework.Graphics" />
     <Reference Include="Microsoft.Xna.Framework.Net" />

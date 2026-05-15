@@ -1391,7 +1391,7 @@ internal static class WorldGen
 		for (int i = 0; i < 4; i++)
 		{
 			UI uI = Main.ui[i];
-			if (uI.menuType != 0)
+			if (uI.menuType != MenuType.MAIN)
 			{
 				uI.player.Save(uI.playerPathName);
 				uI.SaveSettings();
@@ -1415,7 +1415,7 @@ internal static class WorldGen
 		for (int i = 0; i < 4; i++)
 		{
 			UI uI = Main.ui[i];
-			if (uI.menuType != 0)
+			if (uI.menuType != MenuType.MAIN)
 			{
 				uI.player.Save(uI.playerPathName);
 				uI.SaveSettings();
@@ -1912,7 +1912,7 @@ internal static class WorldGen
 						ptr2->flags &= ~Tile.Flags.VISITED;
 					}
 					int num2 = fileIO.ReadByte();
-					if (((uint)num2 & 0x80u) != 0)
+					if ((num2 & 0x80) != 0)
 					{
 						num2 &= 0x7F;
 						num2 |= fileIO.ReadByte() << 7;
@@ -2513,7 +2513,7 @@ internal static class WorldGen
 		float num8 = num4;
 		int num9 = (genRand.Next(2) << 1) - 1;
 		float num10 = 1f / (float)Main.maxTilesX;
-		fixed (Tile* ptr = Main.tile)
+		fixed (Tile* tile = Main.tile)
 		{
 			for (int i = 0; i < Main.maxTilesX; i++)
 			{
@@ -2620,22 +2620,22 @@ internal static class WorldGen
 					num4 -= 1f;
 				}
 				int num11 = Main.maxTilesY - 1;
-				Tile* ptr2 = ptr + (i * 1440 + num11);
+				Tile* ptr = tile + (i * 1440 + num11);
 				do
 				{
-					ptr2->active = 1;
-					ptr2->type = (byte)((num11 >= (int)num4) ? 1u : 0u);
-					ptr2->frameX = -1;
-					ptr2->frameY = -1;
-					ptr2--;
+					ptr->active = 1;
+					ptr->type = (byte)((num11 >= (int)num4) ? 1u : 0u);
+					ptr->frameX = -1;
+					ptr->frameY = -1;
+					ptr--;
 				}
 				while (--num11 >= (int)num3);
 				do
 				{
-					ptr2->active = 0;
-					ptr2->frameX = -1;
-					ptr2->frameY = -1;
-					ptr2--;
+					ptr->active = 0;
+					ptr->frameX = -1;
+					ptr->frameY = -1;
+					ptr--;
 				}
 				while (--num11 >= 0);
 			}
@@ -3505,20 +3505,20 @@ internal static class WorldGen
 					num140 = Main.maxTilesY - 160;
 				}
 				int num142 = num140 - 20 - genRand.Next(3);
-				Tile* ptr3 = ptr + (num141 * 1440 + num142);
+				Tile* ptr2 = tile + (num141 * 1440 + num142);
 				do
 				{
 					if (num142 >= num140)
 					{
-						ptr3->active = 0;
-						ptr3->lava = 0;
-						ptr3->liquid = 0;
+						ptr2->active = 0;
+						ptr2->lava = 0;
+						ptr2->liquid = 0;
 					}
 					else
 					{
-						ptr3->type = 57;
+						ptr2->type = 57;
 					}
-					ptr3++;
+					ptr2++;
 				}
 				while (++num142 < Main.maxTilesY);
 			}
@@ -3535,13 +3535,13 @@ internal static class WorldGen
 					num143 = Main.maxTilesY - 120;
 				}
 				int num145 = num143;
-				Tile* ptr4 = ptr + (num144 * 1440 + num145);
+				Tile* ptr3 = tile + (num144 * 1440 + num145);
 				do
 				{
-					if (ptr4->active == 0)
+					if (ptr3->active == 0)
 					{
-						ptr4->lava = 32;
-						ptr4->liquid = byte.MaxValue;
+						ptr3->lava = 32;
+						ptr3->liquid = byte.MaxValue;
 					}
 				}
 				while (++num145 < Main.maxTilesY - 10);
@@ -4255,48 +4255,48 @@ internal static class WorldGen
 			for (int num225 = 0; num225 < Main.maxTilesX; num225++)
 			{
 				int num226 = num55;
-				Tile* ptr5 = ptr + (num225 * 1440 + num226);
+				Tile* ptr4 = tile + (num225 * 1440 + num226);
 				do
 				{
-					if (ptr5->active != 0)
+					if (ptr4->active != 0)
 					{
-						if (ptr5->type == 60)
+						if (ptr4->type == 60)
 						{
-							ptr5[-1].liquid = byte.MaxValue;
-							ptr5[-2].liquid = byte.MaxValue;
+							ptr4[-1].liquid = byte.MaxValue;
+							ptr4[-2].liquid = byte.MaxValue;
 						}
 						break;
 					}
-					ptr5++;
+					ptr4++;
 				}
 				while (++num226 < Main.worldSurface - 1);
 			}
 			for (int num227 = 400; num227 < Main.maxTilesX - 400; num227++)
 			{
 				int num228 = num55;
-				Tile* ptr6 = ptr + (num227 * 1440 + num228);
+				Tile* ptr5 = tile + (num227 * 1440 + num228);
 				do
 				{
-					if (ptr6->active != 0)
+					if (ptr5->active != 0)
 					{
-						if (ptr6->type != 53)
+						if (ptr5->type != 53)
 						{
 							break;
 						}
-						Tile* ptr7 = ptr6;
+						Tile* ptr6 = ptr5;
 						while (num228 > num55)
 						{
 							num228--;
-							ptr7--;
-							if (ptr7->liquid <= 0)
+							ptr6--;
+							if (ptr6->liquid <= 0)
 							{
 								break;
 							}
-							ptr7->liquid = 0;
+							ptr6->liquid = 0;
 						}
 						break;
 					}
-					ptr6++;
+					ptr5++;
 				}
 				while (++num228 < Main.worldSurface - 1);
 			}
@@ -4631,42 +4631,42 @@ internal static class WorldGen
 				{
 					continue;
 				}
-				Tile* ptr8 = ptr + (num274 * 1440 + 5);
+				Tile* ptr7 = tile + (num274 * 1440 + 5);
 				int num275 = 5;
 				do
 				{
-					if (ptr8->type == 53 && ptr8->active != 0)
+					if (ptr7->type == 53 && ptr7->active != 0)
 					{
-						ptr8--;
-						if (ptr8->active == 0 && ptr8->wall == 0)
+						ptr7--;
+						if (ptr7->active == 0 && ptr7->wall == 0)
 						{
 							if (num274 < 250 || num274 > Main.maxTilesX - 250)
 							{
-								ptr8--;
-								if (ptr8->liquid == byte.MaxValue)
+								ptr7--;
+								if (ptr7->liquid == byte.MaxValue)
 								{
-									ptr8--;
-									if (ptr8->liquid == byte.MaxValue)
+									ptr7--;
+									if (ptr7->liquid == byte.MaxValue)
 									{
-										ptr8--;
-										if (ptr8->liquid == byte.MaxValue)
+										ptr7--;
+										if (ptr7->liquid == byte.MaxValue)
 										{
 											PlaceTile(num274, num275 - 1, 81, mute: true);
 										}
-										ptr8++;
+										ptr7++;
 									}
-									ptr8++;
+									ptr7++;
 								}
-								ptr8++;
+								ptr7++;
 							}
 							else if (num274 > 400 && num274 < Main.maxTilesX - 400)
 							{
 								PlantCactus(num274, num275);
 							}
 						}
-						ptr8++;
+						ptr7++;
 					}
-					ptr8++;
+					ptr7++;
 				}
 				while (++num275 < Main.worldSurface - 1);
 			}
@@ -5557,19 +5557,19 @@ internal static class WorldGen
 		{
 			return false;
 		}
-		fixed (Tile* ptr = Main.tile)
+		fixed (Tile* tile = Main.tile)
 		{
 			do
 			{
 				int num = startY;
-				Tile* ptr2 = ptr + (startX * 1440 + num);
+				Tile* ptr = tile + (startX * 1440 + num);
 				do
 				{
-					if (ptr2->active != 0)
+					if (ptr->active != 0)
 					{
 						return false;
 					}
-					ptr2++;
+					ptr++;
 				}
 				while (++num <= endY);
 			}
@@ -5596,23 +5596,23 @@ internal static class WorldGen
 		{
 			return false;
 		}
-		fixed (Tile* ptr = Main.tile)
+		fixed (Tile* tile = Main.tile)
 		{
 			do
 			{
 				int num = startY;
-				Tile* ptr2 = ptr + (startX * 1440 + num);
+				Tile* ptr = tile + (startX * 1440 + num);
 				do
 				{
-					if (ptr2->active != 0)
+					if (ptr->active != 0)
 					{
-						int type = ptr2->type;
+						int type = ptr->type;
 						if (type != 20 && type != 3 && type != 24 && type != 61 && type != 32 && type != 69 && type != 73 && type != 74 && type != 110 && type != 113)
 						{
 							return false;
 						}
 					}
-					ptr2++;
+					ptr++;
 				}
 				while (++num <= endY);
 			}
@@ -5639,19 +5639,19 @@ internal static class WorldGen
 		{
 			return false;
 		}
-		fixed (Tile* ptr = Main.tile)
+		fixed (Tile* tile = Main.tile)
 		{
 			do
 			{
 				int num = startY;
-				Tile* ptr2 = ptr + (startX * 1440 + num);
+				Tile* ptr = tile + (startX * 1440 + num);
 				do
 				{
-					if (ptr2->active != 0 && ptr2->type != 71)
+					if (ptr->active != 0 && ptr->type != 71)
 					{
 						return false;
 					}
-					ptr2++;
+					ptr++;
 				}
 				while (++num <= endY);
 			}
@@ -5675,13 +5675,15 @@ internal static class WorldGen
 			num2 = num4;
 			num4 = -1;
 		}
-		Vector2i minArea = default(Vector2i);
-		minArea.X = Main.maxTilesX;
-		minArea.Y = Main.maxTilesY;
+		Vector2i min = new Vector2i
+		{
+			X = Main.maxTilesX,
+			Y = Main.maxTilesY
+		};
 		Vector2i maxArea = default(Vector2i);
-		GERunner(num2, new Vector2(3 * num4, 5f), good: true, ref minArea, ref maxArea);
-		GERunner(num3, new Vector2(-3 * num4, 5f), good: false, ref minArea, ref maxArea);
-		Netplay.ResetSections(ref minArea, ref maxArea);
+		GERunner(num2, new Vector2(3 * num4, 5f), good: true, ref min, ref maxArea);
+		GERunner(num3, new Vector2(-3 * num4, 5f), good: false, ref min, ref maxArea);
+		Netplay.ResetSections(ref min, ref maxArea);
 		Main.hardMode = true;
 		hardLock = false;
 	}
@@ -5729,7 +5731,7 @@ internal static class WorldGen
 	{
 		int num = i;
 		int num2 = j;
-		switch (Main.tile[i, j].frameX)
+		switch ((int)Main.tile[i, j].frameX)
 		{
 		case 18:
 			num--;
@@ -5748,7 +5750,7 @@ internal static class WorldGen
 		int num = 0;
 		int num2 = i;
 		int num3 = j;
-		switch (Main.tile[i, j].frameX)
+		switch ((int)Main.tile[i, j].frameX)
 		{
 		case 0:
 			num = 1;
@@ -5824,14 +5826,14 @@ internal static class WorldGen
 
 	public unsafe static bool AddLifeCrystal(int i, int j)
 	{
-		fixed (Tile* ptr = Main.tile)
+		fixed (Tile* tile = Main.tile)
 		{
-			Tile* ptr2 = ptr + (i * 1440 + j);
+			Tile* ptr = tile + (i * 1440 + j);
 			while (j < Main.maxTilesY)
 			{
-				if (ptr2->active != 0 && Main.tileSolid[ptr2->type])
+				if (ptr->active != 0 && Main.tileSolid[ptr->type])
 				{
-					if (ptr2[-2].lava != 0 || ptr2[-1442].lava != 0)
+					if (ptr[-2].lava != 0 || ptr[-1442].lava != 0)
 					{
 						return false;
 					}
@@ -5839,26 +5841,26 @@ internal static class WorldGen
 					{
 						return false;
 					}
-					ptr2[-1442].active = 1;
-					ptr2[-1442].type = 12;
-					ptr2[-1442].frameX = 0;
-					ptr2[-1442].frameY = 0;
-					ptr2[-1441].active = 1;
-					ptr2[-1441].type = 12;
-					ptr2[-1441].frameX = 0;
-					ptr2[-1441].frameY = 18;
-					ptr2[-2].active = 1;
-					ptr2[-2].type = 12;
-					ptr2[-2].frameX = 18;
-					ptr2[-2].frameY = 0;
-					ptr2[-1].active = 1;
-					ptr2[-1].type = 12;
-					ptr2[-1].frameX = 18;
-					ptr2[-1].frameY = 18;
+					ptr[-1442].active = 1;
+					ptr[-1442].type = 12;
+					ptr[-1442].frameX = 0;
+					ptr[-1442].frameY = 0;
+					ptr[-1441].active = 1;
+					ptr[-1441].type = 12;
+					ptr[-1441].frameX = 0;
+					ptr[-1441].frameY = 18;
+					ptr[-2].active = 1;
+					ptr[-2].type = 12;
+					ptr[-2].frameX = 18;
+					ptr[-2].frameY = 0;
+					ptr[-1].active = 1;
+					ptr[-1].type = 12;
+					ptr[-1].frameX = 18;
+					ptr[-1].frameY = 18;
 					return true;
 				}
 				j++;
-				ptr2++;
+				ptr++;
 			}
 		}
 		return false;
@@ -6868,9 +6870,11 @@ internal static class WorldGen
 						num14 = 0;
 						num16++;
 						Rectangle aabb = default(Rectangle);
-						Rectangle aabb2 = default(Rectangle);
-						aabb2.X = num82 << 4;
-						aabb2.Y = (num84 << 4) + 1;
+						Rectangle aabb2 = new Rectangle
+						{
+							X = num82 << 4,
+							Y = (num84 << 4) + 1
+						};
 						aabb.Width = (aabb2.Width = 16);
 						aabb.Height = (aabb2.Height = 16);
 						for (int num87 = 0; num87 < 1000; num87++)
@@ -15640,7 +15644,7 @@ internal static class WorldGen
 		{
 			int num8 = i + genRand.Next(-3, 4);
 			int num9 = j + genRand.Next(-3, 4);
-			switch (Main.tile[num8, num9].type)
+			switch ((int)Main.tile[num8, num9].type)
 			{
 			case 2:
 				Main.tile[num8, num9].type = 109;
@@ -16117,7 +16121,7 @@ internal static class WorldGen
 		{
 			if (SolidTileUnsafe(X, num))
 			{
-				switch (Main.tile[X, num].type)
+				switch ((int)Main.tile[X, num].type)
 				{
 				case 109:
 				case 116:
@@ -16138,7 +16142,7 @@ internal static class WorldGen
 		{
 			if (SolidTileUnsafe(X, num))
 			{
-				switch (Main.tile[X, num].type)
+				switch ((int)Main.tile[X, num].type)
 				{
 				case 109:
 				case 116:
@@ -16973,37 +16977,37 @@ internal static class WorldGen
 
 	public unsafe static void AddPlants()
 	{
-		fixed (Tile* ptr = Main.tile)
+		fixed (Tile* tile = Main.tile)
 		{
 			for (int i = 0; i < Main.maxTilesX; i++)
 			{
-				Tile* ptr2 = ptr + (i * 1440 + 5);
+				Tile* ptr = tile + (i * 1440 + 5);
 				int num = 5;
 				while (num < Main.maxTilesY)
 				{
-					if (ptr2->active != 0)
+					if (ptr->active != 0)
 					{
-						if (ptr2->type == 2)
+						if (ptr->type == 2)
 						{
-							ptr2--;
-							if (ptr2->active == 0)
+							ptr--;
+							if (ptr->active == 0)
 							{
 								PlaceTile(i, num - 1, 3, mute: true);
 							}
-							ptr2++;
+							ptr++;
 						}
-						else if (ptr2->type == 23)
+						else if (ptr->type == 23)
 						{
-							ptr2--;
-							if (ptr2->active == 0)
+							ptr--;
+							if (ptr->active == 0)
 							{
 								PlaceTile(i, num - 1, 24, mute: true);
 							}
-							ptr2++;
+							ptr++;
 						}
 					}
 					num++;
-					ptr2++;
+					ptr++;
 				}
 			}
 		}
@@ -17733,70 +17737,70 @@ internal static class WorldGen
 				{
 					num7 = Main.maxTilesX;
 				}
-				fixed (Tile* ptr = Main.tile)
+				fixed (Tile* tile = Main.tile)
 				{
 					for (int k = num6; k < num7; k++)
 					{
 						int num8 = num4;
-						Tile* ptr2 = ptr + (k * 1440 + num8);
+						Tile* ptr = tile + (k * 1440 + num8);
 						do
 						{
 							if (Math.Abs((float)k - vector.X) + Math.Abs((float)num8 - vector.Y) < (float)strength * 0.5f * (1f + (float)genRand.Next(-10, 11) * 0.015f))
 							{
-								if (mudWall && num8 > Main.worldSurface && num8 < Main.maxTilesY - 210 - genRand.Next(3) && ptr2->wall == 0)
+								if (mudWall && num8 > Main.worldSurface && num8 < Main.maxTilesY - 210 - genRand.Next(3) && ptr->wall == 0)
 								{
-									ptr2->wall = 15;
+									ptr->wall = 15;
 								}
 								if (type < 0)
 								{
-									if (type == -2 && ptr2->active != 0 && (num8 < waterLine || num8 > lavaLine))
+									if (type == -2 && ptr->active != 0 && (num8 < waterLine || num8 > lavaLine))
 									{
-										ptr2->liquid = byte.MaxValue;
+										ptr->liquid = byte.MaxValue;
 										if (num8 > lavaLine)
 										{
-											ptr2->lava = 32;
+											ptr->lava = 32;
 										}
 									}
-									ptr2->active = 0;
+									ptr->active = 0;
 								}
 								else
 								{
-									if (overRide || ptr2->active == 0)
+									if (overRide || ptr->active == 0)
 									{
-										int type2 = ptr2->type;
+										int type2 = ptr->type;
 										if ((type != 40 || type2 != 53) && (!Main.tileStone[type] || type2 == 1) && type2 != 45 && type2 != 147 && (type2 != 1 || type != 59 || num8 >= Main.worldSurface + genRand.Next(-50, 50)))
 										{
 											if (type2 != 53 || num8 >= Main.worldSurface)
 											{
-												ptr2->type = (byte)type;
+												ptr->type = (byte)type;
 											}
 											else if (type == 59)
 											{
-												ptr2->type = (byte)type;
+												ptr->type = (byte)type;
 											}
 										}
 									}
 									if (addTile)
 									{
-										ptr2->active = 1;
-										ptr2->liquid = 0;
-										ptr2->lava = 0;
+										ptr->active = 1;
+										ptr->liquid = 0;
+										ptr->lava = 0;
 									}
 									if (type == 59)
 									{
-										if (num8 > waterLine && ptr2->liquid > 0)
+										if (num8 > waterLine && ptr->liquid > 0)
 										{
-											ptr2->liquid = 0;
-											ptr2->lava = 0;
+											ptr->liquid = 0;
+											ptr->lava = 0;
 										}
 									}
 									else if (noYChange && num8 < Main.worldSurface)
 									{
-										ptr2->wall = 2;
+										ptr->wall = 2;
 									}
 								}
 							}
-							ptr2++;
+							ptr++;
 						}
 						while (++num8 < num5);
 					}
@@ -18945,84 +18949,84 @@ internal static class WorldGen
 	{
 		Liquid.numLiquid = 0;
 		LiquidBuffer.numLiquidBuffer = 0;
-		fixed (Tile* ptr = Main.tile)
+		fixed (Tile* tile = Main.tile)
 		{
 			for (int num = Main.maxTilesX - 2; num > 0; num--)
 			{
-				Tile* ptr2 = ptr + (num * 1440 + Main.maxTilesY - 2);
+				Tile* ptr = tile + (num * 1440 + Main.maxTilesY - 2);
 				int num2 = Main.maxTilesY - 2;
 				while (num2 > 0)
 				{
-					ptr2->checkingLiquid = 0;
-					if (ptr2->liquid > 0)
+					ptr->checkingLiquid = 0;
+					if (ptr->liquid > 0)
 					{
-						if (ptr2->active != 0 && Main.tileSolidNotSolidTop[ptr2->type])
+						if (ptr->active != 0 && Main.tileSolidNotSolidTop[ptr->type])
 						{
-							ptr2->liquid = 0;
+							ptr->liquid = 0;
 						}
 						else
 						{
-							if (ptr2->active != 0)
+							if (ptr->active != 0)
 							{
-								if (Main.tileWaterDeath[ptr2->type] && (ptr2->type != 4 || ptr2->frameY != 176))
+								if (Main.tileWaterDeath[ptr->type] && (ptr->type != 4 || ptr->frameY != 176))
 								{
 									KillTile(num, num2);
 								}
-								if (ptr2->lava != 0 && Main.tileLavaDeath[ptr2->type])
+								if (ptr->lava != 0 && Main.tileLavaDeath[ptr->type])
 								{
 									KillTile(num, num2);
 								}
 							}
-							Tile* ptr3 = ptr2 + 1;
-							if ((ptr3->active == 0 || !Main.tileSolidNotSolidTop[ptr3->type]) && ptr3->liquid < byte.MaxValue)
+							Tile* ptr2 = ptr + 1;
+							if ((ptr2->active == 0 || !Main.tileSolidNotSolidTop[ptr2->type]) && ptr2->liquid < byte.MaxValue)
 							{
-								if (ptr3->liquid > 250)
+								if (ptr2->liquid > 250)
 								{
-									ptr3->liquid = byte.MaxValue;
+									ptr2->liquid = byte.MaxValue;
 								}
 								else
 								{
 									Liquid.AddWater(num, num2);
 								}
 							}
-							ptr3 = ptr2 - 1440;
-							if ((ptr3->active == 0 || !Main.tileSolidNotSolidTop[ptr3->type]) && ptr3->liquid != ptr2->liquid)
+							ptr2 = ptr - 1440;
+							if ((ptr2->active == 0 || !Main.tileSolidNotSolidTop[ptr2->type]) && ptr2->liquid != ptr->liquid)
 							{
 								Liquid.AddWater(num, num2);
 							}
 							else
 							{
-								ptr3 = ptr2 + 1440;
-								if ((ptr3->active == 0 || !Main.tileSolidNotSolidTop[ptr3->type]) && ptr3->liquid != ptr2->liquid)
+								ptr2 = ptr + 1440;
+								if ((ptr2->active == 0 || !Main.tileSolidNotSolidTop[ptr2->type]) && ptr2->liquid != ptr->liquid)
 								{
 									Liquid.AddWater(num, num2);
 								}
 							}
-							if (ptr2->lava != 0)
+							if (ptr->lava != 0)
 							{
-								ptr3 = ptr2 - 1;
-								if (ptr3->liquid > 0 && ptr3->lava == 0)
+								ptr2 = ptr - 1;
+								if (ptr2->liquid > 0 && ptr2->lava == 0)
 								{
 									Liquid.AddWater(num, num2);
 								}
 								else
 								{
-									ptr3 = ptr2 + 1;
-									if (ptr3->liquid > 0 && ptr3->lava == 0)
+									ptr2 = ptr + 1;
+									if (ptr2->liquid > 0 && ptr2->lava == 0)
 									{
 										Liquid.AddWater(num, num2);
 									}
 									else
 									{
-										ptr3 = ptr2 - 1440;
-										if (ptr3->liquid > 0 && ptr3->lava == 0)
+										ptr2 = ptr - 1440;
+										if (ptr2->liquid > 0 && ptr2->lava == 0)
 										{
 											Liquid.AddWater(num, num2);
 										}
 										else
 										{
-											ptr3 = ptr2 + 1440;
-											if (ptr3->liquid > 0 && ptr3->lava == 0)
+											ptr2 = ptr + 1440;
+											if (ptr2->liquid > 0 && ptr2->lava == 0)
 											{
 												Liquid.AddWater(num, num2);
 											}
@@ -19033,7 +19037,7 @@ internal static class WorldGen
 						}
 					}
 					num2--;
-					ptr2--;
+					ptr--;
 				}
 			}
 		}
@@ -19043,7 +19047,7 @@ internal static class WorldGen
 	{
 		UI.main.NextProgressStep(Lang.gen[55]);
 		gen = true;
-		fixed (Tile* ptr = Main.tile)
+		fixed (Tile* tile = Main.tile)
 		{
 			for (int i = 0; i < Main.maxTilesX; i++)
 			{
@@ -19051,15 +19055,15 @@ internal static class WorldGen
 				{
 					UI.main.progress = (float)i / (float)Main.maxTilesX;
 				}
-				Tile* ptr2 = ptr + (1440 * i + Main.maxTilesY);
+				Tile* ptr = tile + (1440 * i + Main.maxTilesY);
 				for (int num = Main.maxTilesY - 1; num >= 0; num--)
 				{
-					ptr2--;
-					if (ptr2->active != 0)
+					ptr--;
+					if (ptr->active != 0)
 					{
 						TileFrameNoLiquid(i, num, -1);
 					}
-					if (ptr2->wall > 0)
+					if (ptr->wall > 0)
 					{
 						WallFrame(i, num, resetFrame: true);
 					}

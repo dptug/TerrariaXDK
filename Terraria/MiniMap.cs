@@ -249,9 +249,9 @@ public sealed class MiniMap
 								}
 								num7 = WallColors[wall];
 							}
-							num10 = num7 & 0xFFu;
-							num9 = (num7 >> 8) & 0xFFu;
-							num8 = (num7 >> 16) & 0xFFu;
+							num10 = num7 & 0xFF;
+							num9 = (num7 >> 8) & 0xFF;
+							num8 = (num7 >> 16) & 0xFF;
 							goto IL_02c8;
 							IL_02c8:
 							uint liquid = ptr3->liquid;
@@ -370,7 +370,7 @@ public sealed class MiniMap
 		{
 			num6 = mapTexture.Length - 1;
 		}
-		Vector2 vector = new Vector2(num, sAFE_AREA_OFFSET_T);
+		Vector2 position = new Vector2(num, sAFE_AREA_OFFSET_T);
 		Rectangle rectangle = default(Rectangle);
 		rectangle.X = mapX - num5 * texWidth;
 		rectangle.Y = mapY;
@@ -379,8 +379,8 @@ public sealed class MiniMap
 		Color color = new Color(alpha, alpha, alpha, alpha);
 		for (int i = num5; i <= num6; i++)
 		{
-			Main.spriteBatch.Draw(mapTexture[i], vector, (Rectangle?)rectangle, color);
-			vector.X += rectangle.Width;
+			Main.spriteBatch.Draw(mapTexture[i], position, rectangle, color);
+			position.X += rectangle.Width;
 			rectangle.X = 0;
 			rectangle.Width = texWidth;
 		}
@@ -450,16 +450,16 @@ public sealed class MiniMap
 				{
 					num12 -= 34 + mapX;
 					num13 -= 34 + mapY;
-					Vector2 position = player.position;
+					Vector2 position2 = player.position;
 					player.position.X = view.screenPosition.X;
 					player.position.Y = view.screenPosition.Y;
 					view.screenProjection.World = view2 * Matrix.CreateTranslation(num + num12, sAFE_AREA_OFFSET_T + num13, 0f);
 					Main.spriteBatch.Begin(SpriteSortMode.Deferred, null, null, null, WorldView.scissorTest, view.screenProjection);
 					player.Draw(view, isMenu: true, isIcon: true);
 					Main.spriteBatch.End();
-					player.position = position;
-					player.aabb.X = (int)position.X;
-					player.aabb.Y = (int)position.Y;
+					player.position = position2;
+					player.aabb.X = (int)position2.X;
+					player.aabb.Y = (int)position2.Y;
 				}
 			}
 		}

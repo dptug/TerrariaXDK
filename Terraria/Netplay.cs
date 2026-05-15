@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Threading;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.GamerServices;
@@ -94,7 +93,7 @@ public sealed class Netplay
 
 	public static void CreateSession()
 	{
-		NetworkSessionType networkSessionType = ((Main.netMode != 0) ? NetworkSessionType.PlayerMatch : NetworkSessionType.Local);
+		NetworkSessionType sessionType = ((Main.netMode != 0) ? NetworkSessionType.PlayerMatch : NetworkSessionType.Local);
 		try
 		{
 			List<SignedInGamer> list = new List<SignedInGamer>(1);
@@ -110,13 +109,13 @@ public sealed class Netplay
 				networkSessionProperties[0] = (int)xuid;
 				networkSessionProperties[1] = (int)(xuid >> 32);
 			}
-			int num = 8;
-			int num2 = 0;
+			int maxGamers = 8;
+			int privateGamerSlots = 0;
 			if (!Main.IsTutorial() && UI.main.isInviteOnly)
 			{
-				num2 = 7;
+				privateGamerSlots = 7;
 			}
-			session = NetworkSession.Create(networkSessionType, (IEnumerable<SignedInGamer>)list, num, num2, networkSessionProperties);
+			session = NetworkSession.Create(sessionType, list, maxGamers, privateGamerSlots, networkSessionProperties);
 			session.AllowJoinInProgress = true;
 			session.AllowHostMigration = false;
 			hookEvents = true;
@@ -331,7 +330,7 @@ public sealed class Netplay
 			}
 			else if (networkGamer == client.gamer)
 			{
-				client.gamer = ((ReadOnlyCollection<NetworkGamer>)(object)client.machine.Gamers)[0];
+				client.gamer = client.machine.Gamers[0];
 			}
 		}
 		NetMessage.CreateMessage2(14, whoAmI, 0);
@@ -429,7 +428,7 @@ public sealed class Netplay
 				if (isJoiningRemoteInvite)
 				{
 					isJoiningRemoteInvite = false;
-					session = NetworkSession.JoinInvited((IEnumerable<SignedInGamer>)gamersWaitingToJoinInvite);
+					session = NetworkSession.JoinInvited(gamersWaitingToJoinInvite);
 					gamersWaitingToJoinInvite.Clear();
 					gamersWhoReceivedInvite.Clear();
 				}
@@ -576,21 +575,21 @@ public sealed class Netplay
 					List<SignedInGamer> list = new List<SignedInGamer>(1);
 					list.Add(signedInGamer);
 					FriendCollection friends = signedInGamer.GetFriends();
-					int num = ((ReadOnlyCollection<FriendGamer>)(object)friends).Count - 1;
+					int num = friends.Count - 1;
 					while (num >= 0 && !stopSessionFinderThread)
 					{
-						FriendGamer friendGamer = ((ReadOnlyCollection<FriendGamer>)(object)friends)[num];
+						FriendGamer friendGamer = friends[num];
 						if (friendGamer.IsJoinable)
 						{
 							ulong xuid = friendGamer.GetXuid();
 							networkSessionProperties[0] = (int)xuid;
 							networkSessionProperties[1] = (int)(xuid >> 32);
-							AvailableNetworkSessionCollection availableNetworkSessionCollection = NetworkSession.Find(NetworkSessionType.PlayerMatch, (IEnumerable<SignedInGamer>)list, networkSessionProperties);
-							if (((ReadOnlyCollection<AvailableNetworkSession>)(object)availableNetworkSessionCollection).Count > 0)
+							AvailableNetworkSessionCollection availableNetworkSessionCollection = NetworkSession.Find(NetworkSessionType.PlayerMatch, list, networkSessionProperties);
+							if (availableNetworkSessionCollection.Count > 0)
 							{
 								lock (availableSessions)
 								{
-									availableSessions.Add(new JoinableSession(((ReadOnlyCollection<AvailableNetworkSession>)(object)availableNetworkSessionCollection)[0]));
+									availableSessions.Add(new JoinableSession(availableNetworkSessionCollection[0]));
 								}
 							}
 							if (stopSessionFinderThread)

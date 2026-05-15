@@ -1,14 +1,8 @@
 namespace Terraria;
 
-public struct Location
+public struct Location(int x, int y)
 {
-	public short X;
+	public short X = (short)x;
 
-	public short Y;
-
-	public Location(int x, int y)
-	{
-		X = (short)x;
-		Y = (short)y;
-	}
+	public short Y = (short)y;
 }

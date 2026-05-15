@@ -28,6 +28,6 @@ public class DifficultyAttributeWidget : AttributeWidget<DifficultySelector>, IA
 
 	public void Apply(Player player)
 	{
-		modifier.Invoke(player, (byte)widget.Selected);
+		modifier(player, (byte)widget.Selected);
 	}
 }

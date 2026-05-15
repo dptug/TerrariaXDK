@@ -334,7 +334,7 @@ public struct Time
 				time = 0f;
 				dayTime = true;
 				bloodMoon = false;
-				moonPhase = (byte)((uint)(moonPhase + 1) & 7u);
+				moonPhase = (byte)((moonPhase + 1) & 7);
 				updateDay();
 				return true;
 			}

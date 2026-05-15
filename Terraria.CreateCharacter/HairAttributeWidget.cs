@@ -22,6 +22,6 @@ public class HairAttributeWidget : AttributeWidget<HairSelector>, IAttributeWidg
 
 	public void Apply(Player player)
 	{
-		modifier.Invoke(player, widget.Selected);
+		modifier(player, widget.Selected);
 	}
 }

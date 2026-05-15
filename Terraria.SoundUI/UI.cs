@@ -6,20 +6,13 @@ namespace Terraria.SoundUI;
 
 internal class UI
 {
-	public struct Icon
+	public struct Icon(Texture2D texture, Vector2 position, Rectangle source)
 	{
-		public Texture2D texture;
+		public Texture2D texture = texture;
 
-		public Vector2 position;
+		public Vector2 position = position;
 
-		public Rectangle source;
-
-		public Icon(Texture2D texture, Vector2 position, Rectangle source)
-		{
-			this.texture = texture;
-			this.position = position;
-			this.source = source;
-		}
+		public Rectangle source = source;
 	}
 
 	private const int SLIDER_SPACE_Y = 10;
@@ -134,8 +127,8 @@ internal class UI
 
 	public void Draw(SpriteBatch screen)
 	{
-		screen.Draw(soundIcon.texture, soundIcon.position, (Rectangle?)soundIcon.source, Color.White);
-		screen.Draw(musicIcon.texture, musicIcon.position, (Rectangle?)musicIcon.source, Color.White);
+		screen.Draw(soundIcon.texture, soundIcon.position, soundIcon.source, Color.White);
+		screen.Draw(musicIcon.texture, musicIcon.position, musicIcon.source, Color.White);
 		soundSlider.Draw(screen);
 		musicSlider.Draw(screen);
 	}

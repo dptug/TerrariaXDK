@@ -23,6 +23,6 @@ public class ColorAttributeWidget : AttributeWidget<ColorSelector>, IAttributeWi
 
 	public void Apply(Player player)
 	{
-		modifier.Invoke(player, widget.Selected);
+		modifier(player, widget.Selected);
 	}
 }

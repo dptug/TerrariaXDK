@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
 using System.Text;
 using Microsoft.Xna.Framework;
@@ -163,11 +162,11 @@ public static class WorldSelect
 				for (int j = sessionListTop; j < num; j++)
 				{
 					JoinableSession joinableSession = Netplay.availableSessions[j];
-					string s2 = (j + 1).ToStringLookup() + ".";
-					UI.DrawStringLC(UI.fontSmallOutline, s2, rect.X, rect.Center.Y, white);
+					string s = (j + 1).ToStringLookup() + ".";
+					UI.DrawStringLC(UI.fontSmallOutline, s, rect.X, rect.Center.Y, white);
 					UI.DrawStringLC(UI.fontSmallOutline, joinableSession.host, rect.X + 32, rect.Center.Y, white);
-					s2 = Lang.menu[78] + joinableSession.players.ToStringLookup() + "/8";
-					UI.DrawStringRC(UI.fontSmallOutline, s2, rect.Right, rect.Center.Y, white);
+					s = Lang.menu[78] + joinableSession.players.ToStringLookup() + "/8";
+					UI.DrawStringRC(UI.fontSmallOutline, s, rect.Right, rect.Center.Y, white);
 					rect.Y += 48;
 				}
 			}
@@ -196,9 +195,9 @@ public static class WorldSelect
 		rect.Y -= 384;
 		for (int l = 0; l < 8; l++)
 		{
-			string s3 = ((worldNames[l] == null) ? Lang.menu[79] : worldNames[l]);
+			string s2 = ((worldNames[l] == null) ? Lang.menu[79] : worldNames[l]);
 			white = ((worldNames[l] == null) ? new Color(200, 200, 220, 255) : new Color(255, 255, 255, 255));
-			UI.DrawStringCC(UI.fontSmallOutline, s3, rect.Center.X, rect.Center.Y, white);
+			UI.DrawStringCC(UI.fontSmallOutline, s2, rect.Center.X, rect.Center.Y, white);
 			rect.Y += 48;
 		}
 	}
@@ -281,12 +280,12 @@ public static class WorldSelect
 			using StorageContainer storageContainer = UI.main.OpenPlayerStorage("Worlds");
 			for (int j = 0; j < 8; j++)
 			{
-				string text = "world" + j.ToStringLookup() + ".wld";
-				if (storageContainer.FileExists(text))
+				string file = "world" + j.ToStringLookup() + ".wld";
+				if (storageContainer.FileExists(file))
 				{
 					try
 					{
-						using Stream input = storageContainer.OpenFile(text, FileMode.Open);
+						using Stream input = storageContainer.OpenFile(file, FileMode.Open);
 						using BinaryReader binaryReader = new BinaryReader(input);
 						int num = binaryReader.ReadInt32();
 						_ = 46;
@@ -300,7 +299,7 @@ public static class WorldSelect
 					catch
 					{
 						Main.ShowSaveIcon();
-						storageContainer.DeleteFile(text);
+						storageContainer.DeleteFile(file);
 						Main.HideSaveIcon();
 						worldNames[j] = null;
 						result = false;
@@ -365,13 +364,13 @@ public static class WorldSelect
 	{
 		List<SignedInGamer> list = new List<SignedInGamer>(1);
 		list.Add(UI.main.signedInGamer);
-		AvailableNetworkSessionCollection availableNetworkSessionCollection = NetworkSession.Find(NetworkSessionType.PlayerMatch, (IEnumerable<SignedInGamer>)list, session.joinableSession.SessionProperties);
+		AvailableNetworkSessionCollection availableNetworkSessionCollection = NetworkSession.Find(NetworkSessionType.PlayerMatch, list, session.joinableSession.SessionProperties);
 		session = null;
-		if (((ReadOnlyCollection<AvailableNetworkSession>)(object)availableNetworkSessionCollection).Count <= 0)
+		if (availableNetworkSessionCollection.Count <= 0)
 		{
 			return null;
 		}
-		return ((ReadOnlyCollection<AvailableNetworkSession>)(object)availableNetworkSessionCollection)[0];
+		return availableNetworkSessionCollection[0];
 	}
 
 	private static void JoinSession()

@@ -19,7 +19,7 @@ public class GenderAttributeWidget : AttributeWidget<HorizontalListSelector>, IA
 		{
 			Assets.OPTION_MALE,
 			Assets.OPTION_FEMALE
-		}, Assets.HORIZONTAL_BACKGROUND, Assets.HORIZONTAL_PICKER, (resetValue != 0) ? 1 : 0);
+		}, Assets.HORIZONTAL_BACKGROUND, Assets.HORIZONTAL_PICKER, (resetValue != Gender.MALE) ? 1 : 0);
 		return new GenderAttributeWidget(horizontalListSelector, modifier, widgetDescription, controlDescription);
 	}
 
@@ -33,6 +33,6 @@ public class GenderAttributeWidget : AttributeWidget<HorizontalListSelector>, IA
 
 	public void Apply(Player player)
 	{
-		modifier.Invoke(player, widget.Selected == 0);
+		modifier(player, widget.Selected == 0);
 	}
 }

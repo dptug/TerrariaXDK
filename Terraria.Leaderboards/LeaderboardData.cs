@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Microsoft.Xna.Framework.GamerServices;
 
@@ -123,7 +122,7 @@ public class LeaderboardData
 	public void LoadLeaderboard(Leaderboard board)
 	{
 		LeaderboardIdentity identity = LeaderboardInfo.GetIdentity(board);
-		Request = LeaderboardReader.BeginRead(identity, 0, 50, (AsyncCallback)null, (object)null);
+		Request = LeaderboardReader.BeginRead(identity, 0, 50, null, null);
 		Reader = null;
 		ReadState = AsyncRequest.FullRead;
 		NumEntries = 0;
@@ -135,7 +134,7 @@ public class LeaderboardData
 	public void LoadLeaderboard(Leaderboard board, Gamer gamer)
 	{
 		LeaderboardIdentity identity = LeaderboardInfo.GetIdentity(board);
-		Request = LeaderboardReader.BeginRead(identity, gamer, 50, (AsyncCallback)null, (object)gamer);
+		Request = LeaderboardReader.BeginRead(identity, gamer, 50, null, gamer);
 		Reader = null;
 		ReadState = AsyncRequest.FullRead;
 		NumEntries = 0;
@@ -147,7 +146,7 @@ public class LeaderboardData
 	public void LoadLeaderboard(Leaderboard board, FriendCollection friends, Gamer gamer)
 	{
 		LeaderboardIdentity identity = LeaderboardInfo.GetIdentity(board);
-		Request = LeaderboardReader.BeginRead(identity, (IEnumerable<Gamer>)(object)friends, gamer, ((ReadOnlyCollection<FriendGamer>)(object)friends).Count + 1, (AsyncCallback)null, (object)gamer);
+		Request = LeaderboardReader.BeginRead(identity, friends, gamer, friends.Count + 1, null, gamer);
 		Reader = null;
 		ReadState = AsyncRequest.FullRead;
 		NumEntries = 0;
@@ -333,7 +332,7 @@ public class LeaderboardData
 		int newStartIndex = Current.StartIndex + Current.NumEntries;
 		FreeCache(newStartIndex);
 		CreateMergedCache(Stale, Current);
-		Request = Reader.BeginPageDown((AsyncCallback)null, (object)null);
+		Request = Reader.BeginPageDown(null, null);
 		ReadState = AsyncRequest.NextPage;
 	}
 
@@ -343,7 +342,7 @@ public class LeaderboardData
 		int newStartIndex = Current.StartIndex - num;
 		FreeCache(newStartIndex);
 		CreateMergedCache(Current, Stale);
-		Request = Reader.BeginPageUp((AsyncCallback)null, (object)null);
+		Request = Reader.BeginPageUp(null, null);
 		ReadState = AsyncRequest.PreviousPage;
 	}
 

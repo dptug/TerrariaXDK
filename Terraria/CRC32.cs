@@ -58,7 +58,7 @@ public sealed class CRC32
 		}
 		uint[] array = table;
 		uint num = value;
-		while (((uint)offset & 7u) != 0 && size != 0)
+		while ((offset & 7) != 0 && size != 0)
 		{
 			num = (num >> 8) ^ array[(byte)num ^ data[offset++]];
 			size--;

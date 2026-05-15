@@ -1,14 +1,8 @@
 namespace Terraria;
 
-public struct Vector2i
+public struct Vector2i(int x, int y)
 {
-	public int X;
+	public int X = (short)x;
 
-	public int Y;
-
-	public Vector2i(int x, int y)
-	{
-		X = (short)x;
-		Y = (short)y;
-	}
+	public int Y = (short)y;
 }

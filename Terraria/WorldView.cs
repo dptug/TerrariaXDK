@@ -337,7 +337,7 @@ public class WorldView : IDisposable
 		{
 			return false;
 		}
-		if (type != 0)
+		if (type != Type.FULLSCREEN)
 		{
 			SMOOTH_LIGHT = false;
 		}
@@ -786,42 +786,42 @@ public class WorldView : IDisposable
 	{
 		Rectangle rectangle = default(Rectangle);
 		Vector2 pos = default(Vector2);
-		fixed (Item* ptr = Main.item)
+		fixed (Item* item = Main.item)
 		{
-			Item* ptr2 = ptr;
+			Item* ptr = item;
 			for (int num = 199; num >= 0; num--)
 			{
-				if (ptr2->active != 0)
+				if (ptr->active != 0)
 				{
-					int num2 = (int)ptr2->position.X;
-					int num3 = (int)ptr2->position.Y;
-					int num4 = 451 + ptr2->type;
+					int num2 = (int)ptr->position.X;
+					int num3 = (int)ptr->position.Y;
+					int num4 = 451 + ptr->type;
 					rectangle.Width = SpriteSheet<_sheetSprites>.src[num4].Width;
 					rectangle.Height = SpriteSheet<_sheetSprites>.src[num4].Height;
-					rectangle.X = num2 + (ptr2->width >> 1);
-					rectangle.Y = num3 + (rectangle.Height >> 1) + ptr2->height - rectangle.Height + 2;
+					rectangle.X = num2 + (ptr->width >> 1);
+					rectangle.Y = num3 + (rectangle.Height >> 1) + ptr->height - rectangle.Height + 2;
 					if (rectangle.Intersects(viewArea))
 					{
-						int x = num2 + (ptr2->width >> 1) >> 4;
-						int y = num3 + (ptr2->height >> 1) >> 4;
+						int x = num2 + (ptr->width >> 1) >> 4;
+						int y = num3 + (ptr->height >> 1) >> 4;
 						Color colorUnsafe = lighting.GetColorUnsafe(x, y);
-						if ((ptr2->CanBePlacedInCoinSlot() || ptr2->type == 58 || ptr2->type == 109) && Main.hasFocus && colorUnsafe.R > 60)
+						if ((ptr->CanBePlacedInCoinSlot() || ptr->type == 58 || ptr->type == 109) && Main.hasFocus && colorUnsafe.R > 60)
 						{
-							float num5 = (float)Main.rand.Next(500) - (Math.Abs(ptr2->velocity.X) + Math.Abs(ptr2->velocity.Y)) * 10f;
+							float num5 = (float)Main.rand.Next(500) - (Math.Abs(ptr->velocity.X) + Math.Abs(ptr->velocity.Y)) * 10f;
 							if (num5 < (float)(int)colorUnsafe.R * 0.02f)
 							{
-								Dust* ptr3 = dustLocal.NewDust(num2, num3, ptr2->width, ptr2->height, 43, 0.0, 0.0, 254, default(Color), 0.5);
-								if (ptr3 != null)
+								Dust* ptr2 = dustLocal.NewDust(num2, num3, ptr->width, ptr->height, 43, 0.0, 0.0, 254, default(Color), 0.5);
+								if (ptr2 != null)
 								{
-									ptr3->velocity.X = 0f;
-									ptr3->velocity.Y = 0f;
+									ptr2->velocity.X = 0f;
+									ptr2->velocity.Y = 0f;
 								}
 							}
 						}
-						float rot = ptr2->velocity.X * 0.2f;
+						float rot = ptr->velocity.X * 0.2f;
 						float num6 = 1f;
-						Color alpha = ptr2->GetAlpha(colorUnsafe);
-						if (ptr2->type == 58 || ptr2->type == 184)
+						Color alpha = ptr->GetAlpha(colorUnsafe);
+						if (ptr->type == 58 || ptr->type == 184)
 						{
 							num6 = UI.essScale * 0.25f + 0.75f;
 							alpha.R = (byte)((float)(int)alpha.R * num6);
@@ -829,7 +829,7 @@ public class WorldView : IDisposable
 							alpha.B = (byte)((float)(int)alpha.B * num6);
 							alpha.A = (byte)((float)(int)alpha.A * num6);
 						}
-						else if (ptr2->type == 520 || ptr2->type == 521 || ptr2->type == 547 || ptr2->type == 548 || ptr2->type == 549 || ptr2->type == 575 || ptr2->type == 620)
+						else if (ptr->type == 520 || ptr->type == 521 || ptr->type == 547 || ptr->type == 548 || ptr->type == 549 || ptr->type == 575 || ptr->type == 620)
 						{
 							num6 = UI.essScale;
 							alpha.R = (byte)((float)(int)alpha.R * num6);
@@ -840,13 +840,13 @@ public class WorldView : IDisposable
 						pos.X = rectangle.X - screenPosition.X;
 						pos.Y = rectangle.Y - screenPosition.Y;
 						SpriteSheet<_sheetSprites>.Draw(num4, ref pos, alpha, rot, num6);
-						if (ptr2->color.PackedValue != 0)
+						if (ptr->color.PackedValue != 0)
 						{
-							SpriteSheet<_sheetSprites>.Draw(num4, ref pos, ptr2->GetColor(colorUnsafe), rot, num6);
+							SpriteSheet<_sheetSprites>.Draw(num4, ref pos, ptr->GetColor(colorUnsafe), rot, num6);
 						}
 					}
 				}
-				ptr2++;
+				ptr++;
 			}
 		}
 	}
@@ -854,9 +854,11 @@ public class WorldView : IDisposable
 	private unsafe void DrawBlack()
 	{
 		float num = (time.tileColorf.X + time.tileColorf.Y + time.tileColorf.Z) * (2f / 15f);
-		Rectangle dest = default(Rectangle);
-		dest.X = 32 + (firstTileX << 4) - screenPosition.X;
-		dest.Width = 16;
+		Rectangle dest = new Rectangle
+		{
+			X = 32 + (firstTileX << 4) - screenPosition.X,
+			Width = 16
+		};
 		Color black = Color.Black;
 		int num2 = lastTileY - 1;
 		if (num2 > Main.worldSurface)
@@ -907,22 +909,22 @@ public class WorldView : IDisposable
 		Color color = default(Color);
 		Rectangle s = default(Rectangle);
 		int num = firstTileX;
-		fixed (Tile* ptr = Main.tile)
+		fixed (Tile* tile = Main.tile)
 		{
 			do
 			{
 				int num2 = firstTileY;
-				Tile* ptr2 = ptr + (num * 1440 + num2);
+				Tile* ptr = tile + (num * 1440 + num2);
 				do
 				{
-					int wall = ptr2->wall;
-					ptr2->flags |= Tile.Flags.VISITED;
-					if (wall > 0 && !ptr2->isFullTile())
+					int wall = ptr->wall;
+					ptr->flags |= Tile.Flags.VISITED;
+					if (wall > 0 && !ptr->isFullTile())
 					{
 						color = lighting.GetColorUnsafe(num, num2);
 						int id = 186 + wall;
-						s.X = ptr2->wallFrameX << 1;
-						s.Y = ptr2->wallFrameY << 1;
+						s.X = ptr->wallFrameX << 1;
+						s.Y = ptr->wallFrameY << 1;
 						s.Width = 32;
 						s.Height = 32;
 						pos.X = num * 16 - screenPosition.X - 8 + 32;
@@ -1040,7 +1042,7 @@ public class WorldView : IDisposable
 							SpriteSheet<_sheetTiles>.Draw(id, ref pos, ref s, color);
 						}
 					}
-					ptr2++;
+					ptr++;
 				}
 				while (++num2 < lastTileY);
 			}
@@ -1050,33 +1052,35 @@ public class WorldView : IDisposable
 
 	private unsafe void DrawWires()
 	{
-		Rectangle s = default(Rectangle);
-		s.Width = 16;
-		s.Height = 16;
+		Rectangle s = new Rectangle
+		{
+			Width = 16,
+			Height = 16
+		};
 		Vector2 pos = default(Vector2);
-		fixed (Tile* ptr = Main.tile)
+		fixed (Tile* tile = Main.tile)
 		{
 			for (int i = firstTileX; i < lastTileX; i++)
 			{
 				pos.X = 32 + i * 16 - screenPosition.X;
-				Tile* ptr2 = ptr + (i * 1440 + firstTileY);
+				Tile* ptr = tile + (i * 1440 + firstTileY);
 				int num = firstTileY;
 				while (num < lastTileY)
 				{
-					if (ptr2->wire != 0)
+					if (ptr->wire != 0)
 					{
 						pos.Y = 32 + num * 16 - screenPosition.Y;
 						if (lighting.IsNotBlackUnsafe(i, num))
 						{
-							ptr2--;
-							int wire = ptr2->wire;
-							ptr2 += 2;
-							int wire2 = ptr2->wire;
-							ptr2 -= 1441;
-							int wire3 = ptr2->wire;
-							ptr2 += 2880;
-							int wire4 = ptr2->wire;
-							ptr2 -= 1440;
+							ptr--;
+							int wire = ptr->wire;
+							ptr += 2;
+							int wire2 = ptr->wire;
+							ptr -= 1441;
+							int wire3 = ptr->wire;
+							ptr += 2880;
+							int wire4 = ptr->wire;
+							ptr -= 1440;
 							if (wire != 0)
 							{
 								if (wire2 != 0)
@@ -1228,7 +1232,7 @@ public class WorldView : IDisposable
 						}
 					}
 					num++;
-					ptr2++;
+					ptr++;
 				}
 			}
 		}
@@ -1326,11 +1330,13 @@ public class WorldView : IDisposable
 		{
 			return;
 		}
-		Rectangle dest = default(Rectangle);
-		dest.X = -1;
-		dest.Y = num2;
-		dest.Width = viewWidth;
-		dest.Height = 1300 - num2;
+		Rectangle dest = new Rectangle
+		{
+			X = -1,
+			Y = num2,
+			Width = viewWidth,
+			Height = 1300 - num2
+		};
 		SpriteSheet<_sheetTiles>.DrawStretchedX(0, ref dest, time.bgColor);
 		if (255 - time.bgColor.R - 100 > 0)
 		{
@@ -1438,7 +1444,7 @@ public class WorldView : IDisposable
 		{
 			for (int k = 0; k < num13; k++)
 			{
-				Main.spriteBatch.Draw(backgroundTexture[7], new Vector2(num12 + num11 * k, num2), (Rectangle?)new Rectangle(0, 0, backgroundTexture[7].Width, backgroundTexture[7].Height), bgColor, 0f, default(Vector2), 2f, SpriteEffects.None, 0f);
+				Main.spriteBatch.Draw(backgroundTexture[7], new Vector2(num12 + num11 * k, num2), new Rectangle(0, 0, backgroundTexture[7].Width, backgroundTexture[7].Height), bgColor, 0f, default(Vector2), 2f, SpriteEffects.None, 0f);
 			}
 		}
 		bgColor = time.bgColor;
@@ -1450,7 +1456,7 @@ public class WorldView : IDisposable
 		{
 			for (int l = 0; l < num13; l++)
 			{
-				Main.spriteBatch.Draw(backgroundTexture[23], new Vector2(num12 + num11 * l, num2), (Rectangle?)new Rectangle(0, 0, backgroundTexture[7].Width, backgroundTexture[7].Height), bgColor, 0f, default(Vector2), 2f, SpriteEffects.None, 0f);
+				Main.spriteBatch.Draw(backgroundTexture[23], new Vector2(num12 + num11 * l, num2), new Rectangle(0, 0, backgroundTexture[7].Width, backgroundTexture[7].Height), bgColor, 0f, default(Vector2), 2f, SpriteEffects.None, 0f);
 			}
 		}
 		bgColor = time.bgColor;
@@ -1462,7 +1468,7 @@ public class WorldView : IDisposable
 		{
 			for (int m = 0; m < num13; m++)
 			{
-				Main.spriteBatch.Draw(backgroundTexture[24], new Vector2(num12 + num11 * m, num2), (Rectangle?)new Rectangle(0, 0, backgroundTexture[7].Width, backgroundTexture[7].Height), bgColor, 0f, default(Vector2), 2f, SpriteEffects.None, 0f);
+				Main.spriteBatch.Draw(backgroundTexture[24], new Vector2(num12 + num11 * m, num2), new Rectangle(0, 0, backgroundTexture[7].Width, backgroundTexture[7].Height), bgColor, 0f, default(Vector2), 2f, SpriteEffects.None, 0f);
 			}
 		}
 		num10 = num2 - 50;
@@ -1514,11 +1520,11 @@ public class WorldView : IDisposable
 			bgColor2.A = (byte)((float)(int)bgColor2.A * num14 * 0.8f);
 			for (int num15 = 0; num15 < num13; num15++)
 			{
-				Main.spriteBatch.Draw(backgroundTexture[18], new Vector2(num12 + 8085 * num15, num2), (Rectangle?)new Rectangle(0, 0, backgroundTexture[18].Width, backgroundTexture[18].Height), bgColor2, 0f, default(Vector2), 2.2f, SpriteEffects.None, 0f);
+				Main.spriteBatch.Draw(backgroundTexture[18], new Vector2(num12 + 8085 * num15, num2), new Rectangle(0, 0, backgroundTexture[18].Width, backgroundTexture[18].Height), bgColor2, 0f, default(Vector2), 2.2f, SpriteEffects.None, 0f);
 			}
 			for (int num16 = 0; num16 < num13; num16++)
 			{
-				Main.spriteBatch.Draw(backgroundTexture[19], new Vector2(num12 + 8085 * num16 + 1700, num2 + 100), (Rectangle?)new Rectangle(0, 0, backgroundTexture[19].Width, backgroundTexture[19].Height), bgColor2, 0f, default(Vector2), 1.98f, SpriteEffects.None, 0f);
+				Main.spriteBatch.Draw(backgroundTexture[19], new Vector2(num12 + 8085 * num16 + 1700, num2 + 100), new Rectangle(0, 0, backgroundTexture[19].Width, backgroundTexture[19].Height), bgColor2, 0f, default(Vector2), 1.98f, SpriteEffects.None, 0f);
 			}
 		}
 		int num17 = (int)((float)backgroundTexture[7].Width * 2.3f);
@@ -1539,7 +1545,7 @@ public class WorldView : IDisposable
 		{
 			for (int num18 = 0; num18 < num13; num18++)
 			{
-				Main.spriteBatch.Draw(backgroundTexture[8], new Vector2(num12 + num17 * num18, num2), (Rectangle?)new Rectangle(0, 0, backgroundTexture[7].Width, backgroundTexture[7].Height), bgColor, 0f, default(Vector2), 2.3f, SpriteEffects.None, 0f);
+				Main.spriteBatch.Draw(backgroundTexture[8], new Vector2(num12 + num17 * num18, num2), new Rectangle(0, 0, backgroundTexture[7].Width, backgroundTexture[7].Height), bgColor, 0f, default(Vector2), 2.3f, SpriteEffects.None, 0f);
 			}
 		}
 		bgColor = time.bgColor;
@@ -1551,7 +1557,7 @@ public class WorldView : IDisposable
 		{
 			for (int num19 = 0; num19 < num13; num19++)
 			{
-				Main.spriteBatch.Draw(backgroundTexture[22], new Vector2(num12 + num17 * num19, num2), (Rectangle?)new Rectangle(0, 0, backgroundTexture[7].Width, backgroundTexture[7].Height), bgColor, 0f, default(Vector2), 2.3f, SpriteEffects.None, 0f);
+				Main.spriteBatch.Draw(backgroundTexture[22], new Vector2(num12 + num17 * num19, num2), new Rectangle(0, 0, backgroundTexture[7].Width, backgroundTexture[7].Height), bgColor, 0f, default(Vector2), 2.3f, SpriteEffects.None, 0f);
 			}
 		}
 		bgColor = time.bgColor;
@@ -1563,7 +1569,7 @@ public class WorldView : IDisposable
 		{
 			for (int num20 = 0; num20 < num13; num20++)
 			{
-				Main.spriteBatch.Draw(backgroundTexture[25], new Vector2(num12 + num17 * num20, num2), (Rectangle?)new Rectangle(0, 0, backgroundTexture[7].Width, backgroundTexture[7].Height), bgColor, 0f, default(Vector2), 2.3f, SpriteEffects.None, 0f);
+				Main.spriteBatch.Draw(backgroundTexture[25], new Vector2(num12 + num17 * num20, num2), new Rectangle(0, 0, backgroundTexture[7].Width, backgroundTexture[7].Height), bgColor, 0f, default(Vector2), 2.3f, SpriteEffects.None, 0f);
 			}
 		}
 		bgColor = time.bgColor;
@@ -1575,7 +1581,7 @@ public class WorldView : IDisposable
 		{
 			for (int num21 = 0; num21 < num13; num21++)
 			{
-				Main.spriteBatch.Draw(backgroundTexture[28], new Vector2(num12 + num17 * num21, num2), (Rectangle?)new Rectangle(0, 0, backgroundTexture[7].Width, backgroundTexture[7].Height), bgColor, 0f, default(Vector2), 2.3f, SpriteEffects.None, 0f);
+				Main.spriteBatch.Draw(backgroundTexture[28], new Vector2(num12 + num17 * num21, num2), new Rectangle(0, 0, backgroundTexture[7].Width, backgroundTexture[7].Height), bgColor, 0f, default(Vector2), 2.3f, SpriteEffects.None, 0f);
 			}
 		}
 		num10 = (float)num2 * 1.01f - 150f;
@@ -1606,7 +1612,7 @@ public class WorldView : IDisposable
 			}
 		}
 		int num23 = bgStyle;
-		if (ui.menuType != 0)
+		if (ui.menuType != MenuType.MAIN)
 		{
 			int num24 = screenPosition.X + (viewWidth >> 1) >> 4;
 			if (num24 < 380 || num24 > Main.maxTilesX - 380)
@@ -1809,7 +1815,7 @@ public class WorldView : IDisposable
 				num13 = viewWidth / num28 + 2;
 				for (int num29 = 0; num29 < num13; num29++)
 				{
-					Main.spriteBatch.Draw(backgroundTexture[15], new Vector2(num12 + num28 * num29, num2), (Rectangle?)new Rectangle(0, 0, backgroundTexture[8].Width, backgroundTexture[8].Height), bgColor, 0f, default(Vector2), 2.5f, SpriteEffects.None, 0f);
+					Main.spriteBatch.Draw(backgroundTexture[15], new Vector2(num12 + num28 * num29, num2), new Rectangle(0, 0, backgroundTexture[8].Width, backgroundTexture[8].Height), bgColor, 0f, default(Vector2), 2.5f, SpriteEffects.None, 0f);
 				}
 				int num30 = (int)((float)backgroundTexture[8].Width * 2.62f);
 				num12 = (int)(0.0 - Math.IEEERemainder((float)screenPosition.X * 0.43f, num30) - (double)(num30 >> 1));
@@ -1822,7 +1828,7 @@ public class WorldView : IDisposable
 				num13 = viewWidth / num30 + 2;
 				for (int num31 = 0; num31 < num13; num31++)
 				{
-					Main.spriteBatch.Draw(backgroundTexture[16], new Vector2(num12 + num30 * num31, num2), (Rectangle?)new Rectangle(0, 0, backgroundTexture[8].Width, backgroundTexture[8].Height), bgColor, 0f, default(Vector2), 2.62f, SpriteEffects.None, 0f);
+					Main.spriteBatch.Draw(backgroundTexture[16], new Vector2(num12 + num30 * num31, num2), new Rectangle(0, 0, backgroundTexture[8].Width, backgroundTexture[8].Height), bgColor, 0f, default(Vector2), 2.62f, SpriteEffects.None, 0f);
 				}
 				int num32 = (int)((float)backgroundTexture[8].Width * 2.68f);
 				num12 = (int)(0.0 - Math.IEEERemainder((float)screenPosition.X * 0.49f, num32) - (double)(num32 >> 1));
@@ -1835,7 +1841,7 @@ public class WorldView : IDisposable
 				num13 = viewWidth / num32 + 2;
 				for (int num33 = 0; num33 < num13; num33++)
 				{
-					Main.spriteBatch.Draw(backgroundTexture[17], new Vector2(num12 + num32 * num33, num2), (Rectangle?)new Rectangle(0, 0, backgroundTexture[8].Width, backgroundTexture[8].Height), bgColor, 0f, default(Vector2), 2.68f, SpriteEffects.None, 0f);
+					Main.spriteBatch.Draw(backgroundTexture[17], new Vector2(num12 + num32 * num33, num2), new Rectangle(0, 0, backgroundTexture[8].Width, backgroundTexture[8].Height), bgColor, 0f, default(Vector2), 2.68f, SpriteEffects.None, 0f);
 				}
 			}
 			else if (num27 == 2 && bgAlpha[num27] > 0f)
@@ -1850,7 +1856,7 @@ public class WorldView : IDisposable
 				num13 = viewWidth / num34 + 2;
 				for (int num35 = 0; num35 < num13; num35++)
 				{
-					Main.spriteBatch.Draw(backgroundTexture[21], new Vector2(num12 + num34 * num35, num2), (Rectangle?)new Rectangle(0, 0, backgroundTexture[21].Width, backgroundTexture[21].Height), bgColor, 0f, default(Vector2), 2.5f, SpriteEffects.None, 0f);
+					Main.spriteBatch.Draw(backgroundTexture[21], new Vector2(num12 + num34 * num35, num2), new Rectangle(0, 0, backgroundTexture[21].Width, backgroundTexture[21].Height), bgColor, 0f, default(Vector2), 2.5f, SpriteEffects.None, 0f);
 				}
 				int num36 = (int)((float)backgroundTexture[20].Width * 2.68f);
 				num12 = (int)(0.0 - Math.IEEERemainder((float)screenPosition.X * 0.49f, num36) - (double)(num36 >> 1));
@@ -1863,7 +1869,7 @@ public class WorldView : IDisposable
 				num13 = viewWidth / num36 + 2;
 				for (int num37 = 0; num37 < num13; num37++)
 				{
-					Main.spriteBatch.Draw(backgroundTexture[20], new Vector2(num12 + num36 * num37, num2), (Rectangle?)new Rectangle(0, 0, backgroundTexture[20].Width, backgroundTexture[20].Height), bgColor, 0f, default(Vector2), 2.68f, SpriteEffects.None, 0f);
+					Main.spriteBatch.Draw(backgroundTexture[20], new Vector2(num12 + num36 * num37, num2), new Rectangle(0, 0, backgroundTexture[20].Width, backgroundTexture[20].Height), bgColor, 0f, default(Vector2), 2.68f, SpriteEffects.None, 0f);
 				}
 			}
 			else if (num27 == 5 && bgAlpha[num27] > 0f)
@@ -1878,7 +1884,7 @@ public class WorldView : IDisposable
 				num13 = viewWidth / num38 + 2;
 				for (int num39 = 0; num39 < num13; num39++)
 				{
-					Main.spriteBatch.Draw(backgroundTexture[26], new Vector2(num12 + num38 * num39, num2), (Rectangle?)new Rectangle(0, 0, backgroundTexture[26].Width, backgroundTexture[26].Height), bgColor, 0f, default(Vector2), 2.5f, SpriteEffects.None, 0f);
+					Main.spriteBatch.Draw(backgroundTexture[26], new Vector2(num12 + num38 * num39, num2), new Rectangle(0, 0, backgroundTexture[26].Width, backgroundTexture[26].Height), bgColor, 0f, default(Vector2), 2.5f, SpriteEffects.None, 0f);
 				}
 				int num40 = (int)((float)backgroundTexture[8].Width * 2.68f);
 				num12 = (int)(0.0 - Math.IEEERemainder((float)screenPosition.X * 0.49f, num40) - (double)(num40 >> 1));
@@ -1891,7 +1897,7 @@ public class WorldView : IDisposable
 				num13 = viewWidth / num40 + 2;
 				for (int num41 = 0; num41 < num13; num41++)
 				{
-					Main.spriteBatch.Draw(backgroundTexture[27], new Vector2(num12 + num40 * num41, num2), (Rectangle?)new Rectangle(0, 0, backgroundTexture[27].Width, backgroundTexture[27].Height), bgColor, 0f, default(Vector2), 2.68f, SpriteEffects.None, 0f);
+					Main.spriteBatch.Draw(backgroundTexture[27], new Vector2(num12 + num40 * num41, num2), new Rectangle(0, 0, backgroundTexture[27].Width, backgroundTexture[27].Height), bgColor, 0f, default(Vector2), 2.68f, SpriteEffects.None, 0f);
 				}
 			}
 			else if (num27 == 1 && bgAlpha[num27] > 0f)
@@ -1906,7 +1912,7 @@ public class WorldView : IDisposable
 				num13 = viewWidth / num42 + 2;
 				for (int num43 = 0; num43 < num13; num43++)
 				{
-					Main.spriteBatch.Draw(backgroundTexture[12], new Vector2(num12 + num42 * num43, num2), (Rectangle?)new Rectangle(0, 0, backgroundTexture[12].Width, backgroundTexture[12].Height), bgColor, 0f, default(Vector2), 2.5f, SpriteEffects.None, 0f);
+					Main.spriteBatch.Draw(backgroundTexture[12], new Vector2(num12 + num42 * num43, num2), new Rectangle(0, 0, backgroundTexture[12].Width, backgroundTexture[12].Height), bgColor, 0f, default(Vector2), 2.5f, SpriteEffects.None, 0f);
 				}
 				int num44 = (int)((float)backgroundTexture[8].Width * 2.62f);
 				num12 = (int)(0.0 - Math.IEEERemainder((float)screenPosition.X * 0.43f, num44) - (double)(num44 >> 1));
@@ -1919,7 +1925,7 @@ public class WorldView : IDisposable
 				num13 = viewWidth / num44 + 2;
 				for (int num45 = 0; num45 < num13; num45++)
 				{
-					Main.spriteBatch.Draw(backgroundTexture[13], new Vector2(num12 + num44 * num45, num2), (Rectangle?)new Rectangle(0, 0, backgroundTexture[13].Width, backgroundTexture[13].Height), bgColor, 0f, default(Vector2), 2.62f, SpriteEffects.None, 0f);
+					Main.spriteBatch.Draw(backgroundTexture[13], new Vector2(num12 + num44 * num45, num2), new Rectangle(0, 0, backgroundTexture[13].Width, backgroundTexture[13].Height), bgColor, 0f, default(Vector2), 2.62f, SpriteEffects.None, 0f);
 				}
 				int num46 = (int)((float)backgroundTexture[8].Width * 2.68f);
 				num12 = (int)(0.0 - Math.IEEERemainder((float)screenPosition.X * 0.49f, num46) - (double)(num46 >> 1));
@@ -1932,7 +1938,7 @@ public class WorldView : IDisposable
 				num13 = viewWidth / num46 + 2;
 				for (int num47 = 0; num47 < num13; num47++)
 				{
-					Main.spriteBatch.Draw(backgroundTexture[14], new Vector2(num12 + num46 * num47, num2), (Rectangle?)new Rectangle(0, 0, backgroundTexture[14].Width, backgroundTexture[14].Height), bgColor, 0f, default(Vector2), 2.68f, SpriteEffects.None, 0f);
+					Main.spriteBatch.Draw(backgroundTexture[14], new Vector2(num12 + num46 * num47, num2), new Rectangle(0, 0, backgroundTexture[14].Width, backgroundTexture[14].Height), bgColor, 0f, default(Vector2), 2.68f, SpriteEffects.None, 0f);
 				}
 			}
 			else if (num27 == 6 && bgAlpha[num27] > 0f)
@@ -1947,7 +1953,7 @@ public class WorldView : IDisposable
 				num13 = viewWidth / num48 + 2;
 				for (int num49 = 0; num49 < num13; num49++)
 				{
-					Main.spriteBatch.Draw(backgroundTexture[29], new Vector2(num12 + num48 * num49, num2), (Rectangle?)new Rectangle(0, 0, backgroundTexture[29].Width, backgroundTexture[29].Height), bgColor, 0f, default(Vector2), 2.5f, SpriteEffects.None, 0f);
+					Main.spriteBatch.Draw(backgroundTexture[29], new Vector2(num12 + num48 * num49, num2), new Rectangle(0, 0, backgroundTexture[29].Width, backgroundTexture[29].Height), bgColor, 0f, default(Vector2), 2.5f, SpriteEffects.None, 0f);
 				}
 				int num50 = (int)((float)backgroundTexture[8].Width * 2.62f);
 				num12 = (int)(0.0 - Math.IEEERemainder((float)screenPosition.X * 0.43f, num50) - (double)(num50 >> 1));
@@ -1960,7 +1966,7 @@ public class WorldView : IDisposable
 				num13 = viewWidth / num50 + 2;
 				for (int num51 = 0; num51 < num13; num51++)
 				{
-					Main.spriteBatch.Draw(backgroundTexture[30], new Vector2(num12 + num50 * num51, num2), (Rectangle?)new Rectangle(0, 0, backgroundTexture[30].Width, backgroundTexture[30].Height), bgColor, 0f, default(Vector2), 2.62f, SpriteEffects.None, 0f);
+					Main.spriteBatch.Draw(backgroundTexture[30], new Vector2(num12 + num50 * num51, num2), new Rectangle(0, 0, backgroundTexture[30].Width, backgroundTexture[30].Height), bgColor, 0f, default(Vector2), 2.62f, SpriteEffects.None, 0f);
 				}
 				int num52 = (int)((float)backgroundTexture[8].Width * 2.68f);
 				num12 = (int)(0.0 - Math.IEEERemainder((float)screenPosition.X * 0.49f, num52) - (double)(num52 >> 1));
@@ -1973,7 +1979,7 @@ public class WorldView : IDisposable
 				num13 = viewWidth / num52 + 2;
 				for (int num53 = 0; num53 < num13; num53++)
 				{
-					Main.spriteBatch.Draw(backgroundTexture[31], new Vector2(num12 + num52 * num53, num2), (Rectangle?)new Rectangle(0, 0, backgroundTexture[31].Width, backgroundTexture[31].Height), bgColor, 0f, default(Vector2), 2.68f, SpriteEffects.None, 0f);
+					Main.spriteBatch.Draw(backgroundTexture[31], new Vector2(num12 + num52 * num53, num2), new Rectangle(0, 0, backgroundTexture[31].Width, backgroundTexture[31].Height), bgColor, 0f, default(Vector2), 2.68f, SpriteEffects.None, 0f);
 				}
 			}
 			else if (num27 == 0 && bgAlpha[num27] > 0f)
@@ -1988,7 +1994,7 @@ public class WorldView : IDisposable
 				num13 = viewWidth / num54 + 2;
 				for (int num55 = 0; num55 < num13; num55++)
 				{
-					Main.spriteBatch.Draw(backgroundTexture[9], new Vector2(num12 + num54 * num55, num2), (Rectangle?)new Rectangle(0, 0, backgroundTexture[9].Width, backgroundTexture[9].Height), bgColor, 0f, default(Vector2), 2.5f, SpriteEffects.None, 0f);
+					Main.spriteBatch.Draw(backgroundTexture[9], new Vector2(num12 + num54 * num55, num2), new Rectangle(0, 0, backgroundTexture[9].Width, backgroundTexture[9].Height), bgColor, 0f, default(Vector2), 2.5f, SpriteEffects.None, 0f);
 				}
 				int num56 = (int)((float)backgroundTexture[8].Width * 2.62f);
 				num12 = (int)(0.0 - Math.IEEERemainder((float)screenPosition.X * 0.43f, num56) - (double)(num56 >> 1));
@@ -2001,7 +2007,7 @@ public class WorldView : IDisposable
 				num13 = viewWidth / num56 + 2;
 				for (int num57 = 0; num57 < num13; num57++)
 				{
-					Main.spriteBatch.Draw(backgroundTexture[10], new Vector2(num12 + num56 * num57, num2), (Rectangle?)new Rectangle(0, 0, backgroundTexture[8].Width, backgroundTexture[8].Height), bgColor, 0f, default(Vector2), 2.62f, SpriteEffects.None, 0f);
+					Main.spriteBatch.Draw(backgroundTexture[10], new Vector2(num12 + num56 * num57, num2), new Rectangle(0, 0, backgroundTexture[8].Width, backgroundTexture[8].Height), bgColor, 0f, default(Vector2), 2.62f, SpriteEffects.None, 0f);
 				}
 				int num58 = (int)((float)backgroundTexture[8].Width * 2.68f);
 				num12 = (int)(0.0 - Math.IEEERemainder((float)screenPosition.X * 0.49f, num58) - (double)(num58 >> 1));
@@ -2014,7 +2020,7 @@ public class WorldView : IDisposable
 				num13 = viewWidth / num58 + 2;
 				for (int num59 = 0; num59 < num13; num59++)
 				{
-					Main.spriteBatch.Draw(backgroundTexture[11], new Vector2(num12 + num58 * num59, num2), (Rectangle?)new Rectangle(0, 0, backgroundTexture[8].Width, backgroundTexture[8].Height), bgColor, 0f, default(Vector2), 2.68f, SpriteEffects.None, 0f);
+					Main.spriteBatch.Draw(backgroundTexture[11], new Vector2(num12 + num58 * num59, num2), new Rectangle(0, 0, backgroundTexture[8].Width, backgroundTexture[8].Height), bgColor, 0f, default(Vector2), 2.68f, SpriteEffects.None, 0f);
 				}
 			}
 		}
@@ -2023,11 +2029,13 @@ public class WorldView : IDisposable
 	public void DrawWorld()
 	{
 		Color white = Color.White;
-		Rectangle destinationRectangle = default(Rectangle);
-		destinationRectangle.Width = viewWidth + 64;
-		destinationRectangle.Height = 636;
-		destinationRectangle.X = sceneWaterPos.X - screenPosition.X;
-		destinationRectangle.Y = sceneWaterPos.Y - screenPosition.Y;
+		Rectangle destinationRectangle = new Rectangle
+		{
+			Width = viewWidth + 64,
+			Height = 636,
+			X = sceneWaterPos.X - screenPosition.X,
+			Y = sceneWaterPos.Y - screenPosition.Y
+		};
 		Main.spriteBatch.Draw(backWaterTarget, destinationRectangle, white);
 		destinationRectangle.X = (int)((float)(sceneBackgroundPos.X - screenPosition.X + 32) * 0.9f) - 32;
 		destinationRectangle.Y = sceneBackgroundPos.Y - screenPosition.Y;
@@ -2137,10 +2145,12 @@ public class WorldView : IDisposable
 			num12 = 8;
 		}
 		Vector2 pos = new Vector2(num11 + num12 + 32, num10 + 32);
-		Rectangle s = default(Rectangle);
-		s.X = num12;
-		s.Width = 16;
-		s.Height = 16;
+		Rectangle s = new Rectangle
+		{
+			X = num12,
+			Width = 16,
+			Height = 16
+		};
 		for (int i = 0; i < num9; i++)
 		{
 			int num13 = 15;
@@ -2186,9 +2196,11 @@ public class WorldView : IDisposable
 				num16 = 8;
 			}
 			Vector2 pos2 = default(Vector2);
-			Rectangle s2 = default(Rectangle);
-			s2.Width = 16;
-			s2.Height = 16;
+			Rectangle s2 = new Rectangle
+			{
+				Width = 16,
+				Height = 16
+			};
 			int j = 0;
 			int num17 = num8 + 8 + screenPosition.X;
 			for (; j < num9; j++)
@@ -2408,7 +2420,7 @@ public class WorldView : IDisposable
 				num10 = num14 + num15 * 96;
 				if (num10 > -32)
 				{
-					Vector2 vector = new Vector2(32 + num8 + num16, 32 + num10);
+					Vector2 position = new Vector2(32 + num8 + num16, 32 + num10);
 					int num22 = num8 + 8;
 					for (int n = 0; n < num9; n++)
 					{
@@ -2419,8 +2431,8 @@ public class WorldView : IDisposable
 							color2.R = (byte)((float)(int)color2.R * num);
 							color2.G = (byte)((float)(int)color2.G * num2);
 							color2.B = (byte)((float)(int)color2.B * num3);
-							Main.spriteBatch.Draw(backgroundTexture[4], vector, (Rectangle?)new Rectangle(num23 + num16 + 16, 0, 16, 16), color2);
-							vector.X += 16f;
+							Main.spriteBatch.Draw(backgroundTexture[4], position, new Rectangle(num23 + num16 + 16, 0, 16, 16), color2);
+							position.X += 16f;
 						}
 					}
 				}
@@ -2566,7 +2578,7 @@ public class WorldView : IDisposable
 										color3.R = (byte)((float)(colorUnsafe2.R + color4.R >> 1) * num);
 										color3.G = (byte)((float)(colorUnsafe2.G + color4.G >> 1) * num2);
 										color3.B = (byte)((float)(colorUnsafe2.B + color4.B >> 1) * num3);
-										Main.spriteBatch.Draw(backgroundTexture[3], new Vector2(32 + num8 + 96 * num25 + num27 + num34 + num24, 32 + num14 + 96 * num26 + num30 + num35), (Rectangle?)new Rectangle(num27 + num34 + num24 + 16, num30 + num35, width, height), color3);
+										Main.spriteBatch.Draw(backgroundTexture[3], new Vector2(32 + num8 + 96 * num25 + num27 + num34 + num24, 32 + num14 + 96 * num26 + num30 + num35), new Rectangle(num27 + num34 + num24 + 16, num30 + num35, width, height), color3);
 									}
 								}
 								else if (colorUnsafe2.R > 160 || (double)(int)colorUnsafe2.G > 176.0 || (double)(int)colorUnsafe2.B > 192.0)
@@ -2599,7 +2611,7 @@ public class WorldView : IDisposable
 										color5.R = (byte)((float)(colorUnsafe2.R + color6.R >> 1) * num);
 										color5.G = (byte)((float)(colorUnsafe2.G + color6.G >> 1) * num2);
 										color5.B = (byte)((float)(colorUnsafe2.B + color6.B >> 1) * num3);
-										Main.spriteBatch.Draw(backgroundTexture[3], new Vector2(32 + num8 + 96 * num25 + num27 + num37 + num24, 32 + num14 + 96 * num26 + num30 + num38), (Rectangle?)new Rectangle(num27 + num37 + num24 + 16, num30 + num38, 8, 8), color5);
+										Main.spriteBatch.Draw(backgroundTexture[3], new Vector2(32 + num8 + 96 * num25 + num27 + num37 + num24, 32 + num14 + 96 * num26 + num30 + num38), new Rectangle(num27 + num37 + num24 + 16, num30 + num38, 8, 8), color5);
 									}
 								}
 								else
@@ -2607,7 +2619,7 @@ public class WorldView : IDisposable
 									colorUnsafe2.R = (byte)((float)(int)colorUnsafe2.R * num);
 									colorUnsafe2.G = (byte)((float)(int)colorUnsafe2.G * num2);
 									colorUnsafe2.B = (byte)((float)(int)colorUnsafe2.B * num3);
-									Main.spriteBatch.Draw(backgroundTexture[3], new Vector2(32 + num8 + 96 * num25 + num27 + num24, 32 + num14 + 96 * num26 + num30), (Rectangle?)new Rectangle(num27 + num24 + 16, num30, 16, 16), colorUnsafe2);
+									Main.spriteBatch.Draw(backgroundTexture[3], new Vector2(32 + num8 + 96 * num25 + num27 + num24, 32 + num14 + 96 * num26 + num30), new Rectangle(num27 + num24 + 16, num30, 16, 16), colorUnsafe2);
 								}
 							}
 							else
@@ -2615,7 +2627,7 @@ public class WorldView : IDisposable
 								colorUnsafe2.R = (byte)((float)(int)colorUnsafe2.R * num);
 								colorUnsafe2.G = (byte)((float)(int)colorUnsafe2.G * num2);
 								colorUnsafe2.B = (byte)((float)(int)colorUnsafe2.B * num3);
-								Main.spriteBatch.Draw(backgroundTexture[3], new Vector2(32 + num8 + 96 * num25 + num27 + num24, 32 + num14 + 96 * num26 + num30), (Rectangle?)new Rectangle(num27 + num24 + 16, num30, 16, 16), colorUnsafe2);
+								Main.spriteBatch.Draw(backgroundTexture[3], new Vector2(32 + num8 + 96 * num25 + num27 + num24, 32 + num14 + 96 * num26 + num30), new Rectangle(num27 + num24 + 16, num30, 16, 16), colorUnsafe2);
 							}
 						}
 					}
@@ -2637,7 +2649,7 @@ public class WorldView : IDisposable
 						color7.R = (byte)((float)(int)color7.R * num);
 						color7.G = (byte)((float)(int)color7.G * num2);
 						color7.B = (byte)((float)(int)color7.B * num3);
-						Main.spriteBatch.Draw(backgroundTexture[6], new Vector2(32 + num8 + 96 * num40 + num41 + num24, 32 + num10), (Rectangle?)value, color7);
+						Main.spriteBatch.Draw(backgroundTexture[6], new Vector2(32 + num8 + 96 * num40 + num41 + num24, 32 + num10), value, color7);
 						num39 += 16;
 					}
 				}
@@ -2774,7 +2786,7 @@ public class WorldView : IDisposable
 											color8.R = (byte)((float)(colorUnsafe3.R + color9.R >> 1) * num);
 											color8.G = (byte)((float)(colorUnsafe3.G + color9.G >> 1) * num2);
 											color8.B = (byte)((float)(colorUnsafe3.B + color9.B >> 1) * num3);
-											Main.spriteBatch.Draw(backgroundTexture[5], new Vector2(32 + num8 + 96 * num44 + num46 + num51 + num43, 32 + num14 + 96 * num45 + num49 + num52), (Rectangle?)new Rectangle(num46 + num51 + num43 + 16, num49 + 96 * Main.magmaBGFrame + num52, width2, height2), color8);
+											Main.spriteBatch.Draw(backgroundTexture[5], new Vector2(32 + num8 + 96 * num44 + num46 + num51 + num43, 32 + num14 + 96 * num45 + num49 + num52), new Rectangle(num46 + num51 + num43 + 16, num49 + 96 * Main.magmaBGFrame + num52, width2, height2), color8);
 										}
 									}
 									else if (colorUnsafe3.R > 240 || (double)(int)colorUnsafe3.G > 264.0 || (double)(int)colorUnsafe3.B > 288.0)
@@ -2807,7 +2819,7 @@ public class WorldView : IDisposable
 											color10.R = (byte)((float)(colorUnsafe3.R + color11.R >> 1) * num);
 											color10.G = (byte)((float)(colorUnsafe3.G + color11.G >> 1) * num2);
 											color10.B = (byte)((float)(colorUnsafe3.B + color11.B >> 1) * num3);
-											Main.spriteBatch.Draw(backgroundTexture[5], new Vector2(32 + num8 + 96 * num44 + num46 + num54 + num43, 32 + num14 + 96 * num45 + num49 + num55), (Rectangle?)new Rectangle(num46 + num54 + num43 + 16, num49 + 96 * Main.magmaBGFrame + num55, 8, 8), color10);
+											Main.spriteBatch.Draw(backgroundTexture[5], new Vector2(32 + num8 + 96 * num44 + num46 + num54 + num43, 32 + num14 + 96 * num45 + num49 + num55), new Rectangle(num46 + num54 + num43 + 16, num49 + 96 * Main.magmaBGFrame + num55, 8, 8), color10);
 										}
 									}
 									else
@@ -2815,7 +2827,7 @@ public class WorldView : IDisposable
 										colorUnsafe3.R = (byte)((float)(int)colorUnsafe3.R * num);
 										colorUnsafe3.G = (byte)((float)(int)colorUnsafe3.G * num2);
 										colorUnsafe3.B = (byte)((float)(int)colorUnsafe3.B * num3);
-										Main.spriteBatch.Draw(backgroundTexture[5], new Vector2(32 + num8 + 96 * num44 + num46 + num43, 32 + num14 + 96 * num45 + num49), (Rectangle?)new Rectangle(num46 + num43 + 16, num49 + 96 * Main.magmaBGFrame, 16, 16), colorUnsafe3);
+										Main.spriteBatch.Draw(backgroundTexture[5], new Vector2(32 + num8 + 96 * num44 + num46 + num43, 32 + num14 + 96 * num45 + num49), new Rectangle(num46 + num43 + 16, num49 + 96 * Main.magmaBGFrame, 16, 16), colorUnsafe3);
 									}
 								}
 								else
@@ -2823,7 +2835,7 @@ public class WorldView : IDisposable
 									colorUnsafe3.R = (byte)((float)(int)colorUnsafe3.R * num);
 									colorUnsafe3.G = (byte)((float)(int)colorUnsafe3.G * num2);
 									colorUnsafe3.B = (byte)((float)(int)colorUnsafe3.B * num3);
-									Main.spriteBatch.Draw(backgroundTexture[5], new Vector2(32 + num8 + 96 * num44 + num46 + num43, 32 + num14 + 96 * num45 + num49), (Rectangle?)new Rectangle(num46 + num43 + 16, num49 + 96 * Main.magmaBGFrame, 16, 16), colorUnsafe3);
+									Main.spriteBatch.Draw(backgroundTexture[5], new Vector2(32 + num8 + 96 * num44 + num46 + num43, 32 + num14 + 96 * num45 + num49), new Rectangle(num46 + num43 + 16, num49 + 96 * Main.magmaBGFrame, 16, 16), colorUnsafe3);
 								}
 							}
 							num48++;
@@ -2971,7 +2983,7 @@ public class WorldView : IDisposable
 		pTile->flags |= mask;
 		pTile += num;
 		pTile->flags |= mask;
-		pTile = ((((uint)(pTile->frameX / 18) & (true ? 1u : 0u)) != 0) ? (pTile - 1440) : (pTile + 1440));
+		pTile = ((((pTile->frameX / 18) & 1) != 0) ? (pTile - 1440) : (pTile + 1440));
 		pTile->flags |= mask;
 		pTile -= num;
 		pTile->flags |= mask;
@@ -3229,25 +3241,25 @@ public class WorldView : IDisposable
 		Rectangle s = default(Rectangle);
 		Vector2 pos = default(Vector2);
 		Main.tileSolid[10] = false;
-		fixed (Tile* ptr = Main.tile)
+		fixed (Tile* tile = Main.tile)
 		{
 			int i;
 			if (!player.dead)
 			{
-				Tile* ptr2 = (((Main.frameCounter & 0x20) == 0) ? null : (ptr + (player.tileInteractX * 1440 + player.tileInteractY)));
+				Tile* ptr = (((Main.frameCounter & 0x20) == 0) ? null : (tile + (player.tileInteractX * 1440 + player.tileInteractY)));
 				int num2 = (player.aabb.X + 10 >> 4) - 10;
 				int num3 = (player.aabb.Y + 21 >> 4) - 8;
 				for (i = 0; i < 20; i++)
 				{
-					Tile* ptr3 = ptr + ((num2 + i) * 1440 + num3);
+					Tile* ptr2 = tile + ((num2 + i) * 1440 + num3);
 					for (int j = 0; j < 16; j++)
 					{
-						if (ptr3->active != 0)
+						if (ptr2->active != 0)
 						{
-							Tile.Flags flags = ((ptr3 == ptr2) ? Tile.Flags.SELECTED : Tile.Flags.NEARBY);
-							if ((ptr3->flags & flags) != flags)
+							Tile.Flags flags = ((ptr2 == ptr) ? Tile.Flags.SELECTED : Tile.Flags.NEARBY);
+							if ((ptr2->flags & flags) != flags)
 							{
-								switch (ptr3->type)
+								switch (ptr2->type)
 								{
 								case 4:
 								case 13:
@@ -3256,14 +3268,14 @@ public class WorldView : IDisposable
 								case 50:
 								case 136:
 								case 144:
-									ptr3->flags |= flags;
+									ptr2->flags |= flags;
 									break;
 								case 11:
 								case 128:
-									Highlight2x3(ptr3, flags);
+									Highlight2x3(ptr2, flags);
 									break;
 								case 10:
-									Highlight1x3(ptr3, flags);
+									Highlight1x3(ptr2, flags);
 									break;
 								case 21:
 								case 55:
@@ -3272,21 +3284,21 @@ public class WorldView : IDisposable
 								case 125:
 								case 132:
 								case 139:
-									Highlight2x2(ptr3, flags);
+									Highlight2x2(ptr2, flags);
 									break;
 								case 29:
-									Highlight2x1(ptr3, flags);
+									Highlight2x1(ptr2, flags);
 									break;
 								case 79:
-									Highlight4x2(ptr3, flags);
+									Highlight4x2(ptr2, flags);
 									break;
 								case 104:
-									Highlight2x5(ptr3, flags);
+									Highlight2x5(ptr2, flags);
 									break;
 								}
 							}
 						}
-						ptr3++;
+						ptr2++;
 					}
 				}
 			}
@@ -3296,15 +3308,15 @@ public class WorldView : IDisposable
 			do
 			{
 				int num6 = firstTileY;
-				Tile* ptr4 = ptr + (i * 1440 + num6 - 1);
+				Tile* ptr3 = tile + (i * 1440 + num6 - 1);
 				do
 				{
-					ptr4++;
-					if (ptr4->active == 0)
+					ptr3++;
+					if (ptr3->active == 0)
 					{
 						continue;
 					}
-					int num7 = ptr4->type;
+					int num7 = ptr3->type;
 					if (Main.tileSolid[num7])
 					{
 						continue;
@@ -3313,8 +3325,8 @@ public class WorldView : IDisposable
 					int num8 = 0;
 					int height = 16;
 					int num9 = 16;
-					s.X = ptr4->frameX;
-					s.Y = ptr4->frameY;
+					s.X = ptr3->frameX;
+					s.Y = ptr3->frameY;
 					switch (num7)
 					{
 					case 3:
@@ -3327,7 +3339,7 @@ public class WorldView : IDisposable
 					case 4:
 						num9 = 20;
 						height = 20;
-						if ((ptr4->flags & Tile.Flags.SELECTED) != 0)
+						if ((ptr3->flags & Tile.Flags.SELECTED) != 0)
 						{
 							s.Y += 396;
 						}
@@ -3338,38 +3350,38 @@ public class WorldView : IDisposable
 						break;
 					case 10:
 					case 11:
-						if ((ptr4->flags & Tile.Flags.SELECTED) != 0)
+						if ((ptr3->flags & Tile.Flags.SELECTED) != 0)
 						{
 							s.Y += 108;
 						}
-						else if ((ptr4->flags & Tile.Flags.NEARBY) != 0)
+						else if ((ptr3->flags & Tile.Flags.NEARBY) != 0)
 						{
 							s.Y += 54;
 						}
 						break;
 					case 13:
-						if ((ptr4->flags & Tile.Flags.SELECTED) != 0)
+						if ((ptr3->flags & Tile.Flags.SELECTED) != 0)
 						{
 							s.Y += 36;
 						}
 						break;
 					case 29:
-						if ((ptr4->flags & Tile.Flags.SELECTED) != 0)
+						if ((ptr3->flags & Tile.Flags.SELECTED) != 0)
 						{
 							s.Y += 36;
 						}
-						else if ((ptr4->flags & Tile.Flags.NEARBY) != 0)
+						else if ((ptr3->flags & Tile.Flags.NEARBY) != 0)
 						{
 							s.Y += 18;
 						}
 						break;
 					case 21:
 						height = 18;
-						if ((ptr4->flags & Tile.Flags.SELECTED) != 0)
+						if ((ptr3->flags & Tile.Flags.SELECTED) != 0)
 						{
 							s.Y += 76;
 						}
-						else if ((ptr4->flags & Tile.Flags.NEARBY) != 0)
+						else if ((ptr3->flags & Tile.Flags.NEARBY) != 0)
 						{
 							s.Y += 38;
 						}
@@ -3378,13 +3390,13 @@ public class WorldView : IDisposable
 					case 49:
 						num8 = -4;
 						height = 20;
-						if ((ptr4->flags & Tile.Flags.SELECTED) != 0)
+						if ((ptr3->flags & Tile.Flags.SELECTED) != 0)
 						{
 							s.Y += 44;
 						}
 						break;
 					case 50:
-						if ((ptr4->flags & Tile.Flags.SELECTED) != 0)
+						if ((ptr3->flags & Tile.Flags.SELECTED) != 0)
 						{
 							s.Y += 32;
 						}
@@ -3408,42 +3420,42 @@ public class WorldView : IDisposable
 						break;
 					case 85:
 						num8 = 2;
-						if ((ptr4->flags & Tile.Flags.SELECTED) != 0)
+						if ((ptr3->flags & Tile.Flags.SELECTED) != 0)
 						{
 							s.Y += 72;
 						}
-						else if ((ptr4->flags & Tile.Flags.NEARBY) != 0)
+						else if ((ptr3->flags & Tile.Flags.NEARBY) != 0)
 						{
 							s.Y += 36;
 						}
 						break;
 					case 104:
-						if ((ptr4->flags & Tile.Flags.SELECTED) != 0)
+						if ((ptr3->flags & Tile.Flags.SELECTED) != 0)
 						{
 							s.Y += 176;
 						}
-						else if ((ptr4->flags & Tile.Flags.NEARBY) != 0)
+						else if ((ptr3->flags & Tile.Flags.NEARBY) != 0)
 						{
 							s.Y += 88;
 						}
 						break;
 					case 97:
 					case 125:
-						if ((ptr4->flags & Tile.Flags.SELECTED) != 0)
+						if ((ptr3->flags & Tile.Flags.SELECTED) != 0)
 						{
 							s.Y += 68;
 						}
-						else if ((ptr4->flags & Tile.Flags.NEARBY) != 0)
+						else if ((ptr3->flags & Tile.Flags.NEARBY) != 0)
 						{
 							s.Y += 34;
 						}
 						break;
 					case 128:
-						if ((ptr4->flags & Tile.Flags.SELECTED) != 0)
+						if ((ptr3->flags & Tile.Flags.SELECTED) != 0)
 						{
 							s.Y += 104;
 						}
-						else if ((ptr4->flags & Tile.Flags.NEARBY) != 0)
+						else if ((ptr3->flags & Tile.Flags.NEARBY) != 0)
 						{
 							s.Y += 52;
 						}
@@ -3451,11 +3463,11 @@ public class WorldView : IDisposable
 					case 132:
 						num8 = 2;
 						height = 18;
-						if ((ptr4->flags & Tile.Flags.SELECTED) != 0)
+						if ((ptr3->flags & Tile.Flags.SELECTED) != 0)
 						{
 							s.Y += 72;
 						}
-						else if ((ptr4->flags & Tile.Flags.NEARBY) != 0)
+						else if ((ptr3->flags & Tile.Flags.NEARBY) != 0)
 						{
 							s.Y += 36;
 						}
@@ -3468,11 +3480,11 @@ public class WorldView : IDisposable
 					case 79:
 					case 136:
 					case 144:
-						if ((ptr4->flags & Tile.Flags.SELECTED) != 0)
+						if ((ptr3->flags & Tile.Flags.SELECTED) != 0)
 						{
 							s.Y += 72;
 						}
-						else if ((ptr4->flags & Tile.Flags.NEARBY) != 0)
+						else if ((ptr3->flags & Tile.Flags.NEARBY) != 0)
 						{
 							s.Y += 36;
 						}
@@ -3495,11 +3507,11 @@ public class WorldView : IDisposable
 						break;
 					case 139:
 						num8 = 2;
-						if ((ptr4->flags & Tile.Flags.SELECTED) != 0)
+						if ((ptr3->flags & Tile.Flags.SELECTED) != 0)
 						{
 							s.Y += 1512;
 						}
-						else if ((ptr4->flags & Tile.Flags.NEARBY) != 0)
+						else if ((ptr3->flags & Tile.Flags.NEARBY) != 0)
 						{
 							s.Y += 756;
 						}
@@ -3534,12 +3546,12 @@ public class WorldView : IDisposable
 							newColor.A = UI.mouseTextBrightness;
 							if (Main.rand.Next(150) == 0)
 							{
-								Dust* ptr5 = dustLocal.NewDust(i * 16, num6 * 16, 16, 16, 15, 0.0, 0.0, 150, default(Color), 0.800000011920929);
-								if (ptr5 != null)
+								Dust* ptr4 = dustLocal.NewDust(i * 16, num6 * 16, 16, 16, 15, 0.0, 0.0, 150, default(Color), 0.800000011920929);
+								if (ptr4 != null)
 								{
-									ptr5->velocity.X *= 0.1f;
-									ptr5->velocity.Y *= 0.1f;
-									ptr5->noLight = true;
+									ptr4->velocity.X *= 0.1f;
+									ptr4->velocity.Y *= 0.1f;
+									ptr4->noLight = true;
 								}
 							}
 							break;
@@ -3548,20 +3560,20 @@ public class WorldView : IDisposable
 					switch (num7)
 					{
 					case 4:
-						if (ptr4->frameX < 66 && Main.rand.Next(40) == 0)
+						if (ptr3->frameX < 66 && Main.rand.Next(40) == 0)
 						{
-							int num11 = ptr4->frameY / 22;
+							int num11 = ptr3->frameY / 22;
 							num11 = num11 switch
 							{
 								0 => 6, 
 								8 => 75, 
 								_ => 58 + num11, 
 							};
-							if (ptr4->frameX == 22)
+							if (ptr3->frameX == 22)
 							{
 								dustLocal.NewDust(i * 16 + 6, num6 * 16, 4, 4, num11, 0.0, 0.0, 100);
 							}
-							else if (ptr4->frameX == 44)
+							else if (ptr3->frameX == 44)
 							{
 								dustLocal.NewDust(i * 16 + 2, num6 * 16, 4, 4, num11, 0.0, 0.0, 100);
 							}
@@ -3586,7 +3598,7 @@ public class WorldView : IDisposable
 						}
 						break;
 					case 33:
-						if (ptr4->frameX == 0 && Main.rand.Next(40) == 0)
+						if (ptr3->frameX == 0 && Main.rand.Next(40) == 0)
 						{
 							dustLocal.NewDust(i * 16 + 4, num6 * 16 - 4, 4, 4, 6, 0.0, 0.0, 100);
 						}
@@ -3594,7 +3606,7 @@ public class WorldView : IDisposable
 					case 34:
 					case 35:
 					case 36:
-						if ((ptr4->frameX == 0 || ptr4->frameX == 36) && ptr4->frameY == 18 && Main.rand.Next(40) == 0)
+						if ((ptr3->frameX == 0 || ptr3->frameX == 36) && ptr3->frameY == 18 && Main.rand.Next(40) == 0)
 						{
 							dustLocal.NewDust(i * 16, num6 * 16 + 2, 14, 6, 6, 0.0, 0.0, 100);
 						}
@@ -3606,23 +3618,23 @@ public class WorldView : IDisposable
 						}
 						break;
 					case 93:
-						if (ptr4->frameX == 0 && ptr4->frameY == 0 && Main.rand.Next(40) == 0)
+						if (ptr3->frameX == 0 && ptr3->frameY == 0 && Main.rand.Next(40) == 0)
 						{
 							dustLocal.NewDust(i * 16 + 4, num6 * 16 + 2, 4, 4, 6, 0.0, 0.0, 100);
 						}
 						break;
 					case 98:
-						if (ptr4->frameX == 0 && ptr4->frameY == 0 && Main.rand.Next(40) == 0)
+						if (ptr3->frameX == 0 && ptr3->frameY == 0 && Main.rand.Next(40) == 0)
 						{
 							dustLocal.NewDust(i * 16 + 12, num6 * 16 + 2, 4, 4, 6, 0.0, 0.0, 100);
 						}
 						break;
 					case 100:
-						if (ptr4->frameY != 0 || ptr4->frameX >= 36 || Main.rand.Next(40) != 0)
+						if (ptr3->frameY != 0 || ptr3->frameX >= 36 || Main.rand.Next(40) != 0)
 						{
 							break;
 						}
-						if (ptr4->frameX == 0)
+						if (ptr3->frameX == 0)
 						{
 							if (Main.rand.Next(3) == 0)
 							{
@@ -3644,22 +3656,22 @@ public class WorldView : IDisposable
 						break;
 					case 61:
 					{
-						if (ptr4->frameX != 144)
+						if (ptr3->frameX != 144)
 						{
 							break;
 						}
 						if (Main.rand.Next(60) == 0)
 						{
-							Dust* ptr7 = dustLocal.NewDust(i * 16, num6 * 16, 16, 16, 44, 0.0, 0.0, 250, default(Color), 0.4000000059604645);
-							if (ptr7 != null)
+							Dust* ptr6 = dustLocal.NewDust(i * 16, num6 * 16, 16, 16, 44, 0.0, 0.0, 250, default(Color), 0.4000000059604645);
+							if (ptr6 != null)
 							{
-								ptr7->fadeIn = 0.7f;
+								ptr6->fadeIn = 0.7f;
 							}
 						}
-						byte b2 = (newColor.G = (byte)(245 - UI.mouseTextBrightness + (UI.mouseTextBrightness >> 1)));
-						b2 = (newColor.B = b2);
-						b2 = (newColor.R = b2);
-						newColor.A = b2;
+						byte b = (newColor.G = (byte)(245 - UI.mouseTextBrightness + (UI.mouseTextBrightness >> 1)));
+						b = (newColor.B = b);
+						b = (newColor.R = b);
+						newColor.A = b;
 						break;
 					}
 					case 71:
@@ -3672,7 +3684,7 @@ public class WorldView : IDisposable
 					case 17:
 					case 77:
 					case 133:
-						if (Main.rand.Next(40) == 0 && ptr4->frameX == 18 && ptr4->frameY == 18)
+						if (Main.rand.Next(40) == 0 && ptr3->frameX == 18 && ptr3->frameY == 18)
 						{
 							dustLocal.NewDust(i * 16 + 2, num6 * 16, 8, 6, 6, 0.0, 0.0, 100);
 						}
@@ -3693,19 +3705,19 @@ public class WorldView : IDisposable
 							num10 = newColor.B;
 						}
 						num10 /= 30;
-						if (Main.rand.Next(Main.tileShine[num7]) < num10 && (num7 != 21 || (ptr4->frameX >= 36 && ptr4->frameX < 180)))
+						if (Main.rand.Next(Main.tileShine[num7]) < num10 && (num7 != 21 || (ptr3->frameX >= 36 && ptr3->frameX < 180)))
 						{
-							Dust* ptr6 = dustLocal.NewDust(i * 16, num6 * 16, 16, 16, 43, 0.0, 0.0, 254, default(Color), 0.5);
-							if (ptr6 != null)
+							Dust* ptr5 = dustLocal.NewDust(i * 16, num6 * 16, 16, 16, 43, 0.0, 0.0, 254, default(Color), 0.5);
+							if (ptr5 != null)
 							{
-								ptr6->velocity.X = 0f;
-								ptr6->velocity.Y = 0f;
+								ptr5->velocity.X = 0f;
+								ptr5->velocity.Y = 0f;
 							}
 						}
 						break;
 					}
 					}
-					if ((num7 == 5 && ptr4->frameY >= 198 && ptr4->frameX >= 22) || (num7 == 128 && ptr4->frameX >= 100))
+					if ((num7 == 5 && ptr3->frameY >= 198 && ptr3->frameX >= 22) || (num7 == 128 && ptr3->frameX >= 100))
 					{
 						spec[num].X = (short)i;
 						spec[num].Y = (short)num6;
@@ -3730,9 +3742,9 @@ public class WorldView : IDisposable
 						{
 							continue;
 						}
-						if (num7 == 72 && ptr4->frameX >= 36)
+						if (num7 == 72 && ptr3->frameX >= 36)
 						{
-							int num12 = ptr4->frameY / 18;
+							int num12 = ptr3->frameY / 18;
 							pos.X = i * 16 - screenPosition.X - 22 + 32;
 							pos.Y = num6 * 16 - screenPosition.Y - 26 + 32;
 							s.X = num12 * 62;
@@ -3755,7 +3767,7 @@ public class WorldView : IDisposable
 						{
 							if (num7 > 82)
 							{
-								int num13 = ptr4->frameX / 18;
+								int num13 = ptr3->frameX / 18;
 								if (num13 == 0 && time.dayTime)
 								{
 									num7 = 84;
@@ -3775,13 +3787,13 @@ public class WorldView : IDisposable
 									case 0:
 										if (Main.rand.Next(100) == 0)
 										{
-											Dust* ptr9 = dustLocal.NewDust(i * 16, num6 * 16 - 4, 16, 16, 19, 0.0, 0.0, 160, default(Color), 0.10000000149011612);
-											if (ptr9 != null)
+											Dust* ptr8 = dustLocal.NewDust(i * 16, num6 * 16 - 4, 16, 16, 19, 0.0, 0.0, 160, default(Color), 0.10000000149011612);
+											if (ptr8 != null)
 											{
-												ptr9->velocity.X *= 0.5f;
-												ptr9->velocity.Y *= 0.5f;
-												ptr9->noGravity = true;
-												ptr9->fadeIn = 1f;
+												ptr8->velocity.X *= 0.5f;
+												ptr8->velocity.Y *= 0.5f;
+												ptr8->noGravity = true;
+												ptr8->fadeIn = 1f;
 											}
 										}
 										break;
@@ -3794,46 +3806,46 @@ public class WorldView : IDisposable
 									case 3:
 										if (Main.rand.Next(200) == 0)
 										{
-											Dust* ptr10 = dustLocal.NewDust(i * 16, num6 * 16, 16, 16, 14, 0.0, 0.0, 100, default(Color), 0.20000000298023224);
-											if (ptr10 != null)
+											Dust* ptr9 = dustLocal.NewDust(i * 16, num6 * 16, 16, 16, 14, 0.0, 0.0, 100, default(Color), 0.20000000298023224);
+											if (ptr9 != null)
 											{
-												ptr10->fadeIn = 1.2f;
+												ptr9->fadeIn = 1.2f;
 											}
 										}
 										if (Main.rand.Next(75) == 0)
 										{
-											Dust* ptr11 = dustLocal.NewDust(i * 16, num6 * 16, 16, 16, 27, 0.0, 0.0, 100);
-											if (ptr11 != null)
+											Dust* ptr10 = dustLocal.NewDust(i * 16, num6 * 16, 16, 16, 27, 0.0, 0.0, 100);
+											if (ptr10 != null)
 											{
-												ptr11->velocity.X *= 0.5f;
-												ptr11->velocity.Y *= 0.5f;
+												ptr10->velocity.X *= 0.5f;
+												ptr10->velocity.Y *= 0.5f;
 											}
 										}
 										break;
 									case 4:
 										if (Main.rand.Next(150) == 0)
 										{
-											Dust* ptr12 = dustLocal.NewDust(i * 16, num6 * 16, 16, 8, 16);
-											if (ptr12 != null)
+											Dust* ptr11 = dustLocal.NewDust(i * 16, num6 * 16, 16, 8, 16);
+											if (ptr11 != null)
 											{
-												ptr12->velocity.X *= 1f / 3f;
-												ptr12->velocity.Y *= 1f / 3f;
-												ptr12->velocity.Y -= 0.7f;
-												ptr12->alpha = 50;
-												ptr12->scale *= 0.1f;
-												ptr12->fadeIn = 0.9f;
-												ptr12->noGravity = true;
+												ptr11->velocity.X *= 1f / 3f;
+												ptr11->velocity.Y *= 1f / 3f;
+												ptr11->velocity.Y -= 0.7f;
+												ptr11->alpha = 50;
+												ptr11->scale *= 0.1f;
+												ptr11->fadeIn = 0.9f;
+												ptr11->noGravity = true;
 											}
 										}
 										break;
 									case 5:
 										if (Main.rand.Next(40) == 0)
 										{
-											Dust* ptr8 = dustLocal.NewDust(i * 16, num6 * 16 - 6, 16, 16, 6, 0.0, 0.0, 0, default(Color), 1.5);
-											if (ptr8 != null)
+											Dust* ptr7 = dustLocal.NewDust(i * 16, num6 * 16 - 6, 16, 16, 6, 0.0, 0.0, 0, default(Color), 1.5);
+											if (ptr7 != null)
 											{
-												ptr8->velocity.Y -= 2f;
-												ptr8->noGravity = true;
+												ptr7->velocity.Y -= 2f;
+												ptr7->noGravity = true;
 											}
 										}
 										newColor.A = (byte)(UI.mouseTextBrightness >> 1);
@@ -3853,7 +3865,7 @@ public class WorldView : IDisposable
 							bool flag = false;
 							bool flag2 = false;
 							int num14 = i;
-							switch (ptr4->frameX)
+							switch (ptr3->frameX)
 							{
 							case 36:
 								num14--;
@@ -3862,7 +3874,7 @@ public class WorldView : IDisposable
 								num14++;
 								break;
 							case 108:
-								num14 = ((ptr4->frameY != 16) ? (num14 + 1) : (num14 - 1));
+								num14 = ((ptr3->frameY != 16) ? (num14 + 1) : (num14 - 1));
 								break;
 							}
 							int num15 = num6;
@@ -4068,7 +4080,7 @@ public class WorldView : IDisposable
 						{
 							if (num7 == 21)
 							{
-								if (ptr4->frameX >= 36 && ptr4->frameX < 178)
+								if (ptr3->frameX >= 36 && ptr3->frameX < 178)
 								{
 									shine(ref newColor, num7);
 								}
@@ -4107,11 +4119,11 @@ public class WorldView : IDisposable
 				int num17 = (player.aabb.Y + 21 >> 4) - 8;
 				for (i = -3; i < 23; i++)
 				{
-					Tile* ptr13 = ptr + ((num16 + i) * 1440 + num17 - 4);
+					Tile* ptr12 = tile + ((num16 + i) * 1440 + num17 - 4);
 					for (int k = -4; k < 20; k++)
 					{
-						ptr13->flags &= ~Tile.Flags.HIGHLIGHT_MASK;
-						ptr13++;
+						ptr12->flags &= ~Tile.Flags.HIGHLIGHT_MASK;
+						ptr12++;
 					}
 				}
 			}
@@ -4124,12 +4136,12 @@ public class WorldView : IDisposable
 			Color tileColor = spec[l].tileColor;
 			pos2.X = 32 + x * 16 - screenPosition.X;
 			pos2.Y = 32 + y * 16 - screenPosition.Y;
-			fixed (Tile* ptr14 = &Main.tile[x, y])
+			fixed (Tile* ptr13 = &Main.tile[x, y])
 			{
-				if (ptr14->type == 128)
+				if (ptr13->type == 128)
 				{
-					int num18 = ptr14->frameY / 18;
-					int frameX = ptr14->frameX;
+					int num18 = ptr13->frameY / 18;
+					int frameX = ptr13->frameX;
 					int num19 = frameX / 100;
 					frameX %= 100;
 					SpriteEffects se = SpriteEffects.FlipHorizontally;
@@ -4157,14 +4169,14 @@ public class WorldView : IDisposable
 					continue;
 				}
 				Rectangle s2 = default(Rectangle);
-				if (ptr14->frameX == 22)
+				if (ptr13->frameX == 22)
 				{
 					int num20 = 0;
-					if (ptr14->frameY == 220)
+					if (ptr13->frameY == 220)
 					{
 						num20 = 1;
 					}
-					else if (ptr14->frameY == 242)
+					else if (ptr13->frameY == 242)
 					{
 						num20 = 2;
 					}
@@ -4175,7 +4187,7 @@ public class WorldView : IDisposable
 					int num23 = ((y + 100 >= Main.maxTilesY) ? (Main.maxTilesY - y) : 100);
 					for (int m = 0; m < num23; m++)
 					{
-						switch (ptr14[m].type)
+						switch ((int)ptr13[m].type)
 						{
 						case 2:
 							num21 = 0;
@@ -4207,15 +4219,15 @@ public class WorldView : IDisposable
 					pos2.Y -= s2.Height - 16;
 					SpriteSheet<_sheetTiles>.Draw(182 + num21, ref pos2, ref s2, tileColor);
 				}
-				else if (ptr14->frameX == 44)
+				else if (ptr13->frameX == 44)
 				{
 					s2.Width = 40;
 					s2.Height = 40;
-					if (ptr14->frameY == 220)
+					if (ptr13->frameY == 220)
 					{
 						s2.Y = 42;
 					}
-					else if (ptr14->frameY == 242)
+					else if (ptr13->frameY == 242)
 					{
 						s2.Y = 84;
 					}
@@ -4223,7 +4235,7 @@ public class WorldView : IDisposable
 					int num25 = ((y + 100 >= Main.maxTilesY) ? (Main.maxTilesY - y) : 100);
 					for (int n = 0; n < num25; n++)
 					{
-						switch (ptr14[n + 1440].type)
+						switch ((int)ptr13[n + 1440].type)
 						{
 						case 2:
 							num24 = 0;
@@ -4252,18 +4264,18 @@ public class WorldView : IDisposable
 				}
 				else
 				{
-					if (ptr14->frameX != 66)
+					if (ptr13->frameX != 66)
 					{
 						continue;
 					}
 					s2.X = 42;
 					s2.Width = 40;
 					s2.Height = 40;
-					if (ptr14->frameY == 220)
+					if (ptr13->frameY == 220)
 					{
 						s2.Y = 42;
 					}
-					else if (ptr14->frameY == 242)
+					else if (ptr13->frameY == 242)
 					{
 						s2.Y = 84;
 					}
@@ -4271,7 +4283,7 @@ public class WorldView : IDisposable
 					int num27 = ((y + 100 >= Main.maxTilesY) ? (Main.maxTilesY - y) : 100);
 					for (int num28 = 0; num28 < num27; num28++)
 					{
-						switch (ptr14[num28 - 1440].type)
+						switch ((int)ptr13[num28 - 1440].type)
 						{
 						case 2:
 							num26 = 0;
@@ -4311,26 +4323,26 @@ public class WorldView : IDisposable
 		int num = lastTileX;
 		int num2 = lastTileY;
 		int num3 = firstTileX;
-		fixed (Tile* ptr = Main.tile)
+		fixed (Tile* tile = Main.tile)
 		{
 			do
 			{
 				int num4 = firstTileY;
-				Tile* ptr2 = ptr + (num3 * 1440 + num4 - 1);
+				Tile* ptr = tile + (num3 * 1440 + num4 - 1);
 				do
 				{
-					ptr2++;
-					if (ptr2->active == 0)
+					ptr++;
+					if (ptr->active == 0)
 					{
 						continue;
 					}
-					int type = ptr2->type;
+					int type = ptr->type;
 					if (!Main.tileSolid[type])
 					{
 						continue;
 					}
-					s.X = ptr2->frameX;
-					s.Y = ptr2->frameY;
+					s.X = ptr->frameX;
+					s.Y = ptr->frameY;
 					s.Width = 16;
 					s.Height = ((type == 137 || type == 138) ? 18 : 16);
 					pos.X = num3 * 16 - screenPosition.X + 32;
@@ -4369,12 +4381,12 @@ public class WorldView : IDisposable
 							newColor.A = UI.mouseTextBrightness;
 							if (Main.rand.Next(150) == 0)
 							{
-								Dust* ptr3 = dustLocal.NewDust(num3 * 16, num4 * 16, 16, 16, 15, 0.0, 0.0, 150, default(Color), 0.800000011920929);
-								if (ptr3 != null)
+								Dust* ptr2 = dustLocal.NewDust(num3 * 16, num4 * 16, 16, 16, 15, 0.0, 0.0, 150, default(Color), 0.800000011920929);
+								if (ptr2 != null)
 								{
-									ptr3->velocity.X *= 0.1f;
-									ptr3->velocity.Y *= 0.1f;
-									ptr3->noLight = true;
+									ptr2->velocity.X *= 0.1f;
+									ptr2->velocity.Y *= 0.1f;
+									ptr2->noLight = true;
 								}
 							}
 							break;
@@ -4403,10 +4415,10 @@ public class WorldView : IDisposable
 					case 37:
 						if (Main.rand.Next(250) == 0)
 						{
-							Dust* ptr6 = dustLocal.NewDust(num3 * 16, num4 * 16, 16, 16, 6, 0.0, 0.0, 0, default(Color), Main.rand.Next(3));
-							if (ptr6 != null && ptr6->scale > 1f)
+							Dust* ptr5 = dustLocal.NewDust(num3 * 16, num4 * 16, 16, 16, 6, 0.0, 0.0, 0, default(Color), Main.rand.Next(3));
+							if (ptr5 != null && ptr5->scale > 1f)
 							{
-								ptr6->noGravity = true;
+								ptr5->noGravity = true;
 							}
 						}
 						break;
@@ -4414,11 +4426,11 @@ public class WorldView : IDisposable
 					case 76:
 						if (Main.rand.Next(250) == 0)
 						{
-							Dust* ptr4 = dustLocal.NewDust(num3 * 16, num4 * 16, 16, 16, 6, 0.0, 0.0, 0, default(Color), Main.rand.Next(3));
-							if (ptr4 != null && ptr4->scale > 1f)
+							Dust* ptr3 = dustLocal.NewDust(num3 * 16, num4 * 16, 16, 16, 6, 0.0, 0.0, 0, default(Color), Main.rand.Next(3));
+							if (ptr3 != null && ptr3->scale > 1f)
 							{
-								ptr4->noGravity = true;
-								ptr4->noLight = true;
+								ptr3->noGravity = true;
+								ptr3->noLight = true;
 							}
 						}
 						break;
@@ -4446,11 +4458,11 @@ public class WorldView : IDisposable
 						num5 /= 30;
 						if (Main.rand.Next(Main.tileShine[type]) < num5)
 						{
-							Dust* ptr5 = dustLocal.NewDust(num3 * 16, num4 * 16, 16, 16, 43, 0.0, 0.0, 254, default(Color), 0.5);
-							if (ptr5 != null)
+							Dust* ptr4 = dustLocal.NewDust(num3 * 16, num4 * 16, 16, 16, 43, 0.0, 0.0, 254, default(Color), 0.5);
+							if (ptr4 != null)
 							{
-								ptr5->velocity.X = 0f;
-								ptr5->velocity.Y = 0f;
+								ptr4->velocity.X = 0f;
+								ptr4->velocity.Y = 0f;
 							}
 						}
 						break;
@@ -4460,7 +4472,7 @@ public class WorldView : IDisposable
 					{
 						continue;
 					}
-					if (!Main.tileSolidTop[type] && (ptr2[-1].liquid > 0 || ptr2[1].liquid > 0 || ptr2[-1440].liquid > 0 || ptr2[1440].liquid > 0))
+					if (!Main.tileSolidTop[type] && (ptr[-1].liquid > 0 || ptr[1].liquid > 0 || ptr[-1440].liquid > 0 || ptr[1440].liquid > 0))
 					{
 						int num6 = 0;
 						bool flag = false;
@@ -4469,36 +4481,36 @@ public class WorldView : IDisposable
 						bool flag4 = false;
 						int num7 = 0;
 						bool flag5 = false;
-						if (ptr2[-1440].liquid > num6)
+						if (ptr[-1440].liquid > num6)
 						{
-							num6 = ptr2[-1440].liquid;
+							num6 = ptr[-1440].liquid;
 							flag = true;
 						}
-						else if (ptr2[-1440].liquid > 0)
+						else if (ptr[-1440].liquid > 0)
 						{
 							flag = true;
 						}
-						if (ptr2[1440].liquid > num6)
+						if (ptr[1440].liquid > num6)
 						{
-							num6 = ptr2[1440].liquid;
+							num6 = ptr[1440].liquid;
 							flag2 = true;
 						}
-						else if (ptr2[1440].liquid > 0)
+						else if (ptr[1440].liquid > 0)
 						{
-							num6 = ptr2[1440].liquid;
+							num6 = ptr[1440].liquid;
 							flag2 = true;
 						}
-						if (ptr2[-1].liquid > 0)
+						if (ptr[-1].liquid > 0)
 						{
 							flag3 = true;
 						}
-						if (ptr2[1].liquid > 240)
+						if (ptr[1].liquid > 240)
 						{
 							flag4 = true;
 						}
-						if (ptr2[-1440].liquid > 0)
+						if (ptr[-1440].liquid > 0)
 						{
-							if (ptr2[-1440].lava != 0)
+							if (ptr[-1440].lava != 0)
 							{
 								num7 = 1;
 							}
@@ -4507,9 +4519,9 @@ public class WorldView : IDisposable
 								flag5 = true;
 							}
 						}
-						if (ptr2[1440].liquid > 0)
+						if (ptr[1440].liquid > 0)
 						{
-							if (ptr2[1440].lava != 0)
+							if (ptr[1440].lava != 0)
 							{
 								num7 = 1;
 							}
@@ -4518,9 +4530,9 @@ public class WorldView : IDisposable
 								flag5 = true;
 							}
 						}
-						if (ptr2[-1].liquid > 0)
+						if (ptr[-1].liquid > 0)
 						{
-							if (ptr2[-1].lava != 0)
+							if (ptr[-1].lava != 0)
 							{
 								num7 = 1;
 							}
@@ -4529,9 +4541,9 @@ public class WorldView : IDisposable
 								flag5 = true;
 							}
 						}
-						if (ptr2[1].liquid > 0)
+						if (ptr[1].liquid > 0)
 						{
-							if (ptr2[1].lava != 0)
+							if (ptr[1].lava != 0)
 							{
 								num7 = 1;
 							}
@@ -4813,25 +4825,25 @@ public class WorldView : IDisposable
 		Vector2 vector = default(Vector2);
 		Vector2 vector2 = default(Vector2);
 		Rectangle s = default(Rectangle);
-		fixed (Tile* ptr = Main.tile)
+		fixed (Tile* tile = Main.tile)
 		{
 			do
 			{
 				int num8 = num6;
-				Tile* ptr2 = ptr + (num4 * 1440 + num8);
+				Tile* ptr = tile + (num4 * 1440 + num8);
 				vector2.X = num4 << 4;
 				do
 				{
-					int liquid = ptr2->liquid;
-					if (liquid > 0 && (bg || ptr2->active == 0 || !Main.tileSolidNotSolidTop[ptr2->type]) && (bg || lighting.IsNotBlackUnsafe(num4, num8)))
+					int liquid = ptr->liquid;
+					if (liquid > 0 && (bg || ptr->active == 0 || !Main.tileSolidNotSolidTop[ptr->type]) && (bg || lighting.IsNotBlackUnsafe(num4, num8)))
 					{
 						Color colorUnsafe = lighting.GetColorUnsafe(num4, num8);
-						int num9 = ((ptr2->lava == 0) ? 14 : 15);
+						int num9 = ((ptr->lava == 0) ? 14 : 15);
 						int num10 = (bg ? 255 : ((num9 == 15) ? 230 : 128));
 						vector2.Y = num8 << 4;
 						s.Width = 16;
-						ptr2--;
-						if (ptr2->liquid == 0)
+						ptr--;
+						if (ptr->liquid == 0)
 						{
 							s.Y = 0;
 							s.Height = Math.Max(1, liquid >> 4);
@@ -4842,7 +4854,7 @@ public class WorldView : IDisposable
 							s.Y = 4;
 							s.Height = 16;
 						}
-						ptr2++;
+						ptr++;
 						if (num9 == 15 && dustLocal.lavaBubbles < 128 && Main.hasFocus)
 						{
 							if (liquid > 200 && Main.rand.Next(700) == 0)
@@ -4851,17 +4863,17 @@ public class WorldView : IDisposable
 							}
 							else if (s.Y == 0 && Main.rand.Next(350) == 0)
 							{
-								Dust* ptr3 = dustLocal.NewDust(num4 << 4, (num8 << 4) + (liquid >> 4) - 8, 16, 8, 35, 0.0, 0.0, 50, default(Color), 1.5);
-								if (ptr3 != null)
+								Dust* ptr2 = dustLocal.NewDust(num4 << 4, (num8 << 4) + (liquid >> 4) - 8, 16, 8, 35, 0.0, 0.0, 50, default(Color), 1.5);
+								if (ptr2 != null)
 								{
-									ptr3->velocity.X *= 1.6f;
-									ptr3->velocity.Y *= 0.8f;
-									ptr3->velocity.Y -= (float)Main.rand.Next(1, 7) * 0.1f;
+									ptr2->velocity.X *= 1.6f;
+									ptr2->velocity.Y *= 0.8f;
+									ptr2->velocity.Y -= (float)Main.rand.Next(1, 7) * 0.1f;
 									if (Main.rand.Next(10) == 0)
 									{
-										ptr3->velocity.Y *= Main.rand.Next(2, 5);
+										ptr2->velocity.Y *= Main.rand.Next(2, 5);
 									}
-									ptr3->noGravity = true;
+									ptr2->noGravity = true;
 								}
 							}
 						}
@@ -4894,21 +4906,21 @@ public class WorldView : IDisposable
 									case 0:
 										if (lighting.Brighter(num4, num8 - 1, num4 - 1, num8))
 										{
-											ptr2 -= 1440;
-											if (ptr2->active == 0)
+											ptr -= 1440;
+											if (ptr->active == 0)
 											{
 												colorUnsafe2 = lighting.GetColorUnsafe(num4 - 1, num8);
 											}
-											ptr2 += 1440;
+											ptr += 1440;
 										}
 										else
 										{
-											ptr2--;
-											if (ptr2->active == 0)
+											ptr--;
+											if (ptr->active == 0)
 											{
 												colorUnsafe2 = lighting.GetColorUnsafe(num4, num8 - 1);
 											}
-											ptr2++;
+											ptr++;
 										}
 										if (s.Height < 8)
 										{
@@ -4918,19 +4930,19 @@ public class WorldView : IDisposable
 									case 1:
 										if (lighting.Brighter(num4, num8 - 1, num4 + 1, num8))
 										{
-											if (ptr2[1440].active == 0)
+											if (ptr[1440].active == 0)
 											{
 												colorUnsafe2 = lighting.GetColorUnsafe(num4 + 1, num8);
 											}
 										}
 										else
 										{
-											ptr2--;
-											if (ptr2->active == 0)
+											ptr--;
+											if (ptr->active == 0)
 											{
 												colorUnsafe2 = lighting.GetColorUnsafe(num4, num8 - 1);
 											}
-											ptr2++;
+											ptr++;
 										}
 										num11 = 8;
 										if (s.Height < 8)
@@ -4941,21 +4953,21 @@ public class WorldView : IDisposable
 									case 2:
 										if (lighting.Brighter(num4, num8 + 1, num4 - 1, num8))
 										{
-											ptr2 -= 1440;
-											if (ptr2->active == 0)
+											ptr -= 1440;
+											if (ptr->active == 0)
 											{
 												colorUnsafe2 = lighting.GetColorUnsafe(num4 - 1, num8);
 											}
-											ptr2 += 1440;
+											ptr += 1440;
 										}
 										else
 										{
-											ptr2++;
-											if (ptr2->active == 0)
+											ptr++;
+											if (ptr->active == 0)
 											{
 												colorUnsafe2 = lighting.GetColorUnsafe(num4, num8 + 1);
 											}
-											ptr2--;
+											ptr--;
 										}
 										num12 = 8;
 										height = 8 - (16 - s.Height);
@@ -4963,19 +4975,19 @@ public class WorldView : IDisposable
 									default:
 										if (lighting.Brighter(num4, num8 + 1, num4 + 1, num8))
 										{
-											if (ptr2[1440].active == 0)
+											if (ptr[1440].active == 0)
 											{
 												colorUnsafe2 = lighting.GetColorUnsafe(num4 + 1, num8);
 											}
 										}
 										else
 										{
-											ptr2++;
-											if (ptr2->active == 0)
+											ptr++;
+											if (ptr->active == 0)
 											{
 												colorUnsafe2 = lighting.GetColorUnsafe(num4, num8 + 1);
 											}
-											ptr2--;
+											ptr--;
 										}
 										num11 = 8;
 										num12 = 8;
@@ -5013,7 +5025,7 @@ public class WorldView : IDisposable
 							SpriteSheet<_sheetTiles>.Draw(num9, ref vector, ref s, colorUnsafe);
 						}
 					}
-					ptr2++;
+					ptr++;
 				}
 				while (++num8 < num7);
 			}
@@ -5045,11 +5057,13 @@ public class WorldView : IDisposable
 	private unsafe void DrawNPCs(bool behindTiles = false)
 	{
 		bool flag = false;
-		Rectangle rectangle = default(Rectangle);
-		rectangle.X = screenPosition.X - 300;
-		rectangle.Y = screenPosition.Y - 300;
-		rectangle.Width = viewWidth + 600;
-		rectangle.Height = 1140;
+		Rectangle rectangle = new Rectangle
+		{
+			X = screenPosition.X - 300,
+			Y = screenPosition.Y - 300,
+			Width = viewWidth + 600,
+			Height = 1140
+		};
 		Vector2 pos = default(Vector2);
 		Color c = default(Color);
 		for (int num = 195; num >= 0; num--)
@@ -5350,9 +5364,11 @@ public class WorldView : IDisposable
 			{
 			case 50:
 			{
-				Vector2 vector8 = default(Vector2);
-				vector8.Y = 0f - Main.npc[num].velocity.Y;
-				vector8.X = Main.npc[num].velocity.X * -2f;
+				Vector2 vector8 = new Vector2
+				{
+					Y = 0f - Main.npc[num].velocity.Y,
+					X = Main.npc[num].velocity.X * -2f
+				};
 				float rotCenter4 = Main.npc[num].velocity.X * 0.05f;
 				if (Main.npc[num].frameY == 120)
 				{
@@ -5373,9 +5389,11 @@ public class WorldView : IDisposable
 			}
 			case 71:
 			{
-				Vector2 vector7 = default(Vector2);
-				vector7.Y = Main.npc[num].velocity.Y * -0.3f;
-				vector7.X = Main.npc[num].velocity.X * -0.6f;
+				Vector2 vector7 = new Vector2
+				{
+					Y = Main.npc[num].velocity.Y * -0.3f,
+					X = Main.npc[num].velocity.X * -0.6f
+				};
 				float rotCenter3 = Main.npc[num].velocity.X * 0.09f;
 				if (Main.npc[num].frameY == 120)
 				{
@@ -5407,9 +5425,11 @@ public class WorldView : IDisposable
 			float num30 = 0f;
 			float num31 = 0f;
 			int width = SpriteSheet<_sheetSprites>.src[1088 + type].Width;
-			Vector2 pivot = default(Vector2);
-			pivot.X = width >> 1;
-			pivot.Y = Main.npc[num].frameHeight >> 1;
+			Vector2 pivot = new Vector2
+			{
+				X = width >> 1,
+				Y = Main.npc[num].frameHeight >> 1
+			};
 			switch (type)
 			{
 			case 108:

@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
@@ -893,7 +892,7 @@ public sealed class UI
 			playerStorage.DeviceSelectorCanceled += DeviceSelectorCanceled;
 			playerStorage.DeviceDisconnected += DeviceDisconnected;
 			playerStorage.DeviceSelected += DeviceSelected;
-			((Collection<IGameComponent>)(object)theGame.Components).Add((IGameComponent)playerStorage);
+			theGame.Components.Add(playerStorage);
 		}
 		if (playerStorage.Device == null)
 		{
@@ -912,7 +911,7 @@ public sealed class UI
 
 	public bool CanViewGamerCard()
 	{
-		if (signedInGamer.IsSignedInToLive && signedInGamer.Privileges.AllowProfileViewing != 0)
+		if (signedInGamer.IsSignedInToLive && signedInGamer.Privileges.AllowProfileViewing != GamerPrivilegeSetting.Blocked)
 		{
 			return !GuideExtensions.IsNetworkCableUnplugged;
 		}
@@ -941,9 +940,9 @@ public sealed class UI
 	{
 		GamerCollection<NetworkGamer> gamerCollection = ((Netplay.session != null) ? Netplay.session.RemoteGamers : null);
 		SignedInGamerCollection signedInGamers = Gamer.SignedInGamers;
-		for (int num = ((ReadOnlyCollection<SignedInGamer>)(object)signedInGamers).Count - 1; num >= 0; num--)
+		for (int num = signedInGamers.Count - 1; num >= 0; num--)
 		{
-			SignedInGamer signedInGamer = ((ReadOnlyCollection<SignedInGamer>)(object)signedInGamers)[num];
+			SignedInGamer signedInGamer = signedInGamers[num];
 			if (!signedInGamer.IsGuest && signedInGamer.IsSignedInToLive)
 			{
 				if (signedInGamer.Privileges.AllowUserCreatedContent == GamerPrivilegeSetting.Blocked)
@@ -952,9 +951,9 @@ public sealed class UI
 				}
 				if (gamerCollection != null && signedInGamer.Privileges.AllowUserCreatedContent == GamerPrivilegeSetting.FriendsOnly)
 				{
-					for (int num2 = ((ReadOnlyCollection<NetworkGamer>)(object)gamerCollection).Count - 1; num2 >= 0; num2--)
+					for (int num2 = gamerCollection.Count - 1; num2 >= 0; num2--)
 					{
-						NetworkGamer gamer = ((ReadOnlyCollection<NetworkGamer>)(object)gamerCollection)[num2];
+						NetworkGamer gamer = gamerCollection[num2];
 						if (!signedInGamer.IsFriend(gamer))
 						{
 							return false;
@@ -1118,12 +1117,12 @@ public sealed class UI
 	public static void DrawStringLB(SpriteFont font, int x, int y)
 	{
 		Vector2 vector = font.MeasureString(Main.strBuilder);
-		Main.spriteBatch.DrawString(font, Main.strBuilder, new Vector2(x, 540 - y), Color.White, 0f, new Vector2(0f, vector.Y), (float)((numActiveViews <= 1) ? 1 : 2), SpriteEffects.None, 0f);
+		Main.spriteBatch.DrawString(font, Main.strBuilder, new Vector2(x, 540 - y), Color.White, 0f, new Vector2(0f, vector.Y), (numActiveViews <= 1) ? 1 : 2, SpriteEffects.None, 0f);
 	}
 
 	public static void DrawStringLT(SpriteFont font, int x, int y, Color c)
 	{
-		Main.spriteBatch.DrawString(font, Main.strBuilder, new Vector2(x, y), c, 0f, default(Vector2), (float)((numActiveViews <= 1) ? 1 : 2), SpriteEffects.None, 0f);
+		Main.spriteBatch.DrawString(font, Main.strBuilder, new Vector2(x, y), c, 0f, default(Vector2), (numActiveViews <= 1) ? 1 : 2, SpriteEffects.None, 0f);
 	}
 
 	public static void DrawStringLT(SpriteFont font, string s, int x, int y, Color c)
@@ -1204,11 +1203,11 @@ public sealed class UI
 	public static float DrawStringCT(SpriteFont font, int x, int y, Color c)
 	{
 		float num = ((numActiveViews <= 1) ? 1 : 2);
-		Vector2 vector = font.MeasureString(Main.strBuilder);
-		vector.X *= 0.5f;
-		float result = vector.Y * num;
-		vector.Y = 0f;
-		Main.spriteBatch.DrawString(font, Main.strBuilder, new Vector2(x, y), c, 0f, vector, num, SpriteEffects.None, 0f);
+		Vector2 origin = font.MeasureString(Main.strBuilder);
+		origin.X *= 0.5f;
+		float result = origin.Y * num;
+		origin.Y = 0f;
+		Main.spriteBatch.DrawString(font, Main.strBuilder, new Vector2(x, y), c, 0f, origin, num, SpriteEffects.None, 0f);
 		return result;
 	}
 
@@ -1290,7 +1289,7 @@ public sealed class UI
 				}
 			}
 		}
-		if (menuMode != 0)
+		if (menuMode != MenuMode.NONE)
 		{
 			for (int num2 = menuHC.Length - 1; num2 >= 0; num2--)
 			{
@@ -1427,7 +1426,7 @@ public sealed class UI
 		isStopping = false;
 		if (playerStorage != null && !Netplay.isJoiningRemoteInvite)
 		{
-			((Collection<IGameComponent>)(object)theGame.Components).Remove((IGameComponent)playerStorage);
+			theGame.Components.Remove(playerStorage);
 			playerStorage.Dispose();
 			playerStorage = null;
 		}
@@ -1439,7 +1438,7 @@ public sealed class UI
 		for (int i = 0; i < 4; i++)
 		{
 			UI uI = Main.ui[i];
-			if (uI.view != null && uI.menuType != 0)
+			if (uI.view != null && uI.menuType != MenuType.MAIN)
 			{
 				uI.view.onStopGame();
 			}
@@ -1510,7 +1509,7 @@ public sealed class UI
 
 	public void PrepareDraw(int pass)
 	{
-		if (view != null && menuType != 0)
+		if (view != null && menuType != MenuType.MAIN)
 		{
 			current = this;
 			view.PrepareDraw(pass);
@@ -1523,7 +1522,7 @@ public sealed class UI
 		{
 			current = this;
 			view.DrawBg(this);
-			if (menuType != 0)
+			if (menuType != MenuType.MAIN)
 			{
 				view.DrawWorld();
 				DrawCursor();
@@ -1674,7 +1673,7 @@ public sealed class UI
 					Exit();
 					return;
 				}
-				int count = ((ReadOnlyCollection<NetworkGamer>)(object)Netplay.session.AllGamers).Count;
+				int count = Netplay.session.AllGamers.Count;
 				if (count < 8)
 				{
 					int privateGamerSlots = Netplay.session.PrivateGamerSlots;
@@ -2157,7 +2156,7 @@ public sealed class UI
 					blacklist.Remove(Main.GetWorldId());
 					settingsDirty = true;
 					PrevMenu();
-					if (menuType != 0)
+					if (menuType != MenuType.MAIN)
 					{
 						menuType = MenuType.NONE;
 					}
@@ -2751,18 +2750,22 @@ public sealed class UI
 			float num2 = progress * numProgressStepsInv + progressTotal;
 			if (num2 > 0f)
 			{
-				Rectangle value = default(Rectangle);
-				value.Height = progressBarTexture.Height >> 1;
-				value.Width = (int)((float)progressBarTexture.Width * num2);
-				Vector2 vector = default(Vector2);
-				vector.X = view.viewWidth - progressBarTexture.Width >> 1;
-				vector.Y = num;
-				Main.spriteBatch.Draw(progressBarTexture, vector, (Rectangle?)value, Color.White);
+				Rectangle value = new Rectangle
+				{
+					Height = progressBarTexture.Height >> 1,
+					Width = (int)((float)progressBarTexture.Width * num2)
+				};
+				Vector2 position = new Vector2
+				{
+					X = view.viewWidth - progressBarTexture.Width >> 1,
+					Y = num
+				};
+				Main.spriteBatch.Draw(progressBarTexture, position, value, Color.White);
 				value.X = value.Width;
 				value.Y = value.Height;
-				vector.X += value.Width;
+				position.X += value.Width;
 				value.Width = progressBarTexture.Width - value.Width;
-				Main.spriteBatch.Draw(progressBarTexture, vector, (Rectangle?)value, Color.White);
+				Main.spriteBatch.Draw(progressBarTexture, position, value, Color.White);
 			}
 			view.SetScreenViewWideCentered();
 			tips.Draw();
@@ -2771,10 +2774,12 @@ public sealed class UI
 		else if (menuMode == MenuMode.CONTROLS)
 		{
 			int num3 = view.viewWidth >> 1;
-			Vector2 position = default(Vector2);
-			position.X = num3 - (controlsTexture.Width >> 1);
-			position.Y = 540 - controlsTexture.Height >> 1;
-			Main.spriteBatch.Draw(controlsTexture, position, Color.White);
+			Vector2 position2 = new Vector2
+			{
+				X = num3 - (controlsTexture.Width >> 1),
+				Y = 540 - controlsTexture.Height >> 1
+			};
+			Main.spriteBatch.Draw(controlsTexture, position2, Color.White);
 			int num4 = (int)MeasureString(fontSmall, Lang.inter[24]).X + 60;
 			num3 = view.viewWidth - view.SAFE_AREA_OFFSET_R - num4;
 			int num5 = 464 - view.SAFE_AREA_OFFSET_B;
@@ -2807,22 +2812,22 @@ public sealed class UI
 					text = ((!alternateGrappleControls) ? (text + array[9].text) : (text + array[0].text));
 					break;
 				}
-				Vector2 vector2 = MeasureString(fontSmallOutline, text);
+				Vector2 vector = MeasureString(fontSmallOutline, text);
 				if (alignment < 2)
 				{
-					num7 -= (int)vector2.X >> 1;
+					num7 -= (int)vector.X >> 1;
 					if (alignment == 0)
 					{
-						num8 -= (int)vector2.Y;
+						num8 -= (int)vector.Y;
 					}
 				}
 				else
 				{
 					if (alignment == 3)
 					{
-						num7 -= (int)vector2.X;
+						num7 -= (int)vector.X;
 					}
-					num8 -= (int)vector2.Y >> 1;
+					num8 -= (int)vector.Y >> 1;
 				}
 				DrawStringLT(fontSmallOutline, text, num7, num8, Color.White);
 			}
@@ -2867,13 +2872,13 @@ public sealed class UI
 				text2 = "";
 			}
 			SpriteFont spriteFont = fontBig;
-			Vector2 vector3 = spriteFont.MeasureString(text2);
-			Vector2 origin = vector3 * 0.5f;
-			Vector2 position2 = new Vector2(480f, 460f);
+			Vector2 vector2 = spriteFont.MeasureString(text2);
+			Vector2 origin = vector2 * 0.5f;
+			Vector2 position3 = new Vector2(480f, 460f);
 			float num9 = 0.75f;
 			num9 *= 1f + cursorAlpha * 0.1f;
 			Color color = new Color(cursorColor.A, cursorColor.A, 100, 255);
-			Main.spriteBatch.DrawString(spriteFont, text2, position2, color, 0f, origin, num9, SpriteEffects.None, 0f);
+			Main.spriteBatch.DrawString(spriteFont, text2, position3, color, 0f, origin, num9, SpriteEffects.None, 0f);
 		}
 		else if (menuMode == MenuMode.LEADERBOARDS)
 		{
@@ -3133,8 +3138,8 @@ public sealed class UI
 		Color color = new Color(LogoA, LogoA, LogoA, LogoA);
 		Color color2 = new Color(LogoB, LogoB, LogoB, LogoB);
 		float x = ((view != null) ? (view.viewWidth >> 1) : 480);
-		Main.spriteBatch.Draw(logoTexture, new Vector2(x, 100f), (Rectangle?)new Rectangle(0, 0, logoTexture.Width, logoTexture.Height), color, logoRotation, new Vector2(logoTexture.Width >> 1, logoTexture.Height >> 1), logoScale, SpriteEffects.None, 0f);
-		Main.spriteBatch.Draw(logo2Texture, new Vector2(x, 100f), (Rectangle?)new Rectangle(0, 0, logoTexture.Width, logoTexture.Height), color2, logoRotation, new Vector2(logoTexture.Width >> 1, logoTexture.Height >> 1), logoScale, SpriteEffects.None, 0f);
+		Main.spriteBatch.Draw(logoTexture, new Vector2(x, 100f), new Rectangle(0, 0, logoTexture.Width, logoTexture.Height), color, logoRotation, new Vector2(logoTexture.Width >> 1, logoTexture.Height >> 1), logoScale, SpriteEffects.None, 0f);
+		Main.spriteBatch.Draw(logo2Texture, new Vector2(x, 100f), new Rectangle(0, 0, logoTexture.Width, logoTexture.Height), color2, logoRotation, new Vector2(logoTexture.Width >> 1, logoTexture.Height >> 1), logoScale, SpriteEffects.None, 0f);
 		if (view.time.dayTime)
 		{
 			LogoA += 2;
@@ -3215,7 +3220,7 @@ public sealed class UI
 					{
 						GamerCollection<NetworkGamer> allGamers = Netplay.session.AllGamers;
 						int num = mapScreenCursorY - 2;
-						if (num < ((ReadOnlyCollection<NetworkGamer>)(object)allGamers).Count)
+						if (num < allGamers.Count)
 						{
 							Main.strBuilder.Append(Lang.controls(Lang.CONTROLS.SHOW_GAMERCARD));
 							Main.strBuilder.Append(' ');
@@ -3659,9 +3664,11 @@ public sealed class UI
 		{
 			num = 1.25f;
 		}
-		Vector2 pos = default(Vector2);
-		pos.X = (float)x + 26f * inventoryScale;
-		pos.Y = (float)y + 26f * inventoryScale;
+		Vector2 pos = new Vector2
+		{
+			X = (float)x + 26f * inventoryScale,
+			Y = (float)y + 26f * inventoryScale
+		};
 		SpriteSheet<_sheetSprites>.DrawScaled(itemTexId, ref pos, itemColor, num);
 	}
 
@@ -3676,9 +3683,11 @@ public sealed class UI
 		{
 			num2 = 1.25f;
 		}
-		Vector2 pos = default(Vector2);
-		pos.X = (float)x + 26f * inventoryScale;
-		pos.Y = (float)y + 26f * inventoryScale;
+		Vector2 pos = new Vector2
+		{
+			X = (float)x + 26f * inventoryScale,
+			Y = (float)y + 26f * inventoryScale
+		};
 		SpriteSheet<_sheetSprites>.DrawScaled(num, ref pos, item.GetAlphaInventory(itemColor), num2);
 		if (item.color.PackedValue != 0)
 		{
@@ -3987,7 +3996,7 @@ public sealed class UI
 			{
 				try
 				{
-					kbResult = Guide.BeginShowKeyboardInput(controller, title, desc, oldString.isCensored ? "" : oldString.text, (AsyncCallback)null, (object)null);
+					kbResult = Guide.BeginShowKeyboardInput(controller, title, desc, oldString.isCensored ? "" : oldString.text, null, null);
 				}
 				catch (GuideAlreadyVisibleException)
 				{
@@ -4380,7 +4389,7 @@ public sealed class UI
 		}
 		else if (view == null)
 		{
-			if (Main.isGameStarted && IsSelectButtonTriggered() && !Main.IsTutorial() && (Netplay.session == null || ((ReadOnlyCollection<NetworkGamer>)(object)Netplay.session.AllGamers).Count != 8))
+			if (Main.isGameStarted && IsSelectButtonTriggered() && !Main.IsTutorial() && (Netplay.session == null || Netplay.session.AllGamers.Count != 8))
 			{
 				ClearButtonTriggers();
 				SetMenu(MenuMode.CHARACTER_SELECT, rememberPrevious: false, reset: true);
@@ -4425,7 +4434,7 @@ public sealed class UI
 				UpdateMenu();
 			}
 		}
-		if (menuType != 0)
+		if (menuType != MenuType.MAIN)
 		{
 			UpdateIngame();
 		}
@@ -4684,16 +4693,18 @@ public sealed class UI
 		{
 			cursorHighlight -= 2;
 		}
-		Rectangle value = default(Rectangle);
-		value.Y = (int)(Main.frameCounter & 0x10);
-		value.Width = 16;
-		value.Height = 16;
-		Vector2 vector = default(Vector2);
+		Rectangle value = new Rectangle
+		{
+			Y = (int)(Main.frameCounter & 0x10),
+			Width = 16,
+			Height = 16
+		};
+		Vector2 position = default(Vector2);
 		if (!smartCursor)
 		{
 			value.X = 16;
-			vector.X = mouseX - 8;
-			vector.Y = mouseY - 8;
+			position.X = mouseX - 8;
+			position.Y = mouseY - 8;
 		}
 		else
 		{
@@ -4701,10 +4712,10 @@ public sealed class UI
 			{
 				return;
 			}
-			vector.X = player.aabb.X + 10 - view.screenPosition.X + (int)player.controlDir.X - 8;
-			vector.Y = player.aabb.Y + 21 - view.screenPosition.Y + (int)player.controlDir.Y - 8;
+			position.X = player.aabb.X + 10 - view.screenPosition.X + (int)player.controlDir.X - 8;
+			position.Y = player.aabb.Y + 21 - view.screenPosition.Y + (int)player.controlDir.Y - 8;
 		}
-		Main.spriteBatch.Draw(cursorTexture, vector, (Rectangle?)value, Color.White);
+		Main.spriteBatch.Draw(cursorTexture, position, value, Color.White);
 	}
 
 	public void DrawInventoryCursor(int x, int y, double scale, int alpha = 255)
@@ -4766,7 +4777,7 @@ public sealed class UI
 
 	public StorageContainer OpenPlayerStorage(string name)
 	{
-		IAsyncResult asyncResult = playerStorage.Device.BeginOpenContainer(name, (AsyncCallback)null, (object)null);
+		IAsyncResult asyncResult = playerStorage.Device.BeginOpenContainer(name, null, null);
 		asyncResult.AsyncWaitHandle.WaitOne();
 		StorageContainer result = playerStorage.Device.EndOpenContainer(asyncResult);
 		asyncResult.AsyncWaitHandle.Close();
@@ -5155,7 +5166,7 @@ public sealed class UI
 				LoadSplitscreenFonts(theGame.Content);
 				InvalidateCachedText();
 			}
-			if (view.setViewType(viewType) && menuType != 0)
+			if (view.setViewType(viewType) && menuType != MenuType.MAIN)
 			{
 				worldFade = -0.25f;
 			}
@@ -5208,7 +5219,7 @@ public sealed class UI
 		if (numActiveViews == 1 && main != null && main.view != null && !main.view.isFullScreen())
 		{
 			main.view.setViewType();
-			if (main.menuType != 0)
+			if (main.menuType != MenuType.MAIN)
 			{
 				main.worldFade = -0.25f;
 			}
@@ -5720,9 +5731,9 @@ public sealed class UI
 			pos.Y -= ct.Height + num;
 			num = 0;
 		}
-		Main.spriteBatch.Draw(chatBackTexture, pos, (Rectangle?)new Rectangle(0, 0, chatBackTexture.Width, ct.Height + num), backColor);
+		Main.spriteBatch.Draw(chatBackTexture, pos, new Rectangle(0, 0, chatBackTexture.Width, ct.Height + num), backColor);
 		pos.Y += ct.Height + num;
-		Main.spriteBatch.Draw(chatBackTexture, pos, (Rectangle?)new Rectangle(0, chatBackTexture.Height - 30, chatBackTexture.Width, 30), backColor);
+		Main.spriteBatch.Draw(chatBackTexture, pos, new Rectangle(0, chatBackTexture.Height - 30, chatBackTexture.Width, 30), backColor);
 		pos.Y -= ct.Height + num;
 		if (caption != null)
 		{
@@ -6478,11 +6489,11 @@ public sealed class UI
 
 	private void DrawNpcChat()
 	{
-		string @string = npcChatText.GetString();
-		if (@string != npcCompiledChatText)
+		string text = npcChatText.GetString();
+		if (text != npcCompiledChatText)
 		{
-			npcCompiledChatText = @string;
-			npcChatCompiledText = new CompiledText(@string, 470, styleFontSmallOutline);
+			npcCompiledChatText = text;
+			npcChatCompiledText = new CompiledText(text, 470, styleFontSmallOutline);
 		}
 		int num = (mouseTextBrightness * 2 + 255) / 3;
 		int num2 = DrawDialog(textColor: new Color(num, num, num, num), pos: new Vector2(view.viewWidth - chatBackTexture.Width >> 1, 100f), backColor: new Color(200, 200, 200, 200), ct: npcChatCompiledText);
@@ -6497,13 +6508,13 @@ public sealed class UI
 			pivot.Y *= 0.5f;
 			DrawStringScaled(fontSmallOutline, focusText, new Vector2((float)num3 + pivot.X, (float)num4 + pivot.Y), focusColor, pivot, (npcChatSelectedItem == 0) ? 1.1f : 0.9f);
 		}
-		string text = Lang.inter[52];
+		string text2 = Lang.inter[52];
 		Color c = new Color(num, (int)((double)num * 0.9090909090909091), num >> 1, num);
 		num3 = num3 + (int)(pivot.X * 2f) + 30;
-		Vector2 pivot2 = MeasureString(fontSmallOutline, text);
+		Vector2 pivot2 = MeasureString(fontSmallOutline, text2);
 		pivot2.X *= 0.5f;
 		pivot2.Y *= 0.5f;
-		DrawStringScaled(fontSmallOutline, text, new Vector2((float)num3 + pivot2.X, (float)num4 + pivot2.Y), c, pivot2, (npcChatSelectedItem == 1) ? 1.1f : 0.9f);
+		DrawStringScaled(fontSmallOutline, text2, new Vector2((float)num3 + pivot2.X, (float)num4 + pivot2.Y), c, pivot2, (npcChatSelectedItem == 1) ? 1.1f : 0.9f);
 		if (focusText3 != null)
 		{
 			num3 = num3 + (int)(pivot2.X * 2f) + 30;
@@ -7534,10 +7545,12 @@ public sealed class UI
 		inventoryScale = 1f;
 		int num = INVENTORY_X + 112;
 		int y = INVENTORY_Y;
-		Rectangle rect = default(Rectangle);
-		rect.Y = y;
-		rect.Width = 16;
-		rect.Height = 56;
+		Rectangle rect = new Rectangle
+		{
+			Y = y,
+			Width = 16,
+			Height = 56
+		};
 		if (inventoryBuffX > 0)
 		{
 			rect.X = num - 16;
@@ -8226,18 +8239,22 @@ public sealed class UI
 			}
 			if (num20 >= 0)
 			{
-				Rectangle rect3 = default(Rectangle);
-				rect3.X = num16 + 200 + 80;
-				rect3.Y = num17 + 18 + 28;
-				rect3.Width = 68;
-				rect3.Height = 68;
+				Rectangle rect3 = new Rectangle
+				{
+					X = num16 + 200 + 80,
+					Y = num17 + 18 + 28,
+					Width = 68,
+					Height = 68
+				};
 				Main.DrawRect(442, rect3, 192);
 				int width2 = SpriteSheet<_sheetSprites>.src[num20].Width;
 				int height = SpriteSheet<_sheetSprites>.src[num20].Height;
 				float scaleCenter = ((width2 <= height) ? (64f / (float)height) : (64f / (float)width2));
-				Vector2 pos = default(Vector2);
-				pos.X = rect3.Center.X;
-				pos.Y = rect3.Center.Y;
+				Vector2 pos = new Vector2
+				{
+					X = rect3.Center.X,
+					Y = rect3.Center.Y
+				};
 				SpriteSheet<_sheetSprites>.DrawScaled(num20, ref pos, Color.White, scaleCenter);
 				DrawStringCT(fontSmall, rect3.Center.X, rect3.Bottom + 2, player.IsNearCraftingStation(craftingRecipe) ? Color.White : new Color(255, 64, 64, 255));
 			}
@@ -8343,9 +8360,9 @@ public sealed class UI
 		}
 		Main.spriteBatch.End();
 		GamerCollection<NetworkGamer> allGamers = Netplay.session.AllGamers;
-		for (int j = 0; j < ((ReadOnlyCollection<NetworkGamer>)(object)allGamers).Count; j++)
+		for (int j = 0; j < allGamers.Count; j++)
 		{
-			NetworkGamer networkGamer = ((ReadOnlyCollection<NetworkGamer>)(object)allGamers)[j];
+			NetworkGamer networkGamer = allGamers[j];
 			if (networkGamer.Tag is Player player)
 			{
 				DrawPlayerIcon(player, new Vector2(num6 + 8, num7 + 8 + j * 44), 1.5f);
@@ -8354,9 +8371,9 @@ public sealed class UI
 		miniMap.DrawMap(view);
 		DrawStringCC(fontSmall, Lang.menu[81], num + 26, num2 + 69, Color.White);
 		DrawStringCC(fontSmall, Lang.menu[82], num3 + 16, num2 + 69, Color.White);
-		for (int k = 0; k < ((ReadOnlyCollection<NetworkGamer>)(object)allGamers).Count; k++)
+		for (int k = 0; k < allGamers.Count; k++)
 		{
-			NetworkGamer networkGamer2 = ((ReadOnlyCollection<NetworkGamer>)(object)allGamers)[k];
+			NetworkGamer networkGamer2 = allGamers[k];
 			if (networkGamer2.Tag is Player player2)
 			{
 				int y = num7 + 4 + 44 * k;
@@ -9518,9 +9535,9 @@ public sealed class UI
 				{
 					GamerCollection<NetworkGamer> allGamers = Netplay.session.AllGamers;
 					int num = mapScreenCursorY - 2;
-					if (num < ((ReadOnlyCollection<NetworkGamer>)(object)allGamers).Count)
+					if (num < allGamers.Count)
 					{
-						NetworkGamer gamer = ((ReadOnlyCollection<NetworkGamer>)(object)allGamers)[num];
+						NetworkGamer gamer = allGamers[num];
 						ShowGamerCard(gamer);
 					}
 				}
@@ -9552,7 +9569,7 @@ public sealed class UI
 				flag = false;
 				try
 				{
-					Guide.ShowGameInvite(controller, (IEnumerable<Gamer>)null);
+					Guide.ShowGameInvite(controller, null);
 				}
 				catch (GuideAlreadyVisibleException)
 				{
@@ -9708,9 +9725,9 @@ public sealed class UI
 				wasRemovedFromSessionWithoutOurConsent = true;
 				if (this == main)
 				{
-					for (int i = 0; i < ((ReadOnlyCollection<LocalNetworkGamer>)(object)Netplay.session.LocalGamers).Count; i++)
+					for (int i = 0; i < Netplay.session.LocalGamers.Count; i++)
 					{
-						SignedInGamer signedInGamer3 = ((ReadOnlyCollection<LocalNetworkGamer>)(object)Netplay.session.LocalGamers)[i].SignedInGamer;
+						SignedInGamer signedInGamer3 = Netplay.session.LocalGamers[i].SignedInGamer;
 						Main.ui[(int)signedInGamer3.PlayerIndex].wasRemovedFromSessionWithoutOurConsent = true;
 					}
 				}
@@ -9732,7 +9749,7 @@ public sealed class UI
 			}
 			if (playerStorage != null)
 			{
-				((Collection<IGameComponent>)(object)theGame.Components).Remove((IGameComponent)playerStorage);
+				theGame.Components.Remove(playerStorage);
 				playerStorage.Dispose();
 				playerStorage = null;
 			}
@@ -9801,7 +9818,7 @@ public sealed class UI
 		{
 			if (blacklist[num] == worldId)
 			{
-				if (menuType != 0)
+				if (menuType != MenuType.MAIN)
 				{
 					menuType = MenuType.PAUSE;
 				}

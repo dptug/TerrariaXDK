@@ -91,9 +91,9 @@ public struct Sign
 
 	public void Read(PacketReader packetIn)
 	{
-		x = ((BinaryReader)(object)packetIn).ReadInt16();
-		y = ((BinaryReader)(object)packetIn).ReadInt16();
-		text = new UserString((BinaryReader)(object)packetIn);
+		x = packetIn.ReadInt16();
+		y = packetIn.ReadInt16();
+		text = new UserString(packetIn);
 	}
 
 	public void Read(BinaryReader fileIO, int release)

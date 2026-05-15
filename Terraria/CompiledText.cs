@@ -244,7 +244,7 @@ public sealed class CompiledText
 		for (int num10 = 0; num10 < _segments.Count; num10 = num9)
 		{
 			num9 = num10 + 1;
-			if ((_segments[num10].Style.TextAttributes & Attributes.Alignment) != 0)
+			if ((_segments[num10].Style.TextAttributes & Attributes.Alignment) != Attributes.None)
 			{
 				if (num8 == -1)
 				{
@@ -275,11 +275,11 @@ public sealed class CompiledText
 		foreach (Segment segment in _segments)
 		{
 			Color color = segment.Style.ForegroundColor;
-			if ((segment.Style.TextAttributes & Attributes.Italic) != 0)
+			if ((segment.Style.TextAttributes & Attributes.Italic) != Attributes.None)
 			{
 				color = defaultAccentColor;
 			}
-			else if ((segment.Style.TextAttributes & Attributes.Highlighted) != 0)
+			else if ((segment.Style.TextAttributes & Attributes.Highlighted) != Attributes.None)
 			{
 				color = new Color(64, 255, 255, 255);
 			}
@@ -290,7 +290,7 @@ public sealed class CompiledText
 			if (segment.Position.X < clip.Width && segment.Position.Y < clip.Height)
 			{
 				UI.DrawStringLT(segment.Style.Font, segment.SegmentText, clip.X + segment.Position.X, clip.Y + segment.Position.Y, color);
-				if ((segment.Style.TextAttributes & Attributes.Bold) != 0)
+				if ((segment.Style.TextAttributes & Attributes.Bold) != Attributes.None)
 				{
 					UI.DrawStringLT(segment.Style.Font, segment.SegmentText, clip.X + segment.Position.X + 1, clip.Y + segment.Position.Y, color);
 				}

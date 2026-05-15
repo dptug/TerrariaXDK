@@ -7,20 +7,13 @@ namespace Terraria;
 
 public struct Projectile
 {
-	private struct PetAnim
+	private struct PetAnim(int s, int e, int d)
 	{
-		private byte startFrame;
+		private byte startFrame = (byte)s;
 
-		private byte endFrame;
+		private byte endFrame = (byte)e;
 
-		private byte frameDelay;
-
-		public PetAnim(int s, int e, int d)
-		{
-			startFrame = (byte)s;
-			endFrame = (byte)e;
-			frameDelay = (byte)d;
-		}
+		private byte frameDelay = (byte)d;
 
 		public void Update(ref Projectile p)
 		{
@@ -1486,7 +1479,7 @@ public struct Projectile
 	{
 		for (int i = 0; i < 512; i++)
 		{
-			uint num = lastProjectileIndex++ & 0x1FFu;
+			uint num = lastProjectileIndex++ & 0x1FF;
 			fixed (Projectile* ptr = &Main.projectile[num])
 			{
 				if (ptr->active != 0)
@@ -1537,7 +1530,7 @@ public struct Projectile
 	{
 		for (int i = 0; i < 512; i++)
 		{
-			uint num = lastProjectileIndex++ & 0x1FFu;
+			uint num = lastProjectileIndex++ & 0x1FF;
 			fixed (Projectile* ptr = &Main.projectile[num])
 			{
 				if (ptr->active != 0)
@@ -4169,7 +4162,7 @@ public struct Projectile
 		if (++frameCounter >= 4)
 		{
 			frameCounter = 0;
-			frame = (byte)((uint)(frame + 1) & 3u);
+			frame = (byte)((frame + 1) & 3);
 		}
 		if (Main.rand.Next(6) == 0)
 		{

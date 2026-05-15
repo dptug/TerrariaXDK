@@ -57,7 +57,7 @@ public class ColorSelector : ISelector
 	{
 		Rectangle rectangle = paletteBounds;
 		Rectangle value = new Rectangle(0, 0, 1, 1);
-		Rectangle rectangle2 = new Rectangle(0, 0, 16, 16);
+		Rectangle destinationRectangle = new Rectangle(0, 0, 16, 16);
 		Vector2 position2 = default(Vector2);
 		Vector2i vector2i = new Vector2i(8, 8);
 		int num = rectangle.Width * 22 - 6;
@@ -76,34 +76,36 @@ public class ColorSelector : ISelector
 				{
 					value.X = num4;
 					value.Y = num3;
-					rectangle2.X = (int)position.X + num4 * 22 - vector2i.X;
-					rectangle2.Y = (int)position.Y + num3 * 22 - vector2i.Y;
-					Main.spriteBatch.Draw(palette, rectangle2, (Rectangle?)value, color);
-					position2.X = rectangle2.X - (pickerBounds.Width - 16 >> 1);
-					position2.Y = rectangle2.Y - (pickerBounds.Height - 16 >> 1);
+					destinationRectangle.X = (int)position.X + num4 * 22 - vector2i.X;
+					destinationRectangle.Y = (int)position.Y + num3 * 22 - vector2i.Y;
+					Main.spriteBatch.Draw(palette, destinationRectangle, value, color);
+					position2.X = destinationRectangle.X - (pickerBounds.Width - 16 >> 1);
+					position2.Y = destinationRectangle.Y - (pickerBounds.Height - 16 >> 1);
 					Main.spriteBatch.Draw(picker, position2, color2);
 				}
 			}
 		}
-		Vector2 vector = default(Vector2);
-		vector.X = position.X + (float)(selected.X * 22);
-		vector.Y = position.Y + (float)(selected.Y * 22);
+		Vector2 position3 = new Vector2
+		{
+			X = position.X + (float)(selected.X * 22),
+			Y = position.Y + (float)(selected.Y * 22)
+		};
 		value.X = selected.X;
 		value.Y = selected.Y;
 		float num5 = ((flashTimer > 0) ? (1f + 0.1f * (float)flashTimer) : 1f);
-		rectangle2.X = (int)position.X + selected.X * 22 - (int)((float)vector2i.X * num5);
-		rectangle2.Y = (int)position.Y + selected.Y * 22 - (int)((float)vector2i.Y * num5);
-		rectangle2.Width = (int)((float)rectangle2.Width * num5);
-		rectangle2.Height = (int)((float)rectangle2.Height * num5);
-		Main.spriteBatch.Draw(palette, rectangle2, (Rectangle?)value, color);
-		Main.spriteBatch.Draw(picker, vector, (Rectangle?)null, color, 0f, new Vector2(pickerBounds.Width >> 1, pickerBounds.Height >> 1), num5, SpriteEffects.None, 0f);
+		destinationRectangle.X = (int)position.X + selected.X * 22 - (int)((float)vector2i.X * num5);
+		destinationRectangle.Y = (int)position.Y + selected.Y * 22 - (int)((float)vector2i.Y * num5);
+		destinationRectangle.Width = (int)((float)destinationRectangle.Width * num5);
+		destinationRectangle.Height = (int)((float)destinationRectangle.Height * num5);
+		Main.spriteBatch.Draw(palette, destinationRectangle, value, color);
+		Main.spriteBatch.Draw(picker, position3, null, color, 0f, new Vector2(pickerBounds.Width >> 1, pickerBounds.Height >> 1), num5, SpriteEffects.None, 0f);
 	}
 
 	private void UpdateColor()
 	{
 		Rectangle value = new Rectangle(selected.X, selected.Y, 1, 1);
 		Color[] array = new Color[1];
-		palette.GetData<Color>(0, (Rectangle?)value, array, 0, 1);
+		palette.GetData(0, value, array, 0, 1);
 		Selected = array[0];
 	}
 

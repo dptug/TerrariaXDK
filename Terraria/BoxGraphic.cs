@@ -54,9 +54,9 @@ internal class BoxGraphic
 	{
 		for (int i = 0; i < 9; i++)
 		{
-			Rectangle rectangle = destinations[i];
-			rectangle.Offset(position.X, position.Y);
-			Main.spriteBatch.Draw(graphic, rectangle, (Rectangle?)sources[i], Color * alpha);
+			Rectangle destinationRectangle = destinations[i];
+			destinationRectangle.Offset(position.X, position.Y);
+			Main.spriteBatch.Draw(graphic, destinationRectangle, sources[i], Color * alpha);
 		}
 	}
 }

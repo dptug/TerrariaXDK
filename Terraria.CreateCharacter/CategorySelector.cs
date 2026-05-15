@@ -76,8 +76,8 @@ internal class CategorySelector
 
 	public void Draw(Vector2 position)
 	{
-		Vector2 vector = new Vector2(background.Width >> 1, background.Height >> 1);
-		Vector2 vector2 = new Vector2(backgroundSelected.Width >> 1, backgroundSelected.Height >> 1);
+		Vector2 origin = new Vector2(background.Width >> 1, background.Height >> 1);
+		Vector2 origin2 = new Vector2(backgroundSelected.Width >> 1, backgroundSelected.Height >> 1);
 		int num = 4;
 		int num2 = num * 2 + 1;
 		int num3 = num + 1;
@@ -98,29 +98,29 @@ internal class CategorySelector
 			if (!(num6 < 0f) && !(val < 0f))
 			{
 				Texture2D texture2D = options[num5];
-				Vector2 vector3 = new Vector2(texture2D.Width >> 1, texture2D.Height >> 1);
-				Vector2 vector4 = spacing * ScrollTween * (float)scrollDirection;
-				Vector2 vector5 = position + spacing * (num4 - num3) + vector4;
+				Vector2 origin3 = new Vector2(texture2D.Width >> 1, texture2D.Height >> 1);
+				Vector2 vector = spacing * ScrollTween * (float)scrollDirection;
+				Vector2 position2 = position + spacing * (num4 - num3) + vector;
 				if (num5 == selected)
 				{
-					Main.spriteBatch.Draw(backgroundSelected, vector5, (Rectangle?)null, Color.White * num6, 0f, vector2, val, SpriteEffects.None, 0f);
+					Main.spriteBatch.Draw(backgroundSelected, position2, null, Color.White * num6, 0f, origin2, val, SpriteEffects.None, 0f);
 				}
 				else
 				{
-					Main.spriteBatch.Draw(background, vector5, (Rectangle?)null, Color.White * num6, 0f, vector, 1f, SpriteEffects.None, 0f);
+					Main.spriteBatch.Draw(background, position2, null, Color.White * num6, 0f, origin, 1f, SpriteEffects.None, 0f);
 				}
-				Main.spriteBatch.Draw(texture2D, vector5, (Rectangle?)null, Color.White * num6, 0f, vector3, 1f, SpriteEffects.None, 0f);
+				Main.spriteBatch.Draw(texture2D, position2, null, Color.White * num6, 0f, origin3, 1f, SpriteEffects.None, 0f);
 			}
 		}
 		if (!Scrolling)
 		{
-			Vector2 vector6 = spacing * ((float)num - 0.25f);
-			Vector2 vector7 = position - vector6 - new Vector2(8f, 8f);
-			Rectangle rect = new Rectangle((int)vector7.X, (int)vector7.Y, 16, 16);
+			Vector2 vector2 = spacing * ((float)num - 0.25f);
+			Vector2 vector3 = position - vector2 - new Vector2(8f, 8f);
+			Rectangle rect = new Rectangle((int)vector3.X, (int)vector3.Y, 16, 16);
 			SpriteSheet<_sheetSprites>.DrawCentered(136, ref rect, SpriteEffects.FlipHorizontally);
-			Vector2 vector8 = position + vector6 - new Vector2(8f, 8f);
-			rect.X = (int)vector8.X;
-			rect.Y = (int)vector8.Y;
+			Vector2 vector4 = position + vector2 - new Vector2(8f, 8f);
+			rect.X = (int)vector4.X;
+			rect.Y = (int)vector4.Y;
 			SpriteSheet<_sheetSprites>.DrawCentered(136, ref rect);
 		}
 	}

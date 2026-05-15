@@ -54,7 +54,7 @@ public sealed class FastRandom
 			y = z;
 			z = w;
 			w = w ^ (w >> 19) ^ (num ^ (num >> 8));
-			num2 = w & 0x7FFFFFFFu;
+			num2 = w & 0x7FFFFFFF;
 		}
 		while (num2 == int.MaxValue);
 		return (int)num2;

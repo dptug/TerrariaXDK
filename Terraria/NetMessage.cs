@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System.IO;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.GamerServices;
@@ -53,8 +52,8 @@ public sealed class NetMessage
 				lock (packetIn)
 				{
 					uI.localGamer.ReceiveData(packetIn, out var _);
-					int num2 = ((BinaryReader)(object)packetIn).ReadByte();
-					num2 = ((BinaryReader)(object)packetIn).ReadByte();
+					int num2 = packetIn.ReadByte();
+					num2 = packetIn.ReadByte();
 					uI.JoinSession(num2);
 					uI.localGamer.Tag = Main.player[num2];
 					SendHello(num2);
@@ -103,31 +102,31 @@ public sealed class NetMessage
 	{
 		if (value < 128)
 		{
-			((BinaryWriter)(object)packetOut).Write((byte)value);
+			packetOut.Write((byte)value);
 			return;
 		}
-		uint num = (value & 0x7Fu) | 0x80u | (value >> 7 << 8);
+		uint num = (value & 0x7F) | 0x80 | (value >> 7 << 8);
 		if (value < 16384)
 		{
-			((BinaryWriter)(object)packetOut).Write((ushort)num);
+			packetOut.Write((ushort)num);
 			return;
 		}
-		((BinaryWriter)(object)packetOut).Write((ushort)((num & 0x7FFFu) | 0x8000u));
+		packetOut.Write((ushort)((num & 0x7FFF) | 0x8000));
 		value >>= 14;
-		((BinaryWriter)(object)packetOut).Write((byte)value);
+		packetOut.Write((byte)value);
 	}
 
 	private static uint ReadCompacted()
 	{
-		uint num = ((BinaryReader)(object)packetIn).ReadByte();
+		uint num = packetIn.ReadByte();
 		if (num >= 128)
 		{
-			num &= 0x7Fu;
-			num |= (uint)(((BinaryReader)(object)packetIn).ReadByte() << 7);
+			num &= 0x7F;
+			num |= (uint)(packetIn.ReadByte() << 7);
 			if (num >= 16384)
 			{
-				num &= 0x3FFFu;
-				num |= (uint)(((BinaryReader)(object)packetIn).ReadByte() << 14);
+				num &= 0x3FFF;
+				num |= (uint)(packetIn.ReadByte() << 14);
 			}
 		}
 		return num;
@@ -135,12 +134,12 @@ public sealed class NetMessage
 
 	public static void CreateMessage0(int msgType)
 	{
-		((BinaryWriter)(object)packetOut).Write((byte)msgType);
+		packetOut.Write((byte)msgType);
 		switch (msgType)
 		{
 		case 7:
 		{
-			((BinaryWriter)(object)packetOut).Write(Main.gameTime.time);
+			packetOut.Write(Main.gameTime.time);
 			int num2 = Main.gameTime.moonPhase << 2;
 			if (Main.gameTime.dayTime)
 			{
@@ -150,15 +149,15 @@ public sealed class NetMessage
 			{
 				num2 |= 2;
 			}
-			((BinaryWriter)(object)packetOut).Write((byte)num2);
-			((BinaryWriter)(object)packetOut).Write((ushort)Main.maxTilesX);
-			((BinaryWriter)(object)packetOut).Write((ushort)Main.maxTilesY);
-			((BinaryWriter)(object)packetOut).Write((ushort)Main.spawnTileX);
-			((BinaryWriter)(object)packetOut).Write((ushort)Main.spawnTileY);
-			((BinaryWriter)(object)packetOut).Write((ushort)Main.worldSurface);
-			((BinaryWriter)(object)packetOut).Write((ushort)Main.rockLayer);
-			((BinaryWriter)(object)packetOut).Write(Main.worldID);
-			((BinaryWriter)(object)packetOut).Write(Main.worldTimestamp);
+			packetOut.Write((byte)num2);
+			packetOut.Write((ushort)Main.maxTilesX);
+			packetOut.Write((ushort)Main.maxTilesY);
+			packetOut.Write((ushort)Main.spawnTileX);
+			packetOut.Write((ushort)Main.spawnTileY);
+			packetOut.Write((ushort)Main.worldSurface);
+			packetOut.Write((ushort)Main.rockLayer);
+			packetOut.Write(Main.worldID);
+			packetOut.Write(Main.worldTimestamp);
 			num2 = (WorldGen.shadowOrbSmashed ? 1 : 0);
 			if (NPC.downedBoss1)
 			{
@@ -180,48 +179,48 @@ public sealed class NetMessage
 			{
 				num2 |= 0x20;
 			}
-			((BinaryWriter)(object)packetOut).Write((byte)num2);
-			((BinaryWriter)(object)packetOut).Write(Main.worldName);
+			packetOut.Write((byte)num2);
+			packetOut.Write(Main.worldName);
 			break;
 		}
 		case 11:
 			if (Main.netMode == 2)
 			{
 				GamerCollection<NetworkGamer> allGamers = Netplay.session.AllGamers;
-				int num = ((ReadOnlyCollection<NetworkGamer>)(object)allGamers).Count;
-				((BinaryWriter)(object)packetOut).Write((byte)num);
+				int num = allGamers.Count;
+				packetOut.Write((byte)num);
 				do
 				{
-					Player player = ((ReadOnlyCollection<NetworkGamer>)(object)allGamers)[--num].Tag as Player;
-					((BinaryWriter)(object)packetOut).Write(player.whoAmI);
+					Player player = allGamers[--num].Tag as Player;
+					packetOut.Write(player.whoAmI);
 				}
 				while (num > 0);
 			}
 			break;
 		case 57:
-			((BinaryWriter)(object)packetOut).Write(WorldGen.tGood);
-			((BinaryWriter)(object)packetOut).Write(WorldGen.tEvil);
+			packetOut.Write(WorldGen.tGood);
+			packetOut.Write(WorldGen.tEvil);
 			break;
 		}
 	}
 
 	public static void CreateMessage1(int msgType, int number)
 	{
-		((BinaryWriter)(object)packetOut).Write((byte)msgType);
+		packetOut.Write((byte)msgType);
 		switch (msgType)
 		{
 		case 0:
-			((BinaryWriter)(object)packetOut).Write((byte)number);
+			packetOut.Write((byte)number);
 			break;
 		case 1:
-			((BinaryWriter)(object)packetOut).Write((byte)1);
-			((BinaryWriter)(object)packetOut).Write((byte)number);
+			packetOut.Write((byte)1);
+			packetOut.Write((byte)number);
 			break;
 		case 2:
-			((BinaryWriter)(object)packetOut).Write((ushort)number);
+			packetOut.Write((ushort)number);
 			break;
 		case 3:
-			((BinaryWriter)(object)packetOut).Write((byte)number);
+			packetOut.Write((byte)number);
 			break;
 		case 4:
 		{
@@ -231,38 +230,38 @@ public sealed class NetMessage
 			{
 				num6 |= 0x400;
 			}
-			((BinaryWriter)(object)packetOut).Write((ushort)num6);
-			((BinaryWriter)(object)packetOut).Write(player2.hairColor.R);
-			((BinaryWriter)(object)packetOut).Write(player2.hairColor.G);
-			((BinaryWriter)(object)packetOut).Write(player2.hairColor.B);
-			((BinaryWriter)(object)packetOut).Write(player2.skinColor.R);
-			((BinaryWriter)(object)packetOut).Write(player2.skinColor.G);
-			((BinaryWriter)(object)packetOut).Write(player2.skinColor.B);
-			((BinaryWriter)(object)packetOut).Write(player2.eyeColor.R);
-			((BinaryWriter)(object)packetOut).Write(player2.eyeColor.G);
-			((BinaryWriter)(object)packetOut).Write(player2.eyeColor.B);
-			((BinaryWriter)(object)packetOut).Write(player2.shirtColor.R);
-			((BinaryWriter)(object)packetOut).Write(player2.shirtColor.G);
-			((BinaryWriter)(object)packetOut).Write(player2.shirtColor.B);
-			((BinaryWriter)(object)packetOut).Write(player2.underShirtColor.R);
-			((BinaryWriter)(object)packetOut).Write(player2.underShirtColor.G);
-			((BinaryWriter)(object)packetOut).Write(player2.underShirtColor.B);
-			((BinaryWriter)(object)packetOut).Write(player2.pantsColor.R);
-			((BinaryWriter)(object)packetOut).Write(player2.pantsColor.G);
-			((BinaryWriter)(object)packetOut).Write(player2.pantsColor.B);
-			((BinaryWriter)(object)packetOut).Write(player2.shoeColor.R);
-			((BinaryWriter)(object)packetOut).Write(player2.shoeColor.G);
-			((BinaryWriter)(object)packetOut).Write(player2.shoeColor.B);
-			((BinaryWriter)(object)packetOut).Write(player2.name);
+			packetOut.Write((ushort)num6);
+			packetOut.Write(player2.hairColor.R);
+			packetOut.Write(player2.hairColor.G);
+			packetOut.Write(player2.hairColor.B);
+			packetOut.Write(player2.skinColor.R);
+			packetOut.Write(player2.skinColor.G);
+			packetOut.Write(player2.skinColor.B);
+			packetOut.Write(player2.eyeColor.R);
+			packetOut.Write(player2.eyeColor.G);
+			packetOut.Write(player2.eyeColor.B);
+			packetOut.Write(player2.shirtColor.R);
+			packetOut.Write(player2.shirtColor.G);
+			packetOut.Write(player2.shirtColor.B);
+			packetOut.Write(player2.underShirtColor.R);
+			packetOut.Write(player2.underShirtColor.G);
+			packetOut.Write(player2.underShirtColor.B);
+			packetOut.Write(player2.pantsColor.R);
+			packetOut.Write(player2.pantsColor.G);
+			packetOut.Write(player2.pantsColor.B);
+			packetOut.Write(player2.shoeColor.R);
+			packetOut.Write(player2.shoeColor.G);
+			packetOut.Write(player2.shoeColor.B);
+			packetOut.Write(player2.name);
 			break;
 		}
 		case 9:
-			((BinaryWriter)(object)packetOut).Write((byte)number);
+			packetOut.Write((byte)number);
 			break;
 		case 12:
-			((BinaryWriter)(object)packetOut).Write((byte)number);
-			((BinaryWriter)(object)packetOut).Write((short)Main.player[number].SpawnX);
-			((BinaryWriter)(object)packetOut).Write((short)Main.player[number].SpawnY);
+			packetOut.Write((byte)number);
+			packetOut.Write((short)Main.player[number].SpawnX);
+			packetOut.Write((short)Main.player[number].SpawnY);
 			break;
 		case 13:
 		{
@@ -298,20 +297,20 @@ public sealed class NetMessage
 			}
 			if (num5 != 0)
 			{
-				((BinaryWriter)(object)packetOut).Write((byte)((uint)number | 0x80u));
-				((BinaryWriter)(object)packetOut).Write((byte)num5);
-				if (((uint)num5 & 0x20u) != 0)
+				packetOut.Write((byte)(number | 0x80));
+				packetOut.Write((byte)num5);
+				if ((num5 & 0x20) != 0)
 				{
-					((BinaryWriter)(object)packetOut).Write(player.selectedItem);
+					packetOut.Write(player.selectedItem);
 				}
 			}
 			else
 			{
-				((BinaryWriter)(object)packetOut).Write((byte)number);
+				packetOut.Write((byte)number);
 			}
 			packetOut.Write(player.position);
 			HalfVector2 halfVector3 = new HalfVector2(player.velocity);
-			((BinaryWriter)(object)packetOut).Write(halfVector3.PackedValue);
+			packetOut.Write(halfVector3.PackedValue);
 			if (Main.netMode == 2 && ++player.netSkip > 2)
 			{
 				player.netSkip = 0;
@@ -321,12 +320,12 @@ public sealed class NetMessage
 		case 16:
 		{
 			int value = number | ((Main.player[number].statLife & 0xFFF) << 4) | (Main.player[number].statLifeMax << 16);
-			((BinaryWriter)(object)packetOut).Write(value);
+			packetOut.Write(value);
 			break;
 		}
 		case 22:
 		{
-			((BinaryWriter)(object)packetOut).Write((byte)number);
+			packetOut.Write((byte)number);
 			int num = Main.item[number].owner;
 			if (num < 8)
 			{
@@ -335,36 +334,36 @@ public sealed class NetMessage
 				{
 					num |= 0x80;
 				}
-				((BinaryWriter)(object)packetOut).Write((byte)num);
+				packetOut.Write((byte)num);
 				packetOut.Write(Main.item[number].position);
-				if (((uint)num & 0x80u) != 0)
+				if ((num & 0x80) != 0)
 				{
 					HalfVector2 halfVector = new HalfVector2(velocity);
-					((BinaryWriter)(object)packetOut).Write(halfVector.PackedValue);
+					packetOut.Write(halfVector.PackedValue);
 				}
 			}
 			else
 			{
-				((BinaryWriter)(object)packetOut).Write((byte)num);
+				packetOut.Write((byte)num);
 			}
 			break;
 		}
 		case 23:
 		{
-			((BinaryWriter)(object)packetOut).Write((byte)number);
+			packetOut.Write((byte)number);
 			int num3 = ((Main.npc[number].active != 0) ? Main.npc[number].life : 0);
 			if (num3 <= 0)
 			{
-				((BinaryWriter)(object)packetOut).Write((byte)0);
+				packetOut.Write((byte)0);
 				Main.npc[number].netSkip = 0;
 				break;
 			}
 			WriteCompacted((uint)num3);
-			((BinaryWriter)(object)packetOut).Write(Main.npc[number].netID);
+			packetOut.Write(Main.npc[number].netID);
 			packetOut.Write(Main.npc[number].position);
 			HalfVector2 halfVector2 = new HalfVector2(Main.npc[number].velocity);
-			((BinaryWriter)(object)packetOut).Write(halfVector2.PackedValue);
-			((BinaryWriter)(object)packetOut).Write((sbyte)(Main.npc[number].target | ((Main.npc[number].direction & 3) << 4) | (Main.npc[number].directionY << 6)));
+			packetOut.Write(halfVector2.PackedValue);
+			packetOut.Write((sbyte)(Main.npc[number].target | ((Main.npc[number].direction & 3) << 4) | (Main.npc[number].directionY << 6)));
 			int num4 = 0;
 			float ai = Main.npc[number].ai0;
 			if (ai != 0f)
@@ -386,22 +385,22 @@ public sealed class NetMessage
 			{
 				num4 |= 8;
 			}
-			((BinaryWriter)(object)packetOut).Write((byte)num4);
-			if (((uint)num4 & (true ? 1u : 0u)) != 0)
+			packetOut.Write((byte)num4);
+			if ((num4 & 1) != 0)
 			{
-				((BinaryWriter)(object)packetOut).Write(ai);
+				packetOut.Write(ai);
 			}
-			if (((uint)num4 & 2u) != 0)
+			if ((num4 & 2) != 0)
 			{
-				((BinaryWriter)(object)packetOut).Write(ai2);
+				packetOut.Write(ai2);
 			}
-			if (((uint)num4 & 4u) != 0)
+			if ((num4 & 4) != 0)
 			{
-				((BinaryWriter)(object)packetOut).Write(ai3);
+				packetOut.Write(ai3);
 			}
-			if (((uint)num4 & 8u) != 0)
+			if ((num4 & 8) != 0)
 			{
-				((BinaryWriter)(object)packetOut).Write(ai4);
+				packetOut.Write(ai4);
 			}
 			break;
 		}
@@ -410,11 +409,11 @@ public sealed class NetMessage
 			{
 				number |= 0x80;
 			}
-			((BinaryWriter)(object)packetOut).Write((byte)number);
+			packetOut.Write((byte)number);
 			break;
 		case 36:
 		{
-			((BinaryWriter)(object)packetOut).Write((byte)number);
+			packetOut.Write((byte)number);
 			int num2 = 0;
 			if (Main.player[number].zoneEvil)
 			{
@@ -436,48 +435,48 @@ public sealed class NetMessage
 			{
 				num2 |= 0x10;
 			}
-			((BinaryWriter)(object)packetOut).Write((byte)num2);
+			packetOut.Write((byte)num2);
 			break;
 		}
 		case 40:
-			((BinaryWriter)(object)packetOut).Write((byte)number);
-			((BinaryWriter)(object)packetOut).Write(Main.player[number].talkNPC);
+			packetOut.Write((byte)number);
+			packetOut.Write(Main.player[number].talkNPC);
 			break;
 		case 41:
-			((BinaryWriter)(object)packetOut).Write((byte)number);
-			((BinaryWriter)(object)packetOut).Write(Main.player[number].itemRotation);
-			((BinaryWriter)(object)packetOut).Write(Main.player[number].itemAnimation);
+			packetOut.Write((byte)number);
+			packetOut.Write(Main.player[number].itemRotation);
+			packetOut.Write(Main.player[number].itemAnimation);
 			break;
 		case 42:
-			((BinaryWriter)(object)packetOut).Write((byte)number);
-			((BinaryWriter)(object)packetOut).Write(Main.player[number].statMana);
-			((BinaryWriter)(object)packetOut).Write(Main.player[number].statManaMax);
+			packetOut.Write((byte)number);
+			packetOut.Write(Main.player[number].statMana);
+			packetOut.Write(Main.player[number].statManaMax);
 			break;
 		case 45:
-			((BinaryWriter)(object)packetOut).Write((byte)(number | (Main.player[number].team << 4)));
+			packetOut.Write((byte)(number | (Main.player[number].team << 4)));
 			break;
 		case 49:
-			((BinaryWriter)(object)packetOut).Write((byte)number);
+			packetOut.Write((byte)number);
 			break;
 		case 50:
 		{
-			((BinaryWriter)(object)packetOut).Write((byte)number);
+			packetOut.Write((byte)number);
 			for (int j = 0; j < 10; j++)
 			{
-				((BinaryWriter)(object)packetOut).Write((byte)Main.player[number].buff[j].Type);
+				packetOut.Write((byte)Main.player[number].buff[j].Type);
 			}
 			break;
 		}
 		case 51:
-			((BinaryWriter)(object)packetOut).Write((byte)number);
+			packetOut.Write((byte)number);
 			break;
 		case 54:
 		{
-			((BinaryWriter)(object)packetOut).Write((byte)number);
+			packetOut.Write((byte)number);
 			for (int i = 0; i < 5; i++)
 			{
 				uint type = Main.npc[number].buff[i].Type;
-				((BinaryWriter)(object)packetOut).Write((byte)type);
+				packetOut.Write((byte)type);
 				if (type != 0)
 				{
 					WriteCompacted(Main.npc[number].buff[i].Time);
@@ -486,26 +485,26 @@ public sealed class NetMessage
 			break;
 		}
 		case 56:
-			((BinaryWriter)(object)packetOut).Write((byte)number);
-			((BinaryWriter)(object)packetOut).Write(NPC.chrName[number]);
+			packetOut.Write((byte)number);
+			packetOut.Write(NPC.chrName[number]);
 			break;
 		case 58:
-			((BinaryWriter)(object)packetOut).Write((byte)number);
-			((BinaryWriter)(object)packetOut).Write(Main.harpNote);
+			packetOut.Write((byte)number);
+			packetOut.Write(Main.harpNote);
 			break;
 		}
 	}
 
 	public unsafe static void CreateMessage2(int msgType, int number, int number2)
 	{
-		((BinaryWriter)(object)packetOut).Write((byte)msgType);
+		packetOut.Write((byte)msgType);
 		switch (msgType)
 		{
 		case 5:
 		{
 			int num9 = number2;
-			((BinaryWriter)(object)packetOut).Write((byte)number);
-			((BinaryWriter)(object)packetOut).Write((byte)num9);
+			packetOut.Write((byte)number);
+			packetOut.Write((byte)num9);
 			int stack2;
 			int netID2;
 			int prefix;
@@ -522,30 +521,30 @@ public sealed class NetMessage
 				netID2 = Main.player[number].armor[num9].netID;
 				prefix = Main.player[number].armor[num9].prefix;
 			}
-			((BinaryWriter)(object)packetOut).Write((byte)stack2);
+			packetOut.Write((byte)stack2);
 			if (stack2 > 0)
 			{
-				((BinaryWriter)(object)packetOut).Write((byte)prefix);
-				((BinaryWriter)(object)packetOut).Write((short)netID2);
+				packetOut.Write((byte)prefix);
+				packetOut.Write((short)netID2);
 			}
 			break;
 		}
 		case 10:
 		{
-			((BinaryWriter)(object)packetOut).Write((byte)number);
-			((BinaryWriter)(object)packetOut).Write((byte)number2);
+			packetOut.Write((byte)number);
+			packetOut.Write((byte)number2);
 			int num = number * 40;
 			int num2 = number2 * 30;
-			fixed (Tile* ptr2 = Main.tile)
+			fixed (Tile* tile = Main.tile)
 			{
 				Tile* ptr = null;
 				uint num3 = 0u;
 				for (int i = num; i < num + 40; i++)
 				{
-					Tile* ptr3 = ptr2 + (num2 + i * 1440);
+					Tile* ptr2 = tile + (num2 + i * 1440);
 					for (int num4 = 29; num4 >= 0; num4--)
 					{
-						if (ptr != null && ptr3->isTheSameAsExcludingVisibility(ref *ptr))
+						if (ptr != null && ptr2->isTheSameAsExcludingVisibility(ref *ptr))
 						{
 							num3++;
 						}
@@ -556,41 +555,41 @@ public sealed class NetMessage
 								WriteCompacted(num3);
 							}
 							num3 = 0u;
-							ptr = ptr3;
-							int active = ptr3->active;
+							ptr = ptr2;
+							int active = ptr2->active;
 							int num5 = active;
-							int wall = ptr3->wall;
+							int wall = ptr2->wall;
 							if (wall > 0)
 							{
 								num5 |= 4;
 							}
-							int liquid = ptr3->liquid;
+							int liquid = ptr2->liquid;
 							if (liquid > 0)
 							{
-								num5 |= 8 | ptr3->lava;
+								num5 |= 8 | ptr2->lava;
 							}
-							num5 |= ptr3->wire;
-							((BinaryWriter)(object)packetOut).Write((byte)num5);
+							num5 |= ptr2->wire;
+							packetOut.Write((byte)num5);
 							if (active != 0)
 							{
-								int type = ptr3->type;
-								((BinaryWriter)(object)packetOut).Write((byte)type);
+								int type = ptr2->type;
+								packetOut.Write((byte)type);
 								if (Main.tileFrameImportant[type])
 								{
-									WriteCompacted((uint)ptr3->frameX);
-									WriteCompacted((uint)ptr3->frameY);
+									WriteCompacted((uint)ptr2->frameX);
+									WriteCompacted((uint)ptr2->frameY);
 								}
 							}
 							if (wall > 0)
 							{
-								((BinaryWriter)(object)packetOut).Write((byte)wall);
+								packetOut.Write((byte)wall);
 							}
 							if (liquid > 0)
 							{
-								((BinaryWriter)(object)packetOut).Write((byte)liquid);
+								packetOut.Write((byte)liquid);
 							}
 						}
-						ptr3++;
+						ptr2++;
 					}
 				}
 				WriteCompacted(num3);
@@ -598,44 +597,44 @@ public sealed class NetMessage
 			break;
 		}
 		case 14:
-			((BinaryWriter)(object)packetOut).Write((byte)(number | (number2 << 7)));
+			packetOut.Write((byte)(number | (number2 << 7)));
 			break;
 		case 15:
-			((BinaryWriter)(object)packetOut).Write((ushort)number);
-			((BinaryWriter)(object)packetOut).Write((ushort)number2);
-			fixed (Tile* ptr4 = &Main.tile[number, number2])
+			packetOut.Write((ushort)number);
+			packetOut.Write((ushort)number2);
+			fixed (Tile* ptr3 = &Main.tile[number, number2])
 			{
-				int active2 = ptr4->active;
+				int active2 = ptr3->active;
 				int num7 = active2;
-				int wall2 = ptr4->wall;
+				int wall2 = ptr3->wall;
 				if (wall2 > 0)
 				{
 					num7 |= 4;
 				}
-				int num8 = ((Main.netMode == 2) ? ptr4->liquid : 0);
+				int num8 = ((Main.netMode == 2) ? ptr3->liquid : 0);
 				if (num8 > 0)
 				{
-					num7 |= 8 | ptr4->lava;
+					num7 |= 8 | ptr3->lava;
 				}
-				num7 |= ptr4->wire;
-				((BinaryWriter)(object)packetOut).Write((byte)num7);
+				num7 |= ptr3->wire;
+				packetOut.Write((byte)num7);
 				if (active2 != 0)
 				{
-					int type2 = ptr4->type;
-					((BinaryWriter)(object)packetOut).Write((byte)type2);
+					int type2 = ptr3->type;
+					packetOut.Write((byte)type2);
 					if (Main.tileFrameImportant[type2])
 					{
-						WriteCompacted((uint)ptr4->frameX);
-						WriteCompacted((uint)ptr4->frameY);
+						WriteCompacted((uint)ptr3->frameX);
+						WriteCompacted((uint)ptr3->frameY);
 					}
 				}
 				if (wall2 > 0)
 				{
-					((BinaryWriter)(object)packetOut).Write((byte)wall2);
+					packetOut.Write((byte)wall2);
 				}
 				if (num8 > 0)
 				{
-					((BinaryWriter)(object)packetOut).Write((byte)num8);
+					packetOut.Write((byte)num8);
 				}
 			}
 			break;
@@ -652,110 +651,110 @@ public sealed class NetMessage
 				ClearMessage();
 				break;
 			}
-			((BinaryWriter)(object)packetOut).Write((byte)number2);
-			((BinaryWriter)(object)packetOut).Write((short)((num6 << 5) | number));
+			packetOut.Write((byte)number2);
+			packetOut.Write((short)((num6 << 5) | number));
 			if (num6 != 0)
 			{
-				((BinaryWriter)(object)packetOut).Write(Main.item[number2].prefix);
-				((BinaryWriter)(object)packetOut).Write((byte)stack);
+				packetOut.Write(Main.item[number2].prefix);
+				packetOut.Write((byte)stack);
 				packetOut.Write(Main.item[number2].position);
 				HalfVector2 halfVector = new HalfVector2(Main.item[number2].velocity);
-				((BinaryWriter)(object)packetOut).Write(halfVector.PackedValue);
+				packetOut.Write(halfVector.PackedValue);
 			}
 			break;
 		}
 		case 24:
-			((BinaryWriter)(object)packetOut).Write((ushort)number);
-			((BinaryWriter)(object)packetOut).Write((ushort)number2);
+			packetOut.Write((ushort)number);
+			packetOut.Write((ushort)number2);
 			break;
 		case 29:
 			WriteCompacted((uint)number);
-			((BinaryWriter)(object)packetOut).Write((byte)number2);
+			packetOut.Write((byte)number2);
 			break;
 		case 32:
 		{
 			WriteCompacted((uint)number);
-			((BinaryWriter)(object)packetOut).Write((byte)number2);
+			packetOut.Write((byte)number2);
 			int netID = Main.chest[number].item[number2].netID;
-			((BinaryWriter)(object)packetOut).Write((short)netID);
+			packetOut.Write((short)netID);
 			if (netID != 0)
 			{
-				((BinaryWriter)(object)packetOut).Write(Main.chest[number].item[number2].prefix);
-				((BinaryWriter)(object)packetOut).Write((byte)Main.chest[number].item[number2].stack);
+				packetOut.Write(Main.chest[number].item[number2].prefix);
+				packetOut.Write((byte)Main.chest[number].item[number2].stack);
 			}
 			break;
 		}
 		case 33:
-			((BinaryWriter)(object)packetOut).Write((short)((number2 << 5) | number));
+			packetOut.Write((short)((number2 << 5) | number));
 			if (number2 >= 0)
 			{
-				((BinaryWriter)(object)packetOut).Write(Main.chest[number2].x);
-				((BinaryWriter)(object)packetOut).Write(Main.chest[number2].y);
+				packetOut.Write(Main.chest[number2].x);
+				packetOut.Write(Main.chest[number2].y);
 			}
 			break;
 		case 34:
-			((BinaryWriter)(object)packetOut).Write((ushort)number);
-			((BinaryWriter)(object)packetOut).Write((ushort)number2);
+			packetOut.Write((ushort)number);
+			packetOut.Write((ushort)number2);
 			break;
 		case 35:
-			((BinaryWriter)(object)packetOut).Write((byte)number);
+			packetOut.Write((byte)number);
 			WriteCompacted((uint)number2);
 			break;
 		case 43:
-			((BinaryWriter)(object)packetOut).Write((byte)number);
-			((BinaryWriter)(object)packetOut).Write((short)number2);
+			packetOut.Write((byte)number);
+			packetOut.Write((short)number2);
 			break;
 		case 47:
-			((BinaryWriter)(object)packetOut).Write((byte)number);
+			packetOut.Write((byte)number);
 			WriteCompacted((uint)number2);
-			((BinaryWriter)(object)packetOut).Write(Main.sign[number2].x);
-			((BinaryWriter)(object)packetOut).Write(Main.sign[number2].y);
-			Main.sign[number2].text.Write((BinaryWriter)(object)packetOut);
+			packetOut.Write(Main.sign[number2].x);
+			packetOut.Write(Main.sign[number2].y);
+			Main.sign[number2].text.Write(packetOut);
 			break;
 		case 48:
-			((BinaryWriter)(object)packetOut).Write((ushort)number);
-			((BinaryWriter)(object)packetOut).Write((ushort)(number2 | (Main.tile[number, number2].lava << 10)));
-			((BinaryWriter)(object)packetOut).Write(Main.tile[number, number2].liquid);
+			packetOut.Write((ushort)number);
+			packetOut.Write((ushort)(number2 | (Main.tile[number, number2].lava << 10)));
+			packetOut.Write(Main.tile[number, number2].liquid);
 			break;
 		case 59:
-			((BinaryWriter)(object)packetOut).Write((ushort)number);
-			((BinaryWriter)(object)packetOut).Write((ushort)number2);
+			packetOut.Write((ushort)number);
+			packetOut.Write((ushort)number2);
 			break;
 		case 61:
-			((BinaryWriter)(object)packetOut).Write((byte)number);
-			((BinaryWriter)(object)packetOut).Write((short)number2);
+			packetOut.Write((byte)number);
+			packetOut.Write((short)number2);
 			break;
 		case 64:
-			((BinaryWriter)(object)packetOut).Write((byte)number);
-			((BinaryWriter)(object)packetOut).Write((byte)number2);
+			packetOut.Write((byte)number);
+			packetOut.Write((byte)number2);
 			break;
 		case 65:
-			((BinaryWriter)(object)packetOut).Write((byte)number);
-			((BinaryWriter)(object)packetOut).Write((byte)number2);
+			packetOut.Write((byte)number);
+			packetOut.Write((byte)number2);
 			break;
 		}
 	}
 
 	public static void CreateMessage3(int msgType, int number, int number2, int number3)
 	{
-		((BinaryWriter)(object)packetOut).Write((byte)msgType);
+		packetOut.Write((byte)msgType);
 		switch (msgType)
 		{
 		case 8:
-			((BinaryWriter)(object)packetOut).Write((byte)number);
-			((BinaryWriter)(object)packetOut).Write((short)number2);
-			((BinaryWriter)(object)packetOut).Write((short)number3);
+			packetOut.Write((byte)number);
+			packetOut.Write((short)number2);
+			packetOut.Write((short)number3);
 			break;
 		case 19:
-			((BinaryWriter)(object)packetOut).Write((ushort)number);
-			((BinaryWriter)(object)packetOut).Write((ushort)number2);
-			((BinaryWriter)(object)packetOut).Write((sbyte)number3);
+			packetOut.Write((ushort)number);
+			packetOut.Write((ushort)number2);
+			packetOut.Write((sbyte)number3);
 			break;
 		case 20:
 		{
-			((BinaryWriter)(object)packetOut).Write((byte)number);
-			((BinaryWriter)(object)packetOut).Write((ushort)number2);
-			((BinaryWriter)(object)packetOut).Write((ushort)number3);
+			packetOut.Write((byte)number);
+			packetOut.Write((ushort)number2);
+			packetOut.Write((ushort)number3);
 			for (int i = number2; i < number2 + number; i++)
 			{
 				for (int j = number3; j < number3 + number; j++)
@@ -773,11 +772,11 @@ public sealed class NetMessage
 						num |= 8 | Main.tile[i, j].lava;
 					}
 					num |= Main.tile[i, j].wire;
-					((BinaryWriter)(object)packetOut).Write((byte)num);
+					packetOut.Write((byte)num);
 					if (active != 0)
 					{
 						int type = Main.tile[i, j].type;
-						((BinaryWriter)(object)packetOut).Write((byte)type);
+						packetOut.Write((byte)type);
 						if (Main.tileFrameImportant[type])
 						{
 							WriteCompacted((uint)Main.tile[i, j].frameX);
@@ -786,39 +785,39 @@ public sealed class NetMessage
 					}
 					if (wall > 0)
 					{
-						((BinaryWriter)(object)packetOut).Write((byte)wall);
+						packetOut.Write((byte)wall);
 					}
 					if (num2 > 0)
 					{
-						((BinaryWriter)(object)packetOut).Write((byte)num2);
+						packetOut.Write((byte)num2);
 					}
 				}
 			}
 			break;
 		}
 		case 31:
-			((BinaryWriter)(object)packetOut).Write((byte)number);
-			((BinaryWriter)(object)packetOut).Write((ushort)number2);
-			((BinaryWriter)(object)packetOut).Write((ushort)number3);
+			packetOut.Write((byte)number);
+			packetOut.Write((ushort)number2);
+			packetOut.Write((ushort)number3);
 			break;
 		case 46:
-			((BinaryWriter)(object)packetOut).Write((byte)number);
-			((BinaryWriter)(object)packetOut).Write((ushort)number2);
-			((BinaryWriter)(object)packetOut).Write((ushort)number3);
+			packetOut.Write((byte)number);
+			packetOut.Write((ushort)number2);
+			packetOut.Write((ushort)number3);
 			break;
 		case 52:
-			((BinaryWriter)(object)packetOut).Write((byte)number);
-			((BinaryWriter)(object)packetOut).Write((ushort)number2);
-			((BinaryWriter)(object)packetOut).Write((ushort)number3);
+			packetOut.Write((byte)number);
+			packetOut.Write((ushort)number2);
+			packetOut.Write((ushort)number3);
 			break;
 		case 53:
-			((BinaryWriter)(object)packetOut).Write((byte)number);
-			((BinaryWriter)(object)packetOut).Write((byte)number2);
+			packetOut.Write((byte)number);
+			packetOut.Write((byte)number2);
 			WriteCompacted((uint)number3);
 			break;
 		case 55:
-			((BinaryWriter)(object)packetOut).Write((byte)number);
-			((BinaryWriter)(object)packetOut).Write((byte)number2);
+			packetOut.Write((byte)number);
+			packetOut.Write((byte)number2);
 			WriteCompacted((uint)number3);
 			break;
 		}
@@ -826,40 +825,40 @@ public sealed class NetMessage
 
 	public static void CreateMessage4(int msgType, int number, int number2, int number3, int number4)
 	{
-		((BinaryWriter)(object)packetOut).Write((byte)msgType);
+		packetOut.Write((byte)msgType);
 		if (msgType == 60)
 		{
-			((BinaryWriter)(object)packetOut).Write((byte)number);
-			((BinaryWriter)(object)packetOut).Write((short)number2);
-			((BinaryWriter)(object)packetOut).Write((short)number3);
-			((BinaryWriter)(object)packetOut).Write((byte)number4);
+			packetOut.Write((byte)number);
+			packetOut.Write((short)number2);
+			packetOut.Write((short)number3);
+			packetOut.Write((byte)number4);
 		}
 	}
 
 	public static void CreateMessage5(int msgType, int number, int number2, int number3, int number4, int number5 = 0)
 	{
-		((BinaryWriter)(object)packetOut).Write((byte)msgType);
+		packetOut.Write((byte)msgType);
 		switch (msgType)
 		{
 		case 17:
-			((BinaryWriter)(object)packetOut).Write((byte)number);
-			((BinaryWriter)(object)packetOut).Write((ushort)number2);
-			((BinaryWriter)(object)packetOut).Write((ushort)number3);
+			packetOut.Write((byte)number);
+			packetOut.Write((ushort)number2);
+			packetOut.Write((ushort)number3);
 			if (number <= 4)
 			{
-				((BinaryWriter)(object)packetOut).Write((byte)number4);
+				packetOut.Write((byte)number4);
 				if (number == 1)
 				{
-					((BinaryWriter)(object)packetOut).Write((byte)number5);
+					packetOut.Write((byte)number5);
 				}
 			}
 			break;
 		case 44:
-			((BinaryWriter)(object)packetOut).Write((byte)number);
-			((BinaryWriter)(object)packetOut).Write((sbyte)number2);
-			((BinaryWriter)(object)packetOut).Write((short)number3);
-			((BinaryWriter)(object)packetOut).Write((byte)number4);
-			((BinaryWriter)(object)packetOut).Write((uint)number5);
+			packetOut.Write((byte)number);
+			packetOut.Write((sbyte)number2);
+			packetOut.Write((short)number3);
+			packetOut.Write((byte)number4);
+			packetOut.Write((uint)number5);
 			break;
 		}
 	}
@@ -890,19 +889,19 @@ public sealed class NetMessage
 
 	public static void SendPlayerHurt(int playerId, int dir, int dmg, bool pvp, bool critical, uint deathText)
 	{
-		((BinaryWriter)(object)packetOut).Write((byte)26);
-		((BinaryWriter)(object)packetOut).Write((byte)playerId);
-		((BinaryWriter)(object)packetOut).Write((sbyte)dir);
-		((BinaryWriter)(object)packetOut).Write((short)dmg);
-		((BinaryWriter)(object)packetOut).Write(pvp);
-		((BinaryWriter)(object)packetOut).Write(critical);
-		((BinaryWriter)(object)packetOut).Write(deathText);
+		packetOut.Write((byte)26);
+		packetOut.Write((byte)playerId);
+		packetOut.Write((sbyte)dir);
+		packetOut.Write((short)dmg);
+		packetOut.Write(pvp);
+		packetOut.Write(critical);
+		packetOut.Write(deathText);
 		SendMessage();
 	}
 
 	public static void SendProjectile(int number, SendDataOptions sendOptions = SendDataOptions.Reliable)
 	{
-		((BinaryWriter)(object)packetOut).Write((byte)27);
+		packetOut.Write((byte)27);
 		int num = 0;
 		float knockBack = Main.projectile[number].knockBack;
 		if (knockBack != 0f)
@@ -924,55 +923,55 @@ public sealed class NetMessage
 		{
 			num |= 8;
 		}
-		((BinaryWriter)(object)packetOut).Write((byte)(Main.projectile[number].owner | (num << 4)));
-		((BinaryWriter)(object)packetOut).Write(Main.projectile[number].type);
+		packetOut.Write((byte)(Main.projectile[number].owner | (num << 4)));
+		packetOut.Write(Main.projectile[number].type);
 		WriteCompacted(Main.projectile[number].identity);
 		packetOut.Write(Main.projectile[number].position);
 		HalfVector2 halfVector = new HalfVector2(Main.projectile[number].velocity);
-		((BinaryWriter)(object)packetOut).Write(halfVector.PackedValue);
-		if (((uint)num & (true ? 1u : 0u)) != 0)
+		packetOut.Write(halfVector.PackedValue);
+		if ((num & 1) != 0)
 		{
 			HalfSingle halfSingle = new HalfSingle(knockBack);
-			((BinaryWriter)(object)packetOut).Write(halfSingle.PackedValue);
+			packetOut.Write(halfSingle.PackedValue);
 		}
-		if (((uint)num & 2u) != 0)
+		if ((num & 2) != 0)
 		{
-			((BinaryWriter)(object)packetOut).Write((short)damage);
+			packetOut.Write((short)damage);
 		}
-		if (((uint)num & 4u) != 0)
+		if ((num & 4) != 0)
 		{
-			((BinaryWriter)(object)packetOut).Write(ai);
+			packetOut.Write(ai);
 		}
-		if (((uint)num & 8u) != 0)
+		if ((num & 8) != 0)
 		{
-			((BinaryWriter)(object)packetOut).Write((short)ai2);
+			packetOut.Write((short)ai2);
 		}
 		SendProjectileMessage(ref Main.projectile[number], sendOptions);
 	}
 
 	public static void SendNpcHurt(int npcId, int dmg)
 	{
-		((BinaryWriter)(object)packetOut).Write((byte)28);
-		((BinaryWriter)(object)packetOut).Write((byte)npcId);
-		((BinaryWriter)(object)packetOut).Write((short)dmg);
+		packetOut.Write((byte)28);
+		packetOut.Write((byte)npcId);
+		packetOut.Write((short)dmg);
 		SendMessage();
 	}
 
 	public static void SendNpcHurt(int npcId, int dmg, double kb, int dir, bool critical = false)
 	{
-		((BinaryWriter)(object)packetOut).Write((byte)28);
-		((BinaryWriter)(object)packetOut).Write((byte)npcId);
-		((BinaryWriter)(object)packetOut).Write((short)dmg);
+		packetOut.Write((byte)28);
+		packetOut.Write((byte)npcId);
+		packetOut.Write((short)dmg);
 		if (dmg >= 0)
 		{
 			HalfSingle halfSingle = new HalfSingle((float)kb);
-			((BinaryWriter)(object)packetOut).Write(halfSingle.PackedValue);
+			packetOut.Write(halfSingle.PackedValue);
 			dir <<= 1;
 			if (critical)
 			{
 				dir |= 1;
 			}
-			((BinaryWriter)(object)packetOut).Write((sbyte)dir);
+			packetOut.Write((sbyte)dir);
 		}
 		SendMessage();
 	}
@@ -987,11 +986,11 @@ public sealed class NetMessage
 				return;
 			}
 		}
-		((BinaryWriter)(object)packetOut).Write((byte)18);
-		((BinaryWriter)(object)packetOut).Write((byte)r);
-		((BinaryWriter)(object)packetOut).Write((byte)g);
-		((BinaryWriter)(object)packetOut).Write((byte)b);
-		((BinaryWriter)(object)packetOut).Write((ushort)textId);
+		packetOut.Write((byte)18);
+		packetOut.Write((byte)r);
+		packetOut.Write((byte)g);
+		packetOut.Write((byte)b);
+		packetOut.Write((ushort)textId);
 		if (player < 0)
 		{
 			SendMessage();
@@ -1012,12 +1011,12 @@ public sealed class NetMessage
 				return;
 			}
 		}
-		((BinaryWriter)(object)packetOut).Write((byte)37);
-		((BinaryWriter)(object)packetOut).Write((byte)r);
-		((BinaryWriter)(object)packetOut).Write((byte)g);
-		((BinaryWriter)(object)packetOut).Write((byte)b);
-		((BinaryWriter)(object)packetOut).Write((ushort)textId);
-		((BinaryWriter)(object)packetOut).Write(prefix);
+		packetOut.Write((byte)37);
+		packetOut.Write((byte)r);
+		packetOut.Write((byte)g);
+		packetOut.Write((byte)b);
+		packetOut.Write((ushort)textId);
+		packetOut.Write(prefix);
 		if (player < 0)
 		{
 			SendMessage();
@@ -1038,12 +1037,12 @@ public sealed class NetMessage
 				return;
 			}
 		}
-		((BinaryWriter)(object)packetOut).Write((byte)38);
-		((BinaryWriter)(object)packetOut).Write((byte)r);
-		((BinaryWriter)(object)packetOut).Write((byte)g);
-		((BinaryWriter)(object)packetOut).Write((byte)b);
-		((BinaryWriter)(object)packetOut).Write((ushort)textId);
-		((BinaryWriter)(object)packetOut).Write(postfix);
+		packetOut.Write((byte)38);
+		packetOut.Write((byte)r);
+		packetOut.Write((byte)g);
+		packetOut.Write((byte)b);
+		packetOut.Write((ushort)textId);
+		packetOut.Write(postfix);
 		if (player < 0)
 		{
 			SendMessage();
@@ -1064,11 +1063,11 @@ public sealed class NetMessage
 				return;
 			}
 		}
-		((BinaryWriter)(object)packetOut).Write((byte)25);
-		((BinaryWriter)(object)packetOut).Write((byte)r);
-		((BinaryWriter)(object)packetOut).Write((byte)g);
-		((BinaryWriter)(object)packetOut).Write((byte)b);
-		((BinaryWriter)(object)packetOut).Write(text);
+		packetOut.Write((byte)25);
+		packetOut.Write((byte)r);
+		packetOut.Write((byte)g);
+		packetOut.Write((byte)b);
+		packetOut.Write(text);
 		if (player < 0)
 		{
 			SendMessage();
@@ -1082,18 +1081,18 @@ public sealed class NetMessage
 	public static void SendDeathText(string name, uint deathText, int r, int g, int b)
 	{
 		Main.NewText(name + Lang.deathMsgString(deathText), r, g, b);
-		((BinaryWriter)(object)packetOut).Write((byte)63);
-		((BinaryWriter)(object)packetOut).Write((byte)r);
-		((BinaryWriter)(object)packetOut).Write((byte)g);
-		((BinaryWriter)(object)packetOut).Write((byte)b);
-		((BinaryWriter)(object)packetOut).Write(deathText);
-		((BinaryWriter)(object)packetOut).Write(name);
+		packetOut.Write((byte)63);
+		packetOut.Write((byte)r);
+		packetOut.Write((byte)g);
+		packetOut.Write((byte)b);
+		packetOut.Write(deathText);
+		packetOut.Write(name);
 		SendMessage();
 	}
 
 	public static void SendMessage()
 	{
-		MemoryStream memoryStream = (MemoryStream)((BinaryWriter)(object)packetOut).BaseStream;
+		MemoryStream memoryStream = (MemoryStream)packetOut.BaseStream;
 		int num = memoryStream.GetBuffer()[0];
 		SendDataOptions options = (SendDataOptions)PRIORITY[num];
 		if (Main.netMode == 1 && Netplay.session.Host != null)
@@ -1129,7 +1128,7 @@ public sealed class NetMessage
 
 	private static void SendProjectileMessage(ref Projectile projectile, SendDataOptions sendOptions)
 	{
-		MemoryStream memoryStream = (MemoryStream)((BinaryWriter)(object)packetOut).BaseStream;
+		MemoryStream memoryStream = (MemoryStream)packetOut.BaseStream;
 		if (Main.netMode == 1)
 		{
 			try
@@ -1163,7 +1162,7 @@ public sealed class NetMessage
 
 	public static void SendMessage(NetClient client)
 	{
-		MemoryStream memoryStream = (MemoryStream)((BinaryWriter)(object)packetOut).BaseStream;
+		MemoryStream memoryStream = (MemoryStream)packetOut.BaseStream;
 		int num = memoryStream.GetBuffer()[0];
 		SendDataOptions sendDataOptions = (SendDataOptions)PRIORITY[num];
 		switch (sendDataOptions)
@@ -1188,7 +1187,7 @@ public sealed class NetMessage
 
 	public static void SendMessageNoClear(NetClient client)
 	{
-		MemoryStream memoryStream = (MemoryStream)((BinaryWriter)(object)packetOut).BaseStream;
+		MemoryStream memoryStream = (MemoryStream)packetOut.BaseStream;
 		int num = memoryStream.GetBuffer()[0];
 		SendDataOptions sendDataOptions = (SendDataOptions)PRIORITY[num];
 		switch (sendDataOptions)
@@ -1211,14 +1210,14 @@ public sealed class NetMessage
 
 	public static void ClearMessage()
 	{
-		MemoryStream memoryStream = (MemoryStream)((BinaryWriter)(object)packetOut).BaseStream;
+		MemoryStream memoryStream = (MemoryStream)packetOut.BaseStream;
 		memoryStream.Position = 0L;
 		memoryStream.SetLength(0L);
 	}
 
 	public static void SendMessageIgnore(NetClient ignoreClient)
 	{
-		MemoryStream memoryStream = (MemoryStream)((BinaryWriter)(object)packetOut).BaseStream;
+		MemoryStream memoryStream = (MemoryStream)packetOut.BaseStream;
 		int num = memoryStream.GetBuffer()[0];
 		SendDataOptions options = (SendDataOptions)PRIORITY[num];
 		for (int num2 = Netplay.clients.Count - 1; num2 >= 0; num2--)
@@ -1241,7 +1240,7 @@ public sealed class NetMessage
 
 	public static void SendMessage(NetworkGamer gamer)
 	{
-		MemoryStream memoryStream = (MemoryStream)((BinaryWriter)(object)packetOut).BaseStream;
+		MemoryStream memoryStream = (MemoryStream)packetOut.BaseStream;
 		int num = memoryStream.GetBuffer()[0];
 		SendDataOptions options = (SendDataOptions)PRIORITY[num];
 		try
@@ -1257,7 +1256,7 @@ public sealed class NetMessage
 
 	private static void EchoMessage(NetClient sender)
 	{
-		MemoryStream memoryStream = (MemoryStream)((BinaryReader)(object)packetIn).BaseStream;
+		MemoryStream memoryStream = (MemoryStream)packetIn.BaseStream;
 		int num = memoryStream.GetBuffer()[0];
 		SendDataOptions options = (SendDataOptions)PRIORITY[num];
 		for (int num2 = Netplay.clients.Count - 1; num2 >= 0; num2--)
@@ -1278,7 +1277,7 @@ public sealed class NetMessage
 
 	private static void EchoProjectileMessage(NetClient sender, ref Projectile projectile)
 	{
-		MemoryStream memoryStream = (MemoryStream)((BinaryReader)(object)packetIn).BaseStream;
+		MemoryStream memoryStream = (MemoryStream)packetIn.BaseStream;
 		int num = memoryStream.GetBuffer()[0];
 		SendDataOptions options = (SendDataOptions)PRIORITY[num];
 		for (int num2 = Netplay.clients.Count - 1; num2 >= 0; num2--)
@@ -1299,7 +1298,7 @@ public sealed class NetMessage
 
 	public unsafe static void GetData(NetClient sender)
 	{
-		int num = ((BinaryReader)(object)packetIn).ReadByte();
+		int num = packetIn.ReadByte();
 		if (Main.netMode == 1)
 		{
 			UI main = UI.main;
@@ -1311,7 +1310,7 @@ public sealed class NetMessage
 			{
 			case 2:
 				Netplay.disconnect = true;
-				main.statusText = Lang.misc[((BinaryReader)(object)packetIn).ReadUInt16()];
+				main.statusText = Lang.misc[packetIn.ReadUInt16()];
 				break;
 			case 3:
 			{
@@ -1319,7 +1318,7 @@ public sealed class NetMessage
 				{
 					Netplay.clientState = Netplay.ClientState.RECEIVED_PLAYER_DATA_REQ;
 				}
-				int num2 = ((BinaryReader)(object)packetIn).ReadByte();
+				int num2 = packetIn.ReadByte();
 				CreateMessage1(4, num2);
 				SendMessage();
 				CreateMessage1(16, num2);
@@ -1344,39 +1343,39 @@ public sealed class NetMessage
 			}
 			case 7:
 			{
-				Main.gameTime.time = ((BinaryReader)(object)packetIn).ReadSingle();
-				int num2 = ((BinaryReader)(object)packetIn).ReadByte();
+				Main.gameTime.time = packetIn.ReadSingle();
+				int num2 = packetIn.ReadByte();
 				Main.gameTime.dayTime = (num2 & 1) != 0;
 				Main.gameTime.bloodMoon = (num2 & 2) != 0;
 				Main.gameTime.moonPhase = (byte)(num2 >> 2);
-				Main.maxTilesX = ((BinaryReader)(object)packetIn).ReadInt16();
-				Main.maxTilesY = ((BinaryReader)(object)packetIn).ReadInt16();
-				Main.spawnTileX = ((BinaryReader)(object)packetIn).ReadInt16();
-				Main.spawnTileY = ((BinaryReader)(object)packetIn).ReadInt16();
-				Main.worldSurface = ((BinaryReader)(object)packetIn).ReadInt16();
+				Main.maxTilesX = packetIn.ReadInt16();
+				Main.maxTilesY = packetIn.ReadInt16();
+				Main.spawnTileX = packetIn.ReadInt16();
+				Main.spawnTileY = packetIn.ReadInt16();
+				Main.worldSurface = packetIn.ReadInt16();
 				Main.worldSurfacePixels = Main.worldSurface << 4;
-				Main.rockLayer = ((BinaryReader)(object)packetIn).ReadInt16();
+				Main.rockLayer = packetIn.ReadInt16();
 				Main.rockLayerPixels = Main.rockLayer << 4;
-				num2 = ((BinaryReader)(object)packetIn).ReadInt32();
+				num2 = packetIn.ReadInt32();
 				if (num2 != Main.worldID)
 				{
 					Main.worldID = num2;
 					Main.checkWorldId = true;
 				}
-				num2 = ((BinaryReader)(object)packetIn).ReadInt32();
+				num2 = packetIn.ReadInt32();
 				if (num2 != Main.worldTimestamp)
 				{
 					Main.worldTimestamp = num2;
 					Main.checkWorldId = true;
 				}
-				num2 = ((BinaryReader)(object)packetIn).ReadByte();
+				num2 = packetIn.ReadByte();
 				WorldGen.shadowOrbSmashed = (num2 & 1) != 0;
 				NPC.downedBoss1 = (num2 & 2) != 0;
 				NPC.downedBoss2 = (num2 & 4) != 0;
 				NPC.downedBoss3 = (num2 & 8) != 0;
 				Main.hardMode = (num2 & 0x10) != 0;
 				NPC.downedClown = (num2 & 0x20) != 0;
-				Main.worldName = ((BinaryReader)(object)packetIn).ReadString();
+				Main.worldName = packetIn.ReadString();
 				WorldGen.UpdateMagmaLayerPos();
 				if (Netplay.clientState <= Netplay.ClientState.WAITING_FOR_WORLD_INFO)
 				{
@@ -1386,54 +1385,54 @@ public sealed class NetMessage
 				break;
 			}
 			case 9:
-				Netplay.clientStatusMax += ((BinaryReader)(object)packetIn).ReadByte();
+				Netplay.clientStatusMax += packetIn.ReadByte();
 				break;
 			case 10:
 			{
-				int num11 = ((BinaryReader)(object)packetIn).ReadByte() * 40;
-				int num12 = ((BinaryReader)(object)packetIn).ReadByte() * 30;
-				fixed (Tile* ptr2 = Main.tile)
+				int num11 = packetIn.ReadByte() * 40;
+				int num12 = packetIn.ReadByte() * 30;
+				fixed (Tile* tile = Main.tile)
 				{
 					uint num13 = 0u;
 					Tile* ptr = null;
 					for (int m = num11; m < num11 + 40; m++)
 					{
-						Tile* ptr3 = ptr2 + (num12 + m * 1440);
+						Tile* ptr2 = tile + (num12 + m * 1440);
 						for (int num14 = 29; num14 >= 0; num14--)
 						{
 							if (num13 != 0)
 							{
 								num13--;
-								*ptr3 = *ptr;
+								*ptr2 = *ptr;
 							}
 							else
 							{
-								ptr = ptr3;
-								int num15 = ((BinaryReader)(object)packetIn).ReadByte();
+								ptr = ptr2;
+								int num15 = packetIn.ReadByte();
 								int num16 = num15 & 1;
 								if (num16 != 0)
 								{
-									int type = ptr3->type;
-									int num17 = (ptr3->type = ((BinaryReader)(object)packetIn).ReadByte());
+									int type = ptr2->type;
+									int num17 = (ptr2->type = packetIn.ReadByte());
 									if (Main.tileFrameImportant[num17])
 									{
-										ptr3->frameX = (short)ReadCompacted();
-										ptr3->frameY = (short)ReadCompacted();
+										ptr2->frameX = (short)ReadCompacted();
+										ptr2->frameY = (short)ReadCompacted();
 									}
-									else if (num17 != type || ptr3->active == 0)
+									else if (num17 != type || ptr2->active == 0)
 									{
-										ptr3->frameX = -1;
-										ptr3->frameY = -1;
+										ptr2->frameX = -1;
+										ptr2->frameY = -1;
 									}
 								}
-								ptr3->active = (byte)num16;
-								ptr3->wall = (byte)((((uint)num15 & 4u) != 0) ? ((BinaryReader)(object)packetIn).ReadByte() : 0);
-								ptr3->liquid = (byte)((((uint)num15 & 8u) != 0) ? ((BinaryReader)(object)packetIn).ReadByte() : 0);
-								ptr3->wire = num15 & 0x10;
-								ptr3->lava = (byte)((uint)num15 & 0x20u);
+								ptr2->active = (byte)num16;
+								ptr2->wall = (byte)(((num15 & 4) != 0) ? packetIn.ReadByte() : 0);
+								ptr2->liquid = (byte)(((num15 & 8) != 0) ? packetIn.ReadByte() : 0);
+								ptr2->wire = num15 & 0x10;
+								ptr2->lava = (byte)(num15 & 0x20);
 								num13 = ReadCompacted();
 							}
-							ptr3++;
+							ptr2++;
 						}
 					}
 				}
@@ -1442,9 +1441,9 @@ public sealed class NetMessage
 			}
 			case 11:
 			{
-				int num5 = ((BinaryReader)(object)packetIn).ReadByte();
+				int num5 = packetIn.ReadByte();
 				GamerCollection<NetworkGamer> allGamers = Netplay.session.AllGamers;
-				if (num5 != ((ReadOnlyCollection<NetworkGamer>)(object)allGamers).Count)
+				if (num5 != allGamers.Count)
 				{
 					CreateMessage0(11);
 					SendMessage();
@@ -1452,8 +1451,8 @@ public sealed class NetMessage
 				}
 				do
 				{
-					NetworkGamer networkGamer = ((ReadOnlyCollection<NetworkGamer>)(object)allGamers)[--num5];
-					int num2 = ((BinaryReader)(object)packetIn).ReadByte();
+					NetworkGamer networkGamer = allGamers[--num5];
+					int num2 = packetIn.ReadByte();
 					Player player = Main.player[num2];
 					_ = networkGamer.IsLocal;
 					networkGamer.Tag = player;
@@ -1463,7 +1462,7 @@ public sealed class NetMessage
 			}
 			case 14:
 			{
-				int num2 = ((BinaryReader)(object)packetIn).ReadByte();
+				int num2 = packetIn.ReadByte();
 				int num3 = num2 & 0x80;
 				num2 ^= num3;
 				Player player = Main.player[num2];
@@ -1484,7 +1483,7 @@ public sealed class NetMessage
 			}
 			case 23:
 			{
-				int num2 = ((BinaryReader)(object)packetIn).ReadByte();
+				int num2 = packetIn.ReadByte();
 				int num6 = (int)ReadCompacted();
 				Main.npc[num2].life = num6;
 				if (num6 == 0)
@@ -1492,7 +1491,7 @@ public sealed class NetMessage
 					Main.npc[num2].active = 0;
 					break;
 				}
-				int num7 = ((BinaryReader)(object)packetIn).ReadInt16();
+				int num7 = packetIn.ReadInt16();
 				if (Main.npc[num2].active == 0 || Main.npc[num2].netID != num7)
 				{
 					Main.npc[num2].netDefaults(num7);
@@ -1500,18 +1499,20 @@ public sealed class NetMessage
 				Main.npc[num2].position = packetIn.ReadVector2();
 				Main.npc[num2].aabb.X = (int)Main.npc[num2].position.X;
 				Main.npc[num2].aabb.Y = (int)Main.npc[num2].position.Y;
-				HalfVector2 halfVector = default(HalfVector2);
-				halfVector.PackedValue = ((BinaryReader)(object)packetIn).ReadUInt32();
+				HalfVector2 halfVector = new HalfVector2
+				{
+					PackedValue = packetIn.ReadUInt32()
+				};
 				Main.npc[num2].velocity = halfVector.ToVector2();
-				int num8 = ((BinaryReader)(object)packetIn).ReadSByte();
-				Main.npc[num2].target = (byte)((uint)num8 & 0xFu);
+				int num8 = packetIn.ReadSByte();
+				Main.npc[num2].target = (byte)(num8 & 0xF);
 				Main.npc[num2].direction = (sbyte)(num8 << 26 >> 30);
 				Main.npc[num2].directionY = (sbyte)(num8 >> 6);
-				int num9 = ((BinaryReader)(object)packetIn).ReadByte();
-				Main.npc[num2].ai0 = ((((uint)num9 & (true ? 1u : 0u)) != 0) ? ((BinaryReader)(object)packetIn).ReadSingle() : 0f);
-				Main.npc[num2].ai1 = ((((uint)num9 & 2u) != 0) ? ((BinaryReader)(object)packetIn).ReadSingle() : 0f);
-				Main.npc[num2].ai2 = ((((uint)num9 & 4u) != 0) ? ((BinaryReader)(object)packetIn).ReadSingle() : 0f);
-				Main.npc[num2].ai3 = ((((uint)num9 & 8u) != 0) ? ((BinaryReader)(object)packetIn).ReadSingle() : 0f);
+				int num9 = packetIn.ReadByte();
+				Main.npc[num2].ai0 = (((num9 & 1) != 0) ? packetIn.ReadSingle() : 0f);
+				Main.npc[num2].ai1 = (((num9 & 2) != 0) ? packetIn.ReadSingle() : 0f);
+				Main.npc[num2].ai2 = (((num9 & 4) != 0) ? packetIn.ReadSingle() : 0f);
+				Main.npc[num2].ai3 = (((num9 & 8) != 0) ? packetIn.ReadSingle() : 0f);
 				break;
 			}
 			case 18:
@@ -1520,29 +1521,29 @@ public sealed class NetMessage
 			case 38:
 			case 63:
 			{
-				byte r = ((BinaryReader)(object)packetIn).ReadByte();
-				byte g = ((BinaryReader)(object)packetIn).ReadByte();
-				byte b = ((BinaryReader)(object)packetIn).ReadByte();
+				byte r = packetIn.ReadByte();
+				byte g = packetIn.ReadByte();
+				byte b = packetIn.ReadByte();
 				uint num10 = 0u;
 				string text;
 				if (num == 18)
 				{
-					num10 = ((BinaryReader)(object)packetIn).ReadUInt16();
+					num10 = packetIn.ReadUInt16();
 					text = Lang.misc[num10];
 				}
 				else if (num == 63)
 				{
-					num10 = ((BinaryReader)(object)packetIn).ReadUInt32();
-					text = ((BinaryReader)(object)packetIn).ReadString();
+					num10 = packetIn.ReadUInt32();
+					text = packetIn.ReadString();
 					text += Lang.deathMsgString(num10);
 				}
 				else
 				{
 					if (num != 25)
 					{
-						num10 = ((BinaryReader)(object)packetIn).ReadUInt16();
+						num10 = packetIn.ReadUInt16();
 					}
-					text = ((BinaryReader)(object)packetIn).ReadString();
+					text = packetIn.ReadString();
 					switch (num)
 					{
 					case 37:
@@ -1558,7 +1559,7 @@ public sealed class NetMessage
 			}
 			case 49:
 			{
-				int num2 = ((BinaryReader)(object)packetIn).ReadByte();
+				int num2 = packetIn.ReadByte();
 				for (int j = 0; j < 4; j++)
 				{
 					UI uI = Main.ui[j];
@@ -1576,10 +1577,10 @@ public sealed class NetMessage
 			}
 			case 54:
 			{
-				int num2 = ((BinaryReader)(object)packetIn).ReadByte();
+				int num2 = packetIn.ReadByte();
 				for (int i = 0; i < 5; i++)
 				{
-					uint num4 = ((BinaryReader)(object)packetIn).ReadByte();
+					uint num4 = packetIn.ReadByte();
 					Main.npc[num2].buff[i].Type = (ushort)num4;
 					Main.npc[num2].buff[i].Time = (ushort)((num4 != 0) ? ReadCompacted() : 0u);
 				}
@@ -1587,27 +1588,27 @@ public sealed class NetMessage
 			}
 			case 56:
 			{
-				int num2 = ((BinaryReader)(object)packetIn).ReadByte();
-				NPC.chrName[num2] = ((BinaryReader)(object)packetIn).ReadString();
+				int num2 = packetIn.ReadByte();
+				NPC.chrName[num2] = packetIn.ReadString();
 				break;
 			}
 			case 57:
-				WorldGen.tGood = ((BinaryReader)(object)packetIn).ReadByte();
-				WorldGen.tEvil = ((BinaryReader)(object)packetIn).ReadByte();
+				WorldGen.tGood = packetIn.ReadByte();
+				WorldGen.tEvil = packetIn.ReadByte();
 				break;
 			case 64:
 			{
-				int num2 = ((BinaryReader)(object)packetIn).ReadByte();
+				int num2 = packetIn.ReadByte();
 				UI ui2 = Main.player[num2].ui;
-				num2 = ((BinaryReader)(object)packetIn).ReadByte();
+				num2 = packetIn.ReadByte();
 				ui2?.SetTriggerState((Trigger)num2);
 				break;
 			}
 			case 65:
 			{
-				int num2 = ((BinaryReader)(object)packetIn).ReadByte();
+				int num2 = packetIn.ReadByte();
 				UI ui = Main.player[num2].ui;
-				num2 = ((BinaryReader)(object)packetIn).ReadByte();
+				num2 = packetIn.ReadByte();
 				ui?.Statistics.incStat((StatisticEntry)num2);
 				break;
 			}
@@ -1619,18 +1620,18 @@ public sealed class NetMessage
 			{
 			case 1:
 			{
-				int num2 = ((BinaryReader)(object)packetIn).ReadByte();
+				int num2 = packetIn.ReadByte();
 				if (sender.serverState == 0)
 				{
 					if (num2 != 1)
 					{
-						num2 = ((BinaryReader)(object)packetIn).ReadByte();
+						num2 = packetIn.ReadByte();
 						BootPlayer(num2, 22);
 						break;
 					}
 					sender.serverState = 1;
 				}
-				num2 = ((BinaryReader)(object)packetIn).ReadByte();
+				num2 = packetIn.ReadByte();
 				SendPlayerInfoRequest(sender, num2);
 				break;
 			}
@@ -1644,9 +1645,9 @@ public sealed class NetMessage
 				break;
 			case 8:
 			{
-				int num2 = ((BinaryReader)(object)packetIn).ReadByte();
-				int num19 = ((BinaryReader)(object)packetIn).ReadInt16();
-				int num20 = ((BinaryReader)(object)packetIn).ReadInt16();
+				int num2 = packetIn.ReadByte();
+				int num19 = packetIn.ReadInt16();
+				int num20 = packetIn.ReadInt16();
 				bool flag2 = num19 >= 0 && num20 >= 0;
 				if (flag2)
 				{
@@ -1736,10 +1737,10 @@ public sealed class NetMessage
 				break;
 			case 31:
 			{
-				int num2 = ((BinaryReader)(object)packetIn).ReadByte();
+				int num2 = packetIn.ReadByte();
 				Player player = Main.player[num2];
-				int x = ((BinaryReader)(object)packetIn).ReadUInt16();
-				int y = ((BinaryReader)(object)packetIn).ReadUInt16();
+				int x = packetIn.ReadUInt16();
+				int y = packetIn.ReadUInt16();
 				int num26 = Chest.FindChest(x, y);
 				if (num26 >= 0 && Chest.UsingChest(num26) == -1)
 				{
@@ -1756,8 +1757,8 @@ public sealed class NetMessage
 			}
 			case 34:
 			{
-				int num24 = ((BinaryReader)(object)packetIn).ReadUInt16();
-				int num25 = ((BinaryReader)(object)packetIn).ReadUInt16();
+				int num24 = packetIn.ReadUInt16();
+				int num25 = packetIn.ReadUInt16();
 				if (Main.tile[num24, num25].type == 21 && WorldGen.KillTile(num24, num25))
 				{
 					CreateMessage5(17, 0, num24, num25, 0);
@@ -1767,9 +1768,9 @@ public sealed class NetMessage
 			}
 			case 46:
 			{
-				int num2 = ((BinaryReader)(object)packetIn).ReadByte();
-				int i2 = ((BinaryReader)(object)packetIn).ReadUInt16();
-				int j2 = ((BinaryReader)(object)packetIn).ReadUInt16();
+				int num2 = packetIn.ReadByte();
+				int i2 = packetIn.ReadUInt16();
+				int j2 = packetIn.ReadUInt16();
 				int num28 = Sign.ReadSign(i2, j2);
 				if (num28 >= 0)
 				{
@@ -1780,8 +1781,8 @@ public sealed class NetMessage
 			}
 			case 53:
 			{
-				int num2 = ((BinaryReader)(object)packetIn).ReadByte();
-				int type2 = ((BinaryReader)(object)packetIn).ReadByte();
+				int num2 = packetIn.ReadByte();
+				int type2 = packetIn.ReadByte();
 				int time = (int)ReadCompacted();
 				Main.npc[num2].AddBuff(type2, time, quiet: true);
 				CreateMessage1(54, num2);
@@ -1790,8 +1791,8 @@ public sealed class NetMessage
 			}
 			case 61:
 			{
-				int num2 = ((BinaryReader)(object)packetIn).ReadByte();
-				int num18 = ((BinaryReader)(object)packetIn).ReadInt16();
+				int num2 = packetIn.ReadByte();
+				int num18 = packetIn.ReadInt16();
 				if (num18 < 0)
 				{
 					if (Main.invasionType == 0)
@@ -1835,37 +1836,37 @@ public sealed class NetMessage
 			{
 				EchoMessage(sender);
 			}
-			int num2 = ((BinaryReader)(object)packetIn).ReadUInt16();
+			int num2 = packetIn.ReadUInt16();
 			Player player = Main.player[num2 & 7];
 			num2 >>= 4;
-			player.hair = (byte)((uint)num2 & 0x3Fu);
+			player.hair = (byte)(num2 & 0x3F);
 			num2 >>= 6;
 			player.male = (num2 & 1) != 0;
 			num2 >>= 1;
 			player.difficulty = (byte)num2;
-			player.hairColor.R = ((BinaryReader)(object)packetIn).ReadByte();
-			player.hairColor.G = ((BinaryReader)(object)packetIn).ReadByte();
-			player.hairColor.B = ((BinaryReader)(object)packetIn).ReadByte();
-			player.skinColor.R = ((BinaryReader)(object)packetIn).ReadByte();
-			player.skinColor.G = ((BinaryReader)(object)packetIn).ReadByte();
-			player.skinColor.B = ((BinaryReader)(object)packetIn).ReadByte();
-			player.eyeColor.R = ((BinaryReader)(object)packetIn).ReadByte();
-			player.eyeColor.G = ((BinaryReader)(object)packetIn).ReadByte();
-			player.eyeColor.B = ((BinaryReader)(object)packetIn).ReadByte();
-			player.shirtColor.R = ((BinaryReader)(object)packetIn).ReadByte();
-			player.shirtColor.G = ((BinaryReader)(object)packetIn).ReadByte();
-			player.shirtColor.B = ((BinaryReader)(object)packetIn).ReadByte();
-			player.underShirtColor.R = ((BinaryReader)(object)packetIn).ReadByte();
-			player.underShirtColor.G = ((BinaryReader)(object)packetIn).ReadByte();
-			player.underShirtColor.B = ((BinaryReader)(object)packetIn).ReadByte();
-			player.pantsColor.R = ((BinaryReader)(object)packetIn).ReadByte();
-			player.pantsColor.G = ((BinaryReader)(object)packetIn).ReadByte();
-			player.pantsColor.B = ((BinaryReader)(object)packetIn).ReadByte();
-			player.shoeColor.R = ((BinaryReader)(object)packetIn).ReadByte();
-			player.shoeColor.G = ((BinaryReader)(object)packetIn).ReadByte();
-			player.shoeColor.B = ((BinaryReader)(object)packetIn).ReadByte();
+			player.hairColor.R = packetIn.ReadByte();
+			player.hairColor.G = packetIn.ReadByte();
+			player.hairColor.B = packetIn.ReadByte();
+			player.skinColor.R = packetIn.ReadByte();
+			player.skinColor.G = packetIn.ReadByte();
+			player.skinColor.B = packetIn.ReadByte();
+			player.eyeColor.R = packetIn.ReadByte();
+			player.eyeColor.G = packetIn.ReadByte();
+			player.eyeColor.B = packetIn.ReadByte();
+			player.shirtColor.R = packetIn.ReadByte();
+			player.shirtColor.G = packetIn.ReadByte();
+			player.shirtColor.B = packetIn.ReadByte();
+			player.underShirtColor.R = packetIn.ReadByte();
+			player.underShirtColor.G = packetIn.ReadByte();
+			player.underShirtColor.B = packetIn.ReadByte();
+			player.pantsColor.R = packetIn.ReadByte();
+			player.pantsColor.G = packetIn.ReadByte();
+			player.pantsColor.B = packetIn.ReadByte();
+			player.shoeColor.R = packetIn.ReadByte();
+			player.shoeColor.G = packetIn.ReadByte();
+			player.shoeColor.B = packetIn.ReadByte();
 			player.oldName = player.name;
-			player.name = ((BinaryReader)(object)packetIn).ReadString();
+			player.name = packetIn.ReadString();
 			break;
 		}
 		case 5:
@@ -1874,16 +1875,16 @@ public sealed class NetMessage
 			{
 				EchoMessage(sender);
 			}
-			int num2 = ((BinaryReader)(object)packetIn).ReadByte();
+			int num2 = packetIn.ReadByte();
 			Player player = Main.player[num2];
-			int num79 = ((BinaryReader)(object)packetIn).ReadByte();
-			int num80 = ((BinaryReader)(object)packetIn).ReadByte();
+			int num79 = packetIn.ReadByte();
+			int num80 = packetIn.ReadByte();
 			int pre3 = 0;
 			int type6 = 0;
 			if (num80 > 0)
 			{
-				pre3 = ((BinaryReader)(object)packetIn).ReadByte();
-				type6 = ((BinaryReader)(object)packetIn).ReadInt16();
+				pre3 = packetIn.ReadByte();
+				type6 = packetIn.ReadInt16();
 			}
 			if (num79 < 49)
 			{
@@ -1912,7 +1913,7 @@ public sealed class NetMessage
 		}
 		case 12:
 		{
-			int num2 = ((BinaryReader)(object)packetIn).ReadByte();
+			int num2 = packetIn.ReadByte();
 			Player player = Main.player[num2];
 			if (Main.netMode == 1)
 			{
@@ -1925,8 +1926,8 @@ public sealed class NetMessage
 			{
 				EchoMessage(sender);
 			}
-			player.SpawnX = ((BinaryReader)(object)packetIn).ReadInt16();
-			player.SpawnY = ((BinaryReader)(object)packetIn).ReadInt16();
+			player.SpawnX = packetIn.ReadInt16();
+			player.SpawnY = packetIn.ReadInt16();
 			player.Spawn();
 			if (Main.netMode == 2 && sender.serverState >= 3)
 			{
@@ -1945,26 +1946,27 @@ public sealed class NetMessage
 		}
 		case 13:
 		{
-			int num2 = ((BinaryReader)(object)packetIn).ReadByte();
+			int num2 = packetIn.ReadByte();
 			Player player = Main.player[num2 & 0x3F];
-			player.direction = (sbyte)((((uint)num2 & 0x40u) != 0) ? 1 : (-1));
-			int num64 = ((((uint)num2 & 0x80u) != 0) ? ((BinaryReader)(object)packetIn).ReadByte() : 0);
+			player.direction = (sbyte)(((num2 & 0x40) != 0) ? 1 : (-1));
+			int num64 = (((num2 & 0x80) != 0) ? packetIn.ReadByte() : 0);
 			player.controlUp = (num64 & 1) != 0;
 			player.controlDown = (num64 & 2) != 0;
 			player.controlLeft = (num64 & 4) != 0;
 			player.controlRight = (num64 & 8) != 0;
 			player.controlJump = (num64 & 0x10) != 0;
 			player.controlUseItem = (num64 & 0x20) != 0;
-			if (((uint)num64 & 0x20u) != 0)
+			if ((num64 & 0x20) != 0)
 			{
-				player.selectedItem = ((BinaryReader)(object)packetIn).ReadSByte();
+				player.selectedItem = packetIn.ReadSByte();
 			}
 			player.position = packetIn.ReadVector2();
 			player.aabb.X = (int)player.position.X;
 			player.aabb.Y = (int)player.position.Y;
-			HalfVector2 halfVector5 = default(HalfVector2);
-			halfVector5.PackedValue = ((BinaryReader)(object)packetIn).ReadUInt32();
-			player.velocity = halfVector5.ToVector2();
+			player.velocity = new HalfVector2
+			{
+				PackedValue = packetIn.ReadUInt32()
+			}.ToVector2();
 			player.fallStart = (short)(player.aabb.Y >> 4);
 			if (Main.netMode == 2 && sender.serverState == 10)
 			{
@@ -1974,16 +1976,16 @@ public sealed class NetMessage
 		}
 		case 15:
 		{
-			int num38 = ((BinaryReader)(object)packetIn).ReadUInt16();
-			int num39 = ((BinaryReader)(object)packetIn).ReadUInt16();
-			int num40 = ((BinaryReader)(object)packetIn).ReadByte();
+			int num38 = packetIn.ReadUInt16();
+			int num39 = packetIn.ReadUInt16();
+			int num40 = packetIn.ReadByte();
 			int active = Main.tile[num38, num39].active;
-			Main.tile[num38, num39].active = (byte)((uint)num40 & 1u);
+			Main.tile[num38, num39].active = (byte)(num40 & 1);
 			Main.tile[num38, num39].wire = num40 & 0x10;
 			if (Main.tile[num38, num39].active != 0)
 			{
 				int type3 = Main.tile[num38, num39].type;
-				int num41 = (Main.tile[num38, num39].type = ((BinaryReader)(object)packetIn).ReadByte());
+				int num41 = (Main.tile[num38, num39].type = packetIn.ReadByte());
 				if (Main.tileFrameImportant[num41])
 				{
 					Main.tile[num38, num39].frameX = (short)ReadCompacted();
@@ -1995,14 +1997,14 @@ public sealed class NetMessage
 					Main.tile[num38, num39].frameY = -1;
 				}
 			}
-			if (((uint)num40 & 4u) != 0)
+			if ((num40 & 4) != 0)
 			{
-				Main.tile[num38, num39].wall = ((BinaryReader)(object)packetIn).ReadByte();
+				Main.tile[num38, num39].wall = packetIn.ReadByte();
 			}
-			if (Main.netMode != 2 && ((uint)num40 & 8u) != 0)
+			if (Main.netMode != 2 && (num40 & 8) != 0)
 			{
-				Main.tile[num38, num39].lava = (byte)((uint)num40 & 0x20u);
-				Main.tile[num38, num39].liquid = ((BinaryReader)(object)packetIn).ReadByte();
+				Main.tile[num38, num39].lava = (byte)(num40 & 0x20);
+				Main.tile[num38, num39].liquid = packetIn.ReadByte();
 			}
 			WorldGen.TileFrame(num38, num39);
 			WorldGen.WallFrame(num38, num39);
@@ -2015,7 +2017,7 @@ public sealed class NetMessage
 		}
 		case 16:
 		{
-			int num2 = ((BinaryReader)(object)packetIn).ReadInt32();
+			int num2 = packetIn.ReadInt32();
 			Player player = Main.player[num2 & 0xF];
 			int num33 = num2 << 16 >> 20;
 			player.statLife = (short)num33;
@@ -2032,10 +2034,10 @@ public sealed class NetMessage
 		}
 		case 17:
 		{
-			int num59 = ((BinaryReader)(object)packetIn).ReadByte();
-			int num60 = ((BinaryReader)(object)packetIn).ReadUInt16();
-			int num61 = ((BinaryReader)(object)packetIn).ReadUInt16();
-			int num62 = ((num59 > 4) ? 1 : ((BinaryReader)(object)packetIn).ReadByte());
+			int num59 = packetIn.ReadByte();
+			int num60 = packetIn.ReadUInt16();
+			int num61 = packetIn.ReadUInt16();
+			int num62 = ((num59 > 4) ? 1 : packetIn.ReadByte());
 			bool flag5 = num62 == 1;
 			int num63 = 0;
 			if (Main.netMode == 2)
@@ -2052,7 +2054,7 @@ public sealed class NetMessage
 				WorldGen.KillTile(num60, num61, flag5);
 				break;
 			case 1:
-				num63 = ((BinaryReader)(object)packetIn).ReadByte();
+				num63 = packetIn.ReadByte();
 				WorldGen.PlaceTile(num60, num61, num62, mute: false, forced: true, -1, num63);
 				if (num62 == 53 && Main.netMode == 2)
 				{
@@ -2083,29 +2085,29 @@ public sealed class NetMessage
 			{
 				EchoMessage(sender);
 			}
-			int i5 = ((BinaryReader)(object)packetIn).ReadUInt16();
-			int j5 = ((BinaryReader)(object)packetIn).ReadUInt16();
-			int direction = ((BinaryReader)(object)packetIn).ReadSByte();
+			int i5 = packetIn.ReadUInt16();
+			int j5 = packetIn.ReadUInt16();
+			int direction = packetIn.ReadSByte();
 			WorldGen.OpenDoor(i5, j5, direction);
 			break;
 		}
 		case 20:
 		{
-			int num51 = ((BinaryReader)(object)packetIn).ReadByte();
-			int num52 = ((BinaryReader)(object)packetIn).ReadUInt16();
-			int num53 = ((BinaryReader)(object)packetIn).ReadUInt16();
+			int num51 = packetIn.ReadByte();
+			int num52 = packetIn.ReadUInt16();
+			int num53 = packetIn.ReadUInt16();
 			for (int num54 = num52; num54 < num52 + num51; num54++)
 			{
 				for (int num55 = num53; num55 < num53 + num51; num55++)
 				{
-					int num56 = ((BinaryReader)(object)packetIn).ReadByte();
+					int num56 = packetIn.ReadByte();
 					int active2 = Main.tile[num54, num55].active;
-					Main.tile[num54, num55].active = (byte)((uint)num56 & 1u);
+					Main.tile[num54, num55].active = (byte)(num56 & 1);
 					Main.tile[num54, num55].wire = num56 & 0x10;
 					if (Main.tile[num54, num55].active != 0)
 					{
 						int type5 = Main.tile[num54, num55].type;
-						int num57 = (Main.tile[num54, num55].type = ((BinaryReader)(object)packetIn).ReadByte());
+						int num57 = (Main.tile[num54, num55].type = packetIn.ReadByte());
 						if (Main.tileFrameImportant[num57])
 						{
 							Main.tile[num54, num55].frameX = (short)ReadCompacted();
@@ -2117,14 +2119,14 @@ public sealed class NetMessage
 							Main.tile[num54, num55].frameY = -1;
 						}
 					}
-					if (((uint)num56 & 4u) != 0)
+					if ((num56 & 4) != 0)
 					{
-						Main.tile[num54, num55].wall = ((BinaryReader)(object)packetIn).ReadByte();
+						Main.tile[num54, num55].wall = packetIn.ReadByte();
 					}
-					if (Main.netMode != 2 && ((uint)num56 & 8u) != 0)
+					if (Main.netMode != 2 && (num56 & 8) != 0)
 					{
-						Main.tile[num54, num55].lava = (byte)((uint)num56 & 0x20u);
-						Main.tile[num54, num55].liquid = ((BinaryReader)(object)packetIn).ReadByte();
+						Main.tile[num54, num55].lava = (byte)(num56 & 0x20);
+						Main.tile[num54, num55].liquid = packetIn.ReadByte();
 					}
 				}
 			}
@@ -2138,8 +2140,8 @@ public sealed class NetMessage
 		}
 		case 21:
 		{
-			int num2 = ((BinaryReader)(object)packetIn).ReadByte();
-			int num45 = ((BinaryReader)(object)packetIn).ReadInt16();
+			int num2 = packetIn.ReadByte();
+			int num45 = packetIn.ReadInt16();
 			int num46 = num45 & 0x1F;
 			num45 >>= 5;
 			if (Main.netMode == 1)
@@ -2150,11 +2152,13 @@ public sealed class NetMessage
 					break;
 				}
 				Main.item[num2].netDefaults(num45);
-				Main.item[num2].Prefix(((BinaryReader)(object)packetIn).ReadByte());
-				Main.item[num2].stack = ((BinaryReader)(object)packetIn).ReadByte();
+				Main.item[num2].Prefix(packetIn.ReadByte());
+				Main.item[num2].stack = packetIn.ReadByte();
 				Main.item[num2].position = packetIn.ReadVector2();
-				HalfVector2 halfVector3 = default(HalfVector2);
-				halfVector3.PackedValue = ((BinaryReader)(object)packetIn).ReadUInt32();
+				HalfVector2 halfVector3 = new HalfVector2
+				{
+					PackedValue = packetIn.ReadUInt32()
+				};
 				Main.item[num2].velocity = halfVector3.ToVector2();
 				Main.item[num2].wet = Collision.WetCollision(ref Main.item[num2].position, Main.item[num2].width, Main.item[num2].height);
 				break;
@@ -2166,10 +2170,10 @@ public sealed class NetMessage
 				SendMessage();
 				break;
 			}
-			int pre2 = ((BinaryReader)(object)packetIn).ReadByte();
-			int stack2 = ((BinaryReader)(object)packetIn).ReadByte();
-			float num47 = ((BinaryReader)(object)packetIn).ReadSingle();
-			float num48 = ((BinaryReader)(object)packetIn).ReadSingle();
+			int pre2 = packetIn.ReadByte();
+			int stack2 = packetIn.ReadByte();
+			float num47 = packetIn.ReadSingle();
+			float num48 = packetIn.ReadSingle();
 			bool flag4 = num2 == 200;
 			if (flag4)
 			{
@@ -2184,8 +2188,10 @@ public sealed class NetMessage
 			}
 			Main.item[num2].netDefaults(num45, stack2);
 			Main.item[num2].Prefix(pre2);
-			HalfVector2 halfVector4 = default(HalfVector2);
-			halfVector4.PackedValue = ((BinaryReader)(object)packetIn).ReadUInt32();
+			HalfVector2 halfVector4 = new HalfVector2
+			{
+				PackedValue = packetIn.ReadUInt32()
+			};
 			Main.item[num2].velocity = halfVector4.ToVector2();
 			Main.item[num2].owner = 8;
 			CreateMessage2(21, num46, num2);
@@ -2203,8 +2209,8 @@ public sealed class NetMessage
 		}
 		case 22:
 		{
-			int num2 = ((BinaryReader)(object)packetIn).ReadByte();
-			int num34 = ((BinaryReader)(object)packetIn).ReadByte();
+			int num2 = packetIn.ReadByte();
+			int num34 = packetIn.ReadByte();
 			int num35 = num34 & 0x80;
 			num34 ^= num35;
 			Main.item[num2].owner = (byte)num34;
@@ -2214,8 +2220,10 @@ public sealed class NetMessage
 				Main.item[num2].position = packetIn.ReadVector2();
 				if (num35 != 0)
 				{
-					HalfVector2 halfVector2 = default(HalfVector2);
-					halfVector2.PackedValue = ((BinaryReader)(object)packetIn).ReadUInt32();
+					HalfVector2 halfVector2 = new HalfVector2
+					{
+						PackedValue = packetIn.ReadUInt32()
+					};
 					Main.item[num2].velocity = halfVector2.ToVector2();
 				}
 				else
@@ -2236,8 +2244,8 @@ public sealed class NetMessage
 			{
 				EchoMessage(sender);
 			}
-			int i4 = ((BinaryReader)(object)packetIn).ReadUInt16();
-			int j4 = ((BinaryReader)(object)packetIn).ReadUInt16();
+			int i4 = packetIn.ReadUInt16();
+			int j4 = packetIn.ReadUInt16();
 			WorldGen.CloseDoor(i4, j4, forced: true);
 			break;
 		}
@@ -2247,21 +2255,21 @@ public sealed class NetMessage
 			{
 				EchoMessage(sender);
 			}
-			int num2 = ((BinaryReader)(object)packetIn).ReadByte();
-			int hitDirection2 = ((BinaryReader)(object)packetIn).ReadSByte();
-			int damage = ((BinaryReader)(object)packetIn).ReadInt16();
-			bool pvp = ((BinaryReader)(object)packetIn).ReadBoolean();
-			bool crit2 = ((BinaryReader)(object)packetIn).ReadBoolean();
-			uint deathText2 = ((BinaryReader)(object)packetIn).ReadUInt32();
+			int num2 = packetIn.ReadByte();
+			int hitDirection2 = packetIn.ReadSByte();
+			int damage = packetIn.ReadInt16();
+			bool pvp = packetIn.ReadBoolean();
+			bool crit2 = packetIn.ReadBoolean();
+			uint deathText2 = packetIn.ReadUInt32();
 			Main.player[num2].Hurt(damage, hitDirection2, pvp, quiet: true, deathText2, crit2);
 			break;
 		}
 		case 27:
 		{
-			int num71 = ((BinaryReader)(object)packetIn).ReadByte();
+			int num71 = packetIn.ReadByte();
 			int num72 = num71 >> 4;
 			num71 &= 0xF;
-			int num73 = ((BinaryReader)(object)packetIn).ReadByte();
+			int num73 = packetIn.ReadByte();
 			int num2 = (int)ReadCompacted();
 			int num74 = 512;
 			for (int num75 = 0; num75 < 512; num75++)
@@ -2293,22 +2301,26 @@ public sealed class NetMessage
 			Main.projectile[num74].position = packetIn.ReadVector2();
 			Main.projectile[num74].aabb.X = (int)Main.projectile[num74].position.X;
 			Main.projectile[num74].aabb.Y = (int)Main.projectile[num74].position.Y;
-			HalfVector2 halfVector6 = default(HalfVector2);
-			halfVector6.PackedValue = ((BinaryReader)(object)packetIn).ReadUInt32();
-			Main.projectile[num74].velocity = halfVector6.ToVector2();
-			if (((uint)num72 & (true ? 1u : 0u)) != 0)
+			HalfVector2 halfVector5 = new HalfVector2
 			{
-				HalfSingle halfSingle2 = default(HalfSingle);
-				halfSingle2.PackedValue = ((BinaryReader)(object)packetIn).ReadUInt16();
+				PackedValue = packetIn.ReadUInt32()
+			};
+			Main.projectile[num74].velocity = halfVector5.ToVector2();
+			if ((num72 & 1) != 0)
+			{
+				HalfSingle halfSingle2 = new HalfSingle
+				{
+					PackedValue = packetIn.ReadUInt16()
+				};
 				Main.projectile[num74].knockBack = halfSingle2.ToSingle();
 			}
 			else
 			{
 				Main.projectile[num74].knockBack = 0f;
 			}
-			Main.projectile[num74].damage = (short)((((uint)num72 & 2u) != 0) ? ((BinaryReader)(object)packetIn).ReadInt16() : 0);
-			Main.projectile[num74].ai0 = ((((uint)num72 & 4u) != 0) ? ((BinaryReader)(object)packetIn).ReadSingle() : 0f);
-			Main.projectile[num74].ai1 = ((((uint)num72 & 8u) != 0) ? ((BinaryReader)(object)packetIn).ReadInt16() : 0);
+			Main.projectile[num74].damage = (short)(((num72 & 2) != 0) ? packetIn.ReadInt16() : 0);
+			Main.projectile[num74].ai0 = (((num72 & 4) != 0) ? packetIn.ReadSingle() : 0f);
+			Main.projectile[num74].ai1 = (((num72 & 8) != 0) ? packetIn.ReadInt16() : 0);
 			if (Main.netMode == 2)
 			{
 				EchoProjectileMessage(sender, ref Main.projectile[num74]);
@@ -2321,14 +2333,16 @@ public sealed class NetMessage
 			{
 				EchoMessage(sender);
 			}
-			int num2 = ((BinaryReader)(object)packetIn).ReadByte();
-			int num36 = ((BinaryReader)(object)packetIn).ReadInt16();
+			int num2 = packetIn.ReadByte();
+			int num36 = packetIn.ReadInt16();
 			if (num36 >= 0)
 			{
-				HalfSingle halfSingle = default(HalfSingle);
-				halfSingle.PackedValue = ((BinaryReader)(object)packetIn).ReadUInt16();
+				HalfSingle halfSingle = new HalfSingle
+				{
+					PackedValue = packetIn.ReadUInt16()
+				};
 				float knockBack = halfSingle.ToSingle();
-				int num37 = ((BinaryReader)(object)packetIn).ReadSByte();
+				int num37 = packetIn.ReadSByte();
 				bool crit = (num37 & 1) != 0;
 				num37 >>= 1;
 				Main.npc[num2].StrikeNPC(num36, knockBack, num37, crit);
@@ -2360,7 +2374,7 @@ public sealed class NetMessage
 		case 29:
 		{
 			int num2 = (int)ReadCompacted();
-			int num81 = ((BinaryReader)(object)packetIn).ReadByte();
+			int num81 = packetIn.ReadByte();
 			if (Main.netMode == 2)
 			{
 				EchoMessage(sender);
@@ -2377,7 +2391,7 @@ public sealed class NetMessage
 		}
 		case 30:
 		{
-			int num2 = ((BinaryReader)(object)packetIn).ReadByte();
+			int num2 = packetIn.ReadByte();
 			int num67 = num2 & 0x80;
 			num2 ^= num67;
 			Player player = Main.player[num2];
@@ -2393,16 +2407,16 @@ public sealed class NetMessage
 		case 32:
 		{
 			int num42 = (int)ReadCompacted();
-			int num43 = ((BinaryReader)(object)packetIn).ReadByte();
+			int num43 = packetIn.ReadByte();
 			if (Main.chest[num42] == null)
 			{
 				Main.chest[num42] = new Chest();
 			}
-			int num44 = ((BinaryReader)(object)packetIn).ReadInt16();
+			int num44 = packetIn.ReadInt16();
 			if (num44 != 0)
 			{
-				int pre = ((BinaryReader)(object)packetIn).ReadByte();
-				int stack = ((BinaryReader)(object)packetIn).ReadByte();
+				int pre = packetIn.ReadByte();
+				int stack = packetIn.ReadByte();
 				Main.chest[num42].item[num43].netDefaults(num44, stack);
 				Main.chest[num42].item[num43].Prefix(pre);
 			}
@@ -2414,7 +2428,7 @@ public sealed class NetMessage
 		}
 		case 33:
 		{
-			int num2 = ((BinaryReader)(object)packetIn).ReadInt16();
+			int num2 = packetIn.ReadInt16();
 			Player player = Main.player[num2 & 0x1F];
 			num2 >>= 5;
 			if (player.isLocal())
@@ -2423,8 +2437,8 @@ public sealed class NetMessage
 				player.chest = (short)num2;
 				if (num2 >= 0)
 				{
-					player.chestX = ((BinaryReader)(object)packetIn).ReadInt16();
-					player.chestY = ((BinaryReader)(object)packetIn).ReadInt16();
+					player.chestX = packetIn.ReadInt16();
+					player.chestY = packetIn.ReadInt16();
 				}
 				if (chest == -1)
 				{
@@ -2461,7 +2475,7 @@ public sealed class NetMessage
 			{
 				EchoMessage(sender);
 			}
-			int num2 = ((BinaryReader)(object)packetIn).ReadByte();
+			int num2 = packetIn.ReadByte();
 			int healAmount = (int)ReadCompacted();
 			Player player = Main.player[num2];
 			player.HealEffect(healAmount);
@@ -2473,9 +2487,9 @@ public sealed class NetMessage
 			{
 				EchoMessage(sender);
 			}
-			int num2 = ((BinaryReader)(object)packetIn).ReadByte();
+			int num2 = packetIn.ReadByte();
 			Player player = Main.player[num2];
-			int num58 = ((BinaryReader)(object)packetIn).ReadByte();
+			int num58 = packetIn.ReadByte();
 			player.zoneEvil = (num58 & 1) != 0;
 			player.zoneMeteor = (num58 & 2) != 0;
 			player.zoneDungeon = (num58 & 4) != 0;
@@ -2489,9 +2503,9 @@ public sealed class NetMessage
 			{
 				EchoMessage(sender);
 			}
-			int num2 = ((BinaryReader)(object)packetIn).ReadByte();
+			int num2 = packetIn.ReadByte();
 			Player player = Main.player[num2];
-			player.talkNPC = ((BinaryReader)(object)packetIn).ReadInt16();
+			player.talkNPC = packetIn.ReadInt16();
 			break;
 		}
 		case 41:
@@ -2500,10 +2514,10 @@ public sealed class NetMessage
 			{
 				EchoMessage(sender);
 			}
-			int num2 = ((BinaryReader)(object)packetIn).ReadByte();
+			int num2 = packetIn.ReadByte();
 			Player player = Main.player[num2];
-			player.itemRotation = ((BinaryReader)(object)packetIn).ReadSingle();
-			player.itemAnimation = ((BinaryReader)(object)packetIn).ReadInt16();
+			player.itemRotation = packetIn.ReadSingle();
+			player.itemAnimation = packetIn.ReadInt16();
 			player.channel = player.inventory[player.selectedItem].channel;
 			break;
 		}
@@ -2513,10 +2527,10 @@ public sealed class NetMessage
 			{
 				EchoMessage(sender);
 			}
-			int num2 = ((BinaryReader)(object)packetIn).ReadByte();
+			int num2 = packetIn.ReadByte();
 			Player player = Main.player[num2];
-			player.statMana = ((BinaryReader)(object)packetIn).ReadInt16();
-			player.statManaMax = ((BinaryReader)(object)packetIn).ReadInt16();
+			player.statMana = packetIn.ReadInt16();
+			player.statManaMax = packetIn.ReadInt16();
 			break;
 		}
 		case 43:
@@ -2525,8 +2539,8 @@ public sealed class NetMessage
 			{
 				EchoMessage(sender);
 			}
-			int num2 = ((BinaryReader)(object)packetIn).ReadByte();
-			int manaAmount = ((BinaryReader)(object)packetIn).ReadInt16();
+			int num2 = packetIn.ReadByte();
+			int manaAmount = packetIn.ReadInt16();
 			Player player = Main.player[num2];
 			player.ManaEffect(manaAmount);
 			break;
@@ -2537,18 +2551,18 @@ public sealed class NetMessage
 			{
 				EchoMessage(sender);
 			}
-			int num2 = ((BinaryReader)(object)packetIn).ReadByte();
-			int hitDirection = ((BinaryReader)(object)packetIn).ReadSByte();
-			int num31 = ((BinaryReader)(object)packetIn).ReadInt16();
-			int num32 = ((BinaryReader)(object)packetIn).ReadByte();
-			uint deathText = ((BinaryReader)(object)packetIn).ReadUInt32();
+			int num2 = packetIn.ReadByte();
+			int hitDirection = packetIn.ReadSByte();
+			int num31 = packetIn.ReadInt16();
+			int num32 = packetIn.ReadByte();
+			uint deathText = packetIn.ReadUInt32();
 			Player player = Main.player[num2];
 			player.KillMe(num31, hitDirection, num32 != 0, deathText);
 			break;
 		}
 		case 45:
 		{
-			int num2 = ((BinaryReader)(object)packetIn).ReadByte();
+			int num2 = packetIn.ReadByte();
 			int num77 = num2 >> 4;
 			num2 &= 0xF;
 			Player player = Main.player[num2];
@@ -2571,7 +2585,7 @@ public sealed class NetMessage
 		}
 		case 47:
 		{
-			int num2 = ((BinaryReader)(object)packetIn).ReadByte();
+			int num2 = packetIn.ReadByte();
 			Player player = Main.player[num2];
 			num2 = (int)ReadCompacted();
 			Main.sign[num2].Read(packetIn);
@@ -2588,11 +2602,11 @@ public sealed class NetMessage
 		}
 		case 48:
 		{
-			int num68 = ((BinaryReader)(object)packetIn).ReadUInt16();
-			int num69 = ((BinaryReader)(object)packetIn).ReadUInt16();
+			int num68 = packetIn.ReadUInt16();
+			int num69 = packetIn.ReadUInt16();
 			int num70 = num69 & 0x7FFF;
-			Main.tile[num68, num70].liquid = ((BinaryReader)(object)packetIn).ReadByte();
-			Main.tile[num68, num70].lava = (byte)((uint)(num69 >> 10) & 0x20u);
+			Main.tile[num68, num70].liquid = packetIn.ReadByte();
+			Main.tile[num68, num70].lava = (byte)((num69 >> 10) & 0x20);
 			if (Main.netMode == 2)
 			{
 				WorldGen.SquareTileFrame(num68, num70);
@@ -2605,11 +2619,11 @@ public sealed class NetMessage
 			{
 				EchoMessage(sender);
 			}
-			int num2 = ((BinaryReader)(object)packetIn).ReadByte();
+			int num2 = packetIn.ReadByte();
 			Player player = Main.player[num2];
 			for (int num65 = 0; num65 < 10; num65++)
 			{
-				int num66 = ((BinaryReader)(object)packetIn).ReadByte();
+				int num66 = packetIn.ReadByte();
 				player.buff[num65].Type = (ushort)num66;
 				player.buff[num65].Time = (ushort)((num66 > 0) ? 60u : 0u);
 			}
@@ -2621,7 +2635,7 @@ public sealed class NetMessage
 			{
 				EchoMessage(sender);
 			}
-			Player player = Main.player[((BinaryReader)(object)packetIn).ReadByte()];
+			Player player = Main.player[packetIn.ReadByte()];
 			Main.PlaySound(2, player.aabb.X, player.aabb.Y);
 			break;
 		}
@@ -2631,9 +2645,9 @@ public sealed class NetMessage
 			{
 				EchoMessage(sender);
 			}
-			int num2 = ((BinaryReader)(object)packetIn).ReadByte();
-			int num49 = ((BinaryReader)(object)packetIn).ReadUInt16();
-			int num50 = ((BinaryReader)(object)packetIn).ReadUInt16();
+			int num2 = packetIn.ReadByte();
+			int num49 = packetIn.ReadUInt16();
+			int num50 = packetIn.ReadUInt16();
 			Chest.Unlock(num49, num50);
 			if (Main.netMode == 2)
 			{
@@ -2647,9 +2661,9 @@ public sealed class NetMessage
 			{
 				EchoMessage(sender);
 			}
-			int num2 = ((BinaryReader)(object)packetIn).ReadByte();
+			int num2 = packetIn.ReadByte();
 			Player player = Main.player[num2];
-			int type4 = ((BinaryReader)(object)packetIn).ReadByte();
+			int type4 = packetIn.ReadByte();
 			int time2 = (int)ReadCompacted();
 			player.AddBuff(type4, time2);
 			break;
@@ -2660,9 +2674,9 @@ public sealed class NetMessage
 			{
 				EchoMessage(sender);
 			}
-			int num2 = ((BinaryReader)(object)packetIn).ReadByte();
+			int num2 = packetIn.ReadByte();
 			Player player = Main.player[num2];
-			Main.harpNote = ((BinaryReader)(object)packetIn).ReadSingle();
+			Main.harpNote = packetIn.ReadSingle();
 			Main.PlaySound(2, player.aabb.X, player.aabb.Y, (player.inventory[player.selectedItem].type == 507) ? 35 : 26);
 			break;
 		}
@@ -2672,17 +2686,17 @@ public sealed class NetMessage
 			{
 				EchoMessage(sender);
 			}
-			int i3 = ((BinaryReader)(object)packetIn).ReadUInt16();
-			int j3 = ((BinaryReader)(object)packetIn).ReadUInt16();
+			int i3 = packetIn.ReadUInt16();
+			int j3 = packetIn.ReadUInt16();
 			WorldGen.hitSwitch(i3, j3);
 			break;
 		}
 		case 60:
 		{
-			int num2 = ((BinaryReader)(object)packetIn).ReadByte();
-			int num29 = ((BinaryReader)(object)packetIn).ReadInt16();
-			int num30 = ((BinaryReader)(object)packetIn).ReadInt16();
-			bool flag3 = ((BinaryReader)(object)packetIn).ReadBoolean();
+			int num2 = packetIn.ReadByte();
+			int num29 = packetIn.ReadInt16();
+			int num30 = packetIn.ReadInt16();
+			bool flag3 = packetIn.ReadBoolean();
 			if (Main.netMode == 1)
 			{
 				Main.npc[num2].homeless = flag3;

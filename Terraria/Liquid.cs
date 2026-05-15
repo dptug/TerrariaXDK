@@ -939,7 +939,7 @@ public struct Liquid
 							{
 								continue;
 							}
-							switch (Main.tile[i, j].type)
+							switch ((int)Main.tile[i, j].type)
 							{
 							case 2:
 							case 23:

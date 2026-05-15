@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Net;
 
@@ -59,7 +58,7 @@ public sealed class NetClient
 			Netplay.session.PrivateGamerSlots++;
 		}
 		player.client = null;
-		return ((ReadOnlyCollection<NetworkGamer>)(object)machine.Gamers).Count == 0;
+		return machine.Gamers.Count == 0;
 	}
 
 	public void ResetSections()
@@ -129,9 +128,9 @@ public sealed class NetClient
 			aabb2.Y -= 2500;
 			aabb2.Width += 5000;
 			aabb2.Height += 5000;
-			for (int num2 = ((ReadOnlyCollection<NetworkGamer>)(object)machine.Gamers).Count - 1; num2 >= 0; num2--)
+			for (int num2 = machine.Gamers.Count - 1; num2 >= 0; num2--)
 			{
-				NetworkGamer networkGamer2 = ((ReadOnlyCollection<NetworkGamer>)(object)machine.Gamers)[num2];
+				NetworkGamer networkGamer2 = machine.Gamers[num2];
 				Player player3 = networkGamer2.Tag as Player;
 				if (aabb2.Intersects(player3.aabb))
 				{
@@ -159,9 +158,9 @@ public sealed class NetClient
 			aabb.Y -= 3000;
 			aabb.Width += 6000;
 			aabb.Height += 6000;
-			for (int num = ((ReadOnlyCollection<NetworkGamer>)(object)machine.Gamers).Count - 1; num >= 0; num--)
+			for (int num = machine.Gamers.Count - 1; num >= 0; num--)
 			{
-				NetworkGamer networkGamer = ((ReadOnlyCollection<NetworkGamer>)(object)machine.Gamers)[num];
+				NetworkGamer networkGamer = machine.Gamers[num];
 				Player player = networkGamer.Tag as Player;
 				if (aabb.Intersects(player.aabb))
 				{
@@ -188,9 +187,9 @@ public sealed class NetClient
 			aabb.Y -= 5000;
 			aabb.Width += 10000;
 			aabb.Height += 10000;
-			for (int num = ((ReadOnlyCollection<NetworkGamer>)(object)machine.Gamers).Count - 1; num >= 0; num--)
+			for (int num = machine.Gamers.Count - 1; num >= 0; num--)
 			{
-				NetworkGamer networkGamer = ((ReadOnlyCollection<NetworkGamer>)(object)machine.Gamers)[num];
+				NetworkGamer networkGamer = machine.Gamers[num];
 				Player player = networkGamer.Tag as Player;
 				if (aabb.Intersects(player.aabb))
 				{

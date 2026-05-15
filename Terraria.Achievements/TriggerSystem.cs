@@ -52,10 +52,11 @@ public class TriggerSystem
 
 	private static TriggerLink Link(Trigger trigger, Achievement achievement)
 	{
-		TriggerLink result = default(TriggerLink);
-		result.Trigger = trigger;
-		result.Achievement = achievement;
-		return result;
+		return new TriggerLink
+		{
+			Trigger = trigger,
+			Achievement = achievement
+		};
 	}
 
 	public bool CheckEnabled(Trigger trigger)

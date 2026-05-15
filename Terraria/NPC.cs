@@ -6818,11 +6818,13 @@ public sealed class NPC
 		if (Main.netMode != 1 && townNPC && !homeless && (num != homeTileX || num2 != j) && (!Main.gameTime.dayTime || Main.tileDungeon[Main.tile[num, num2].type]))
 		{
 			bool flag2 = true;
-			Rectangle rectangle = default(Rectangle);
-			rectangle.X = aabb.X + (width >> 1) - 960 - 62;
-			rectangle.Y = aabb.Y + (height >> 1) - 540 - 34;
-			rectangle.Width = 2044;
-			rectangle.Height = 1148;
+			Rectangle rectangle = new Rectangle
+			{
+				X = aabb.X + (width >> 1) - 960 - 62,
+				Y = aabb.Y + (height >> 1) - 540 - 34,
+				Width = 2044,
+				Height = 1148
+			};
 			for (int k = 0; k < 8; k++)
 			{
 				if (Main.player[k].active != 0 && rectangle.Intersects(Main.player[k].aabb))
@@ -20597,11 +20599,13 @@ public sealed class NPC
 				healthBarLife = life;
 			}
 		}
-		Rectangle rect = default(Rectangle);
-		rect.X = num - 22;
-		rect.Y = num2 - 4;
-		rect.Height = 10;
-		rect.Width = 52;
+		Rectangle rect = new Rectangle
+		{
+			X = num - 22,
+			Y = num2 - 4,
+			Height = 10,
+			Width = 52
+		};
 		Color wINDOW_OUTLINE = UI.WINDOW_OUTLINE;
 		Main.DrawRect(rect, wINDOW_OUTLINE, center: false);
 		rect.X += 2;

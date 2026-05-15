@@ -73,12 +73,13 @@ public static class GameMode
 
 	public static void Draw(WorldView view)
 	{
-		Rectangle rect = default(Rectangle);
-		rect.X = (view.viewWidth >> 1) - 190;
-		rect.Y = 210;
-		rect.Width = 380;
-		rect.Height = 168;
-		Main.DrawRect(451, rect, 64);
+		Main.DrawRect(451, new Rectangle
+		{
+			X = (view.viewWidth >> 1) - 190,
+			Y = 210,
+			Width = 380,
+			Height = 168
+		}, 64);
 		Color c = Color.White;
 		int num = (view.viewWidth >> 1) - 100;
 		int num2 = 230;

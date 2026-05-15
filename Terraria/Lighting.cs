@@ -270,34 +270,34 @@ public sealed class Lighting
 				return;
 			}
 			int num7 = ((num2 <= Main.worldSurface) ? num2 : Main.worldSurface);
-			fixed (Tile* ptr7 = Main.tile)
+			fixed (Tile* tile = Main.tile)
 			{
 				for (int l = firstToLightX; l < num; l++)
 				{
-					Tile* ptr8 = ptr7 + (l * 1440 + firstToLightY);
+					Tile* ptr7 = tile + (l * 1440 + firstToLightY);
 					int num8 = firstToLightY;
 					while (num8 < num7)
 					{
-						if ((ptr8->active == 0 || !Main.tileNoSunLight[ptr8->type]) && (ptr8->wall == 0 || ptr8->wall == 21) && ptr8->liquid < 200)
+						if ((ptr7->active == 0 || !Main.tileNoSunLight[ptr7->type]) && (ptr7->wall == 0 || ptr7->wall == 21) && ptr7->liquid < 200)
 						{
-							fixed (Vector3* ptr9 = &color[l - firstToLightX, num8 - firstToLightY])
+							fixed (Vector3* ptr8 = &color[l - firstToLightX, num8 - firstToLightY])
 							{
-								if (ptr9->X < skyColor)
+								if (ptr8->X < skyColor)
 								{
-									ptr9->X = view.time.tileColorf.X;
-									if (ptr9->Y < skyColor)
+									ptr8->X = view.time.tileColorf.X;
+									if (ptr8->Y < skyColor)
 									{
-										ptr9->Y = view.time.tileColorf.Y;
+										ptr8->Y = view.time.tileColorf.Y;
 									}
-									if (ptr9->Z < skyColor)
+									if (ptr8->Z < skyColor)
 									{
-										ptr9->Z = view.time.tileColorf.Z;
+										ptr8->Z = view.time.tileColorf.Z;
 									}
 								}
 							}
 						}
 						num8++;
-						ptr8++;
+						ptr7++;
 					}
 				}
 			}
@@ -312,44 +312,44 @@ public sealed class Lighting
 			num10 -= scrY;
 			int num11 = ((num9 < 0) ? (-num9) : 0);
 			int num12 = ((num10 < 0) ? (-num10) : 0);
-			fixed (Vector3* ptr10 = color)
+			fixed (Vector3* ptr9 = color)
 			{
-				fixed (Vector3* ptr12 = color2)
+				fixed (Vector3* ptr10 = color2)
 				{
 					for (int m = num11; m < MAX_LIGHT_ARRAY_X; m++)
 					{
-						Vector3* ptr11 = ptr10 + (m * 107 + num12);
-						Vector3* ptr13 = ptr12 + ((m + num9) * 117 + num12 + num10);
+						Vector3* ptr11 = ptr9 + (m * 107 + num12);
+						Vector3* ptr12 = ptr10 + ((m + num9) * 117 + num12 + num10);
 						for (int n = num12; n < 107; n++)
 						{
-							*(ptr11++) = *(ptr13++);
+							*(ptr11++) = *(ptr12++);
 						}
 					}
 				}
 			}
 		}
-		fixed (Vector3* ptr14 = color2)
+		fixed (Vector3* ptr13 = color2)
 		{
-			fixed (byte* ptr16 = stopAndWetLight)
+			fixed (byte* ptr14 = stopAndWetLight)
 			{
-				Vector3* ptr15 = ptr14;
-				byte* ptr17 = ptr16;
+				Vector3* ptr15 = ptr13;
+				byte* ptr16 = ptr14;
 				for (int num13 = COLOR_W * 117 - 1; num13 >= 0; num13--)
 				{
 					ptr15->X = 0f;
 					ptr15->Y = 0f;
 					ptr15->Z = 0f;
-					*ptr17 = 0;
+					*ptr16 = 0;
 					ptr15++;
-					ptr17++;
+					ptr16++;
 				}
 			}
 		}
-		fixed (TempLight* ptr18 = tempLight)
+		fixed (TempLight* ptr17 = tempLight)
 		{
-			fixed (Vector3* ptr20 = color2)
+			fixed (Vector3* ptr18 = color2)
 			{
-				TempLight* ptr19 = ptr18;
+				TempLight* ptr19 = ptr17;
 				for (int num14 = tempLightCount - 1; num14 >= 0; num14--)
 				{
 					int num15 = ptr19->x - firstToLightX;
@@ -358,10 +358,10 @@ public sealed class Lighting
 						int num16 = ptr19->y - firstToLightY;
 						if (num16 >= 0 && num16 < 117)
 						{
-							Vector3* ptr21 = ptr20 + (num16 + num15 * 117);
-							ptr21->X = ptr19->color.X;
-							ptr21->Y = ptr19->color.Y;
-							ptr21->Z = ptr19->color.Z;
+							Vector3* ptr20 = ptr18 + (num16 + num15 * 117);
+							ptr20->X = ptr19->color.X;
+							ptr20->Y = ptr19->color.Y;
+							ptr20->Z = ptr19->color.Z;
 						}
 					}
 					ptr19++;
@@ -415,35 +415,35 @@ public sealed class Lighting
 		int num29 = firstToLightY;
 		int num30 = num2;
 		int num31 = ((num30 < Main.worldSurface) ? num30 : Main.worldSurface);
-		fixed (Tile* ptr22 = Main.tile)
+		fixed (Tile* tile2 = Main.tile)
 		{
 			for (int num32 = num27; num32 < num28; num32++)
 			{
-				Tile* ptr23 = ptr22 + (num32 * 1440 + num29);
+				Tile* ptr21 = tile2 + (num32 * 1440 + num29);
 				int num33 = num29;
 				while (num33 < num31)
 				{
-					int wall = ptr23->wall;
-					if ((wall == 0 || wall == 21) && ptr23->liquid < 200 && (ptr23->active == 0 || !Main.tileNoSunLight[ptr23->type]))
+					int wall = ptr21->wall;
+					if ((wall == 0 || wall == 21) && ptr21->liquid < 200 && (ptr21->active == 0 || !Main.tileNoSunLight[ptr21->type]))
 					{
-						fixed (Vector3* ptr24 = &color2[num32 - firstToLightX, num33 - firstToLightY])
+						fixed (Vector3* ptr22 = &color2[num32 - firstToLightX, num33 - firstToLightY])
 						{
-							if (ptr24->X < skyColor)
+							if (ptr22->X < skyColor)
 							{
-								ptr24->X = view.time.tileColorf.X;
-								if (ptr24->Y < skyColor)
+								ptr22->X = view.time.tileColorf.X;
+								if (ptr22->Y < skyColor)
 								{
-									ptr24->Y = view.time.tileColorf.Y;
+									ptr22->Y = view.time.tileColorf.Y;
 								}
-								if (ptr24->Z < skyColor)
+								if (ptr22->Z < skyColor)
 								{
-									ptr24->Z = view.time.tileColorf.Z;
+									ptr22->Z = view.time.tileColorf.Z;
 								}
 							}
 						}
 					}
 					num33++;
-					ptr23++;
+					ptr21++;
 				}
 			}
 		}
@@ -474,25 +474,25 @@ public sealed class Lighting
 		maxX = 0;
 		minY = 117;
 		maxY = 0;
-		fixed (Tile* ptr25 = Main.tile)
+		fixed (Tile* tile3 = Main.tile)
 		{
 			for (int num34 = num27; num34 < num28; num34++)
 			{
-				Tile* ptr26 = ptr25 + (num34 * 1440 + num29);
+				Tile* ptr23 = tile3 + (num34 * 1440 + num29);
 				int num35 = num29;
 				while (num35 < num30)
 				{
 					int num36 = num34 - firstToLightX;
 					int num37 = num35 - firstToLightY;
-					fixed (Vector3* ptr27 = &color2[num36, num37])
+					fixed (Vector3* ptr24 = &color2[num36, num37])
 					{
-						if (ptr26->active == 0)
+						if (ptr23->active == 0)
 						{
 							view.inactiveTiles++;
 						}
 						else
 						{
-							int type = ptr26->type;
+							int type = ptr23->type;
 							int num38 = num28 - num27 - 99 >> 1;
 							int num39 = num30 - num29 - 87 >> 1;
 							if (num34 > num27 + num38 && num34 < num28 - num38 && num35 > num29 + num39 && num35 < num30 - num39)
@@ -544,9 +544,9 @@ public sealed class Lighting
 									view.snowTiles++;
 									break;
 								case 139:
-									if (ptr26->frameX >= 36)
+									if (ptr23->frameX >= 36)
 									{
-										view.musicBox = ptr26->frameY / 36;
+										view.musicBox = ptr23->frameY / 36;
 									}
 									break;
 								}
@@ -560,72 +560,72 @@ public sealed class Lighting
 								switch (type)
 								{
 								case 92:
-									if (ptr26->frameY <= 18 && ptr26->frameX == 0)
+									if (ptr23->frameY <= 18 && ptr23->frameX == 0)
 									{
 										float num40 = 1f;
 										float num41 = 1f;
 										float num42 = 1f;
-										if (num40 > ptr27->X)
+										if (num40 > ptr24->X)
 										{
-											ptr27->X = num40;
+											ptr24->X = num40;
 										}
-										if (num41 > ptr27->Y)
+										if (num41 > ptr24->Y)
 										{
-											ptr27->Y = num41;
+											ptr24->Y = num41;
 										}
-										if (num42 > ptr27->Z)
+										if (num42 > ptr24->Z)
 										{
-											ptr27->Z = num42;
+											ptr24->Z = num42;
 										}
 									}
 									break;
 								case 93:
-									if (ptr26->frameY == 0 && ptr26->frameX == 0)
+									if (ptr23->frameY == 0 && ptr23->frameX == 0)
 									{
 										float num40 = 1f;
 										float num41 = 0.97f;
 										float num42 = 0.85f;
-										if (num40 > ptr27->X)
+										if (num40 > ptr24->X)
 										{
-											ptr27->X = num40;
+											ptr24->X = num40;
 										}
-										if (num41 > ptr27->Y)
+										if (num41 > ptr24->Y)
 										{
-											ptr27->Y = num41;
+											ptr24->Y = num41;
 										}
-										if (num42 > ptr27->Z)
+										if (num42 > ptr24->Z)
 										{
-											ptr27->Z = num42;
+											ptr24->Z = num42;
 										}
 									}
 									break;
 								case 98:
-									if (ptr26->frameY == 0)
+									if (ptr23->frameY == 0)
 									{
 										float num40 = 1f;
 										float num41 = 0.97f;
 										float num42 = 0.85f;
-										if (num40 > ptr27->X)
+										if (num40 > ptr24->X)
 										{
-											ptr27->X = num40;
+											ptr24->X = num40;
 										}
-										if (num41 > ptr27->Y)
+										if (num41 > ptr24->Y)
 										{
-											ptr27->Y = num41;
+											ptr24->Y = num41;
 										}
-										if (num42 > ptr27->Z)
+										if (num42 > ptr24->Z)
 										{
-											ptr27->Z = num42;
+											ptr24->Z = num42;
 										}
 									}
 									break;
 								case 4:
-									if (ptr26->frameX < 66)
+									if (ptr23->frameX < 66)
 									{
 										float num40;
 										float num41;
 										float num42;
-										switch (ptr26->frameY)
+										switch (ptr23->frameY)
 										{
 										case 22:
 											num40 = 0f;
@@ -673,118 +673,118 @@ public sealed class Lighting
 											num42 = 0.8f;
 											break;
 										}
-										if (num40 > ptr27->X)
+										if (num40 > ptr24->X)
 										{
-											ptr27->X = num40;
+											ptr24->X = num40;
 										}
-										if (num41 > ptr27->Y)
+										if (num41 > ptr24->Y)
 										{
-											ptr27->Y = num41;
+											ptr24->Y = num41;
 										}
-										if (num42 > ptr27->Z)
+										if (num42 > ptr24->Z)
 										{
-											ptr27->Z = num42;
+											ptr24->Z = num42;
 										}
 									}
 									break;
 								case 33:
-									if (ptr26->frameX == 0)
+									if (ptr23->frameX == 0)
 									{
 										float num40 = 1f;
 										float num41 = 0.95f;
 										float num42 = 0.65f;
-										if (num40 > ptr27->X)
+										if (num40 > ptr24->X)
 										{
-											ptr27->X = num40;
+											ptr24->X = num40;
 										}
-										if (num41 > ptr27->Y)
+										if (num41 > ptr24->Y)
 										{
-											ptr27->Y = num41;
+											ptr24->Y = num41;
 										}
-										if (num42 > ptr27->Z)
+										if (num42 > ptr24->Z)
 										{
-											ptr27->Z = num42;
+											ptr24->Z = num42;
 										}
 									}
 									break;
 								case 36:
-									if (ptr26->frameX < 54)
+									if (ptr23->frameX < 54)
 									{
 										float num40 = 1f;
 										float num41 = 0.95f;
 										float num42 = 0.65f;
-										if (num40 > ptr27->X)
+										if (num40 > ptr24->X)
 										{
-											ptr27->X = num40;
+											ptr24->X = num40;
 										}
-										if (num41 > ptr27->Y)
+										if (num41 > ptr24->Y)
 										{
-											ptr27->Y = num41;
+											ptr24->Y = num41;
 										}
-										if (num42 > ptr27->Z)
+										if (num42 > ptr24->Z)
 										{
-											ptr27->Z = num42;
+											ptr24->Z = num42;
 										}
 									}
 									break;
 								case 100:
-									if (ptr26->frameX < 36)
+									if (ptr23->frameX < 36)
 									{
 										float num40 = 1f;
 										float num41 = 0.95f;
 										float num42 = 0.65f;
-										if (num40 > ptr27->X)
+										if (num40 > ptr24->X)
 										{
-											ptr27->X = num40;
+											ptr24->X = num40;
 										}
-										if (num41 > ptr27->Y)
+										if (num41 > ptr24->Y)
 										{
-											ptr27->Y = num41;
+											ptr24->Y = num41;
 										}
-										if (num42 > ptr27->Z)
+										if (num42 > ptr24->Z)
 										{
-											ptr27->Z = num42;
+											ptr24->Z = num42;
 										}
 									}
 									break;
 								case 34:
 								case 35:
-									if (ptr26->frameX < 54)
+									if (ptr23->frameX < 54)
 									{
 										float num40 = 1f;
 										float num41 = 0.95f;
 										float num42 = 0.8f;
-										if (num40 > ptr27->X)
+										if (num40 > ptr24->X)
 										{
-											ptr27->X = num40;
+											ptr24->X = num40;
 										}
-										if (num41 > ptr27->Y)
+										if (num41 > ptr24->Y)
 										{
-											ptr27->Y = num41;
+											ptr24->Y = num41;
 										}
-										if (num42 > ptr27->Z)
+										if (num42 > ptr24->Z)
 										{
-											ptr27->Z = num42;
+											ptr24->Z = num42;
 										}
 									}
 									break;
 								case 95:
-									if (ptr26->frameX < 36)
+									if (ptr23->frameX < 36)
 									{
 										float num40 = 1f;
 										float num41 = 0.95f;
 										float num42 = 0.8f;
-										if (num40 > ptr27->X)
+										if (num40 > ptr24->X)
 										{
-											ptr27->X = num40;
+											ptr24->X = num40;
 										}
-										if (num41 > ptr27->Y)
+										if (num41 > ptr24->Y)
 										{
-											ptr27->Y = num41;
+											ptr24->Y = num41;
 										}
-										if (num42 > ptr27->Z)
+										if (num42 > ptr24->Z)
 										{
-											ptr27->Z = num42;
+											ptr24->Z = num42;
 										}
 									}
 									break;
@@ -794,17 +794,17 @@ public sealed class Lighting
 									float num40 = 0.83f;
 									float num41 = 0.6f;
 									float num42 = 0.5f;
-									if (num40 > ptr27->X)
+									if (num40 > ptr24->X)
 									{
-										ptr27->X = num40;
+										ptr24->X = num40;
 									}
-									if (num41 > ptr27->Y)
+									if (num41 > ptr24->Y)
 									{
-										ptr27->Y = num41;
+										ptr24->Y = num41;
 									}
-									if (num42 > ptr27->Z)
+									if (num42 > ptr24->Z)
 									{
-										ptr27->Z = num42;
+										ptr24->Z = num42;
 									}
 									break;
 								}
@@ -813,17 +813,17 @@ public sealed class Lighting
 									float num40 = 0.75f;
 									float num41 = 0.45f;
 									float num42 = 0.25f;
-									if (num40 > ptr27->X)
+									if (num40 > ptr24->X)
 									{
-										ptr27->X = num40;
+										ptr24->X = num40;
 									}
-									if (num41 > ptr27->Y)
+									if (num41 > ptr24->Y)
 									{
-										ptr27->Y = num41;
+										ptr24->Y = num41;
 									}
-									if (num42 > ptr27->Z)
+									if (num42 > ptr24->Z)
 									{
-										ptr27->Z = num42;
+										ptr24->Z = num42;
 									}
 									break;
 								}
@@ -832,17 +832,17 @@ public sealed class Lighting
 									float num40 = 0.56f;
 									float num41 = 0.43f;
 									float num42 = 0.15f;
-									if (num40 > ptr27->X)
+									if (num40 > ptr24->X)
 									{
-										ptr27->X = num40;
+										ptr24->X = num40;
 									}
-									if (num41 > ptr27->Y)
+									if (num41 > ptr24->Y)
 									{
-										ptr27->Y = num41;
+										ptr24->Y = num41;
 									}
-									if (num42 > ptr27->Z)
+									if (num42 > ptr24->Z)
 									{
-										ptr27->Z = num42;
+										ptr24->Z = num42;
 									}
 									break;
 								}
@@ -852,37 +852,37 @@ public sealed class Lighting
 									float num40 = 0.12f;
 									float num41 = 0.07f;
 									float num42 = 0.32f;
-									if (num40 > ptr27->X)
+									if (num40 > ptr24->X)
 									{
-										ptr27->X = num40;
+										ptr24->X = num40;
 									}
-									if (num41 > ptr27->Y)
+									if (num41 > ptr24->Y)
 									{
-										ptr27->Y = num41;
+										ptr24->Y = num41;
 									}
-									if (num42 > ptr27->Z)
+									if (num42 > ptr24->Z)
 									{
-										ptr27->Z = num42;
+										ptr24->Z = num42;
 									}
 									break;
 								}
 								case 42:
-									if (ptr26->frameX == 0)
+									if (ptr23->frameX == 0)
 									{
 										float num40 = 0.65f;
 										float num41 = 0.8f;
 										float num42 = 0.54f;
-										if (num40 > ptr27->X)
+										if (num40 > ptr24->X)
 										{
-											ptr27->X = num40;
+											ptr24->X = num40;
 										}
-										if (num41 > ptr27->Y)
+										if (num41 > ptr24->Y)
 										{
-											ptr27->Y = num41;
+											ptr24->Y = num41;
 										}
-										if (num42 > ptr27->Z)
+										if (num42 > ptr24->Z)
 										{
-											ptr27->Z = num42;
+											ptr24->Z = num42;
 										}
 									}
 									break;
@@ -891,17 +891,17 @@ public sealed class Lighting
 									float num40 = 0.3f;
 									float num41 = 0.3f;
 									float num42 = 0.75f;
-									if (num40 > ptr27->X)
+									if (num40 > ptr24->X)
 									{
-										ptr27->X = num40;
+										ptr24->X = num40;
 									}
-									if (num41 > ptr27->Y)
+									if (num41 > ptr24->Y)
 									{
-										ptr27->Y = num41;
+										ptr24->Y = num41;
 									}
-									if (num42 > ptr27->Z)
+									if (num42 > ptr24->Z)
 									{
-										ptr27->Z = num42;
+										ptr24->Z = num42;
 									}
 									break;
 								}
@@ -914,37 +914,37 @@ public sealed class Lighting
 									float num40 = 0.1f;
 									float num41 = 0.3f + num46;
 									float num42 = 0.6f + num46;
-									if (num40 > ptr27->X)
+									if (num40 > ptr24->X)
 									{
-										ptr27->X = num40;
+										ptr24->X = num40;
 									}
-									if (num41 > ptr27->Y)
+									if (num41 > ptr24->Y)
 									{
-										ptr27->Y = num41;
+										ptr24->Y = num41;
 									}
-									if (num42 > ptr27->Z)
+									if (num42 > ptr24->Z)
 									{
-										ptr27->Z = num42;
+										ptr24->Z = num42;
 									}
 									break;
 								}
 								case 61:
-									if (ptr26->frameX == 144)
+									if (ptr23->frameX == 144)
 									{
 										float num40 = 0.42f;
 										float num41 = 0.81f;
 										float num42 = 0.52f;
-										if (num40 > ptr27->X)
+										if (num40 > ptr24->X)
 										{
-											ptr27->X = num40;
+											ptr24->X = num40;
 										}
-										if (num41 > ptr27->Y)
+										if (num41 > ptr24->Y)
 										{
-											ptr27->Y = num41;
+											ptr24->Y = num41;
 										}
-										if (num42 > ptr27->Z)
+										if (num42 > ptr24->Z)
 										{
-											ptr27->Z = num42;
+											ptr24->Z = num42;
 										}
 									}
 									break;
@@ -955,22 +955,22 @@ public sealed class Lighting
 									float num40 = 0.31f + num43;
 									float num41 = 0.1f;
 									float num42 = 0.44f + num43;
-									if (num40 > ptr27->X)
+									if (num40 > ptr24->X)
 									{
-										ptr27->X = num40;
+										ptr24->X = num40;
 									}
-									if (num41 > ptr27->Y)
+									if (num41 > ptr24->Y)
 									{
-										ptr27->Y = num41;
+										ptr24->Y = num41;
 									}
-									if (num42 > ptr27->Z)
+									if (num42 > ptr24->Z)
 									{
-										ptr27->Z = num42;
+										ptr24->Z = num42;
 									}
 									break;
 								}
 								case 84:
-									switch (ptr26->frameX / 18)
+									switch (ptr23->frameX / 18)
 									{
 									case 2:
 									{
@@ -986,17 +986,17 @@ public sealed class Lighting
 										float num40 = 0.7f * num45;
 										float num41 = num45;
 										float num42 = 0.1f * num45;
-										if (num40 > ptr27->X)
+										if (num40 > ptr24->X)
 										{
-											ptr27->X = num40;
+											ptr24->X = num40;
 										}
-										if (num41 > ptr27->Y)
+										if (num41 > ptr24->Y)
 										{
-											ptr27->Y = num41;
+											ptr24->Y = num41;
 										}
-										if (num42 > ptr27->Z)
+										if (num42 > ptr24->Z)
 										{
-											ptr27->Z = num42;
+											ptr24->Z = num42;
 										}
 										break;
 									}
@@ -1005,56 +1005,56 @@ public sealed class Lighting
 										float num40 = 0.9f;
 										float num41 = 0.71999997f;
 										float num42 = 0.17999999f;
-										if (num40 > ptr27->X)
+										if (num40 > ptr24->X)
 										{
-											ptr27->X = num40;
+											ptr24->X = num40;
 										}
-										if (num41 > ptr27->Y)
+										if (num41 > ptr24->Y)
 										{
-											ptr27->Y = num41;
+											ptr24->Y = num41;
 										}
-										if (num42 > ptr27->Z)
+										if (num42 > ptr24->Z)
 										{
-											ptr27->Z = num42;
+											ptr24->Z = num42;
 										}
 										break;
 									}
 									}
 									break;
 								case 83:
-									if (ptr26->frameX == 18 && !view.time.dayTime)
+									if (ptr23->frameX == 18 && !view.time.dayTime)
 									{
 										float num40 = 0.1f;
 										float num41 = 0.4f;
 										float num42 = 0.6f;
-										if (num40 > ptr27->X)
+										if (num40 > ptr24->X)
 										{
-											ptr27->X = num40;
+											ptr24->X = num40;
 										}
-										if (num41 > ptr27->Y)
+										if (num41 > ptr24->Y)
 										{
-											ptr27->Y = num41;
+											ptr24->Y = num41;
 										}
-										if (num42 > ptr27->Z)
+										if (num42 > ptr24->Z)
 										{
-											ptr27->Z = num42;
+											ptr24->Z = num42;
 										}
 									}
 									break;
 								case 126:
-									if (ptr26->frameX < 36)
+									if (ptr23->frameX < 36)
 									{
-										if (Main.DiscoRGB.X > ptr27->X)
+										if (Main.DiscoRGB.X > ptr24->X)
 										{
-											ptr27->X = Main.DiscoRGB.X;
+											ptr24->X = Main.DiscoRGB.X;
 										}
-										if (Main.DiscoRGB.Y > ptr27->Y)
+										if (Main.DiscoRGB.Y > ptr24->Y)
 										{
-											ptr27->Y = Main.DiscoRGB.Y;
+											ptr24->Y = Main.DiscoRGB.Y;
 										}
-										if (Main.DiscoRGB.Z > ptr27->Z)
+										if (Main.DiscoRGB.Z > ptr24->Z)
 										{
-											ptr27->Z = Main.DiscoRGB.Z;
+											ptr24->Z = Main.DiscoRGB.Z;
 										}
 									}
 									break;
@@ -1062,13 +1062,13 @@ public sealed class Lighting
 								{
 									float num44 = (float)Main.rand.Next(28, 42) * 0.01f;
 									num44 += (float)(270 - UI.mouseTextBrightness) * 0.00125f;
-									if (ptr27->Y < 0.1f * num44)
+									if (ptr24->Y < 0.1f * num44)
 									{
-										ptr27->Y = 0.3f * num44;
+										ptr24->Y = 0.3f * num44;
 									}
-									if (ptr27->Z < 0.3f * num44)
+									if (ptr24->Z < 0.3f * num44)
 									{
-										ptr27->Z = 0.6f * num44;
+										ptr24->Z = 0.6f * num44;
 									}
 									break;
 								}
@@ -1077,13 +1077,13 @@ public sealed class Lighting
 									float num40;
 									float num41;
 									float num42;
-									if (ptr26->frameX == 0 || ptr26->frameX == 54 || ptr26->frameX == 108)
+									if (ptr23->frameX == 0 || ptr23->frameX == 54 || ptr23->frameX == 108)
 									{
 										num40 = 0f;
 										num41 = 0.05f;
 										num42 = 0.25f;
 									}
-									else if (ptr26->frameX == 18 || ptr26->frameX == 72 || ptr26->frameX == 126)
+									else if (ptr23->frameX == 18 || ptr23->frameX == 72 || ptr23->frameX == 126)
 									{
 										num40 = 0.2f;
 										num41 = 0f;
@@ -1095,33 +1095,33 @@ public sealed class Lighting
 										num41 = 0f;
 										num42 = 0.2f;
 									}
-									if (ptr27->X < num40)
+									if (ptr24->X < num40)
 									{
-										ptr27->X = num40 * (float)Main.rand.Next(970, 1031) * 0.001f;
+										ptr24->X = num40 * (float)Main.rand.Next(970, 1031) * 0.001f;
 									}
-									if (ptr27->Y < num41)
+									if (ptr24->Y < num41)
 									{
-										ptr27->Y = num41 * (float)Main.rand.Next(970, 1031) * 0.001f;
+										ptr24->Y = num41 * (float)Main.rand.Next(970, 1031) * 0.001f;
 									}
-									if (ptr27->Z < num42)
+									if (ptr24->Z < num42)
 									{
-										ptr27->Z = num42 * (float)Main.rand.Next(970, 1031) * 0.001f;
+										ptr24->Z = num42 * (float)Main.rand.Next(970, 1031) * 0.001f;
 									}
 									break;
 								}
 								case 149:
-									if (ptr26->frameX <= 36)
+									if (ptr23->frameX <= 36)
 									{
 										float num40;
 										float num41;
 										float num42;
-										if (ptr26->frameX == 0)
+										if (ptr23->frameX == 0)
 										{
 											num40 = 0.1f;
 											num41 = 0.2f;
 											num42 = 0.5f;
 										}
-										else if (ptr26->frameX == 18)
+										else if (ptr23->frameX == 18)
 										{
 											num40 = 0.5f;
 											num41 = 0.1f;
@@ -1133,48 +1133,48 @@ public sealed class Lighting
 											num41 = 0.5f;
 											num42 = 0.1f;
 										}
-										if (ptr27->X < num40)
+										if (ptr24->X < num40)
 										{
-											ptr27->X = num40 * (float)Main.rand.Next(970, 1031) * 0.001f;
+											ptr24->X = num40 * (float)Main.rand.Next(970, 1031) * 0.001f;
 										}
-										if (ptr27->Y < num41)
+										if (ptr24->Y < num41)
 										{
-											ptr27->Y = num41 * (float)Main.rand.Next(970, 1031) * 0.001f;
+											ptr24->Y = num41 * (float)Main.rand.Next(970, 1031) * 0.001f;
 										}
-										if (ptr27->Z < num42)
+										if (ptr24->Z < num42)
 										{
-											ptr27->Z = num42 * (float)Main.rand.Next(970, 1031) * 0.001f;
+											ptr24->Z = num42 * (float)Main.rand.Next(970, 1031) * 0.001f;
 										}
 									}
 									break;
 								}
 							}
 						}
-						if (ptr26->liquid > 0)
+						if (ptr23->liquid > 0)
 						{
-							if (ptr26->lava != 0)
+							if (ptr23->lava != 0)
 							{
 								float num47 = 0.55f;
 								num47 += (float)(270 - UI.mouseTextBrightness) * 0.0011111111f;
-								if (ptr27->X < num47)
+								if (ptr24->X < num47)
 								{
-									ptr27->X = num47;
+									ptr24->X = num47;
 								}
-								if (ptr27->Y < num47)
+								if (ptr24->Y < num47)
 								{
-									ptr27->Y = num47 * 0.6f;
+									ptr24->Y = num47 * 0.6f;
 								}
-								if (ptr27->Z < num47)
+								if (ptr24->Z < num47)
 								{
-									ptr27->Z = num47 * 0.2f;
+									ptr24->Z = num47 * 0.2f;
 								}
 							}
-							else if (ptr26->liquid > 128)
+							else if (ptr23->liquid > 128)
 							{
 								stopAndWetLight[num36 * 117 + num37] |= 2;
 							}
 						}
-						if (ptr27->X > 0f || ptr27->Y > 0f || ptr27->Z > 0f)
+						if (ptr24->X > 0f || ptr24->Y > 0f || ptr24->Z > 0f)
 						{
 							if (minX > num36)
 							{
@@ -1195,7 +1195,7 @@ public sealed class Lighting
 						}
 					}
 					num35++;
-					ptr26++;
+					ptr23++;
 				}
 			}
 		}
